@@ -1,0 +1,59 @@
+name: Benchmark Protocol & Audit CI
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'protocol-*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  audit-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Benchmark Audit Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml jsonschema
+
+      - name: Verify Manifest Integrity and Task Counts
+        run: |
+          python3 -c "
+          import json
+          with open('benchmark-manifest.json') as f:
+              m = json.load(f)
+          assert m['total_scored_tasks'] == 20, f'Expected 20 scored tasks, got {m[\"total_scored_tasks\"]}'
+          assert len(m['calibration_tasks']) == 3, f'Expected 3 calibration tasks'
+          print('Manifest integrity check passed: 20 scored + 3 calibration tasks.')
+          "
+
+      - name: Check for Gold Leakage in Agent Workspace
+        run: |
+          python3 -c "
+          import os, sys
+          from pathlib import Path
+          workspaces = Path('agent-workspaces')
+          if workspaces.exists():
+              for p in workspaces.rglob('*.patch'):
+                  if 'private-oracle' in str(p) or 'gold' in str(p).lower():
+                      print(f'CRITICAL: Gold leakage detected in agent workspace: {p}')
+                      sys.exit(1)
+          print('No gold solution leakage detected in agent workspaces.')
+          "
+
+      - name: Verify Documentation & Inventory Completeness
+        run: |
+          for f in README.md BENCHMARK_PROTOCOL.md BENCHMARK_SOURCES.md SYSTEM_UNDER_TEST.md benchmark-manifest.json system-under-test.json; do
+            if [ ! -f "$f" ]; then
+              echo "Missing required audit file: $f"
+              exit 1
+            fi
+          done
+          echo "All required protocol audit documents are present."

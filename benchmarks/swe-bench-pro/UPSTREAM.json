@@ -1,0 +1,11 @@
+{
+  "name": "SWE-bench Pro V2",
+  "canonical_repository": "https://github.com/scaleapi/SWE-bench_Pro-os.git",
+  "pinned_sha": "66f92766bba642462d4bbe5479e83f91f9211862",
+  "tag": "v2.0.0",
+  "dataset": "ScaleAI/SWE-bench_Pro",
+  "license": "Apache-2.0",
+  "official_grader": "harbor run -p v2/tasks/<task_id> -e docker -a patch_replay:PatchReplayAgent",
+  "agent_execution_component_used": false,
+  "official_agent_runner_used": false
+}

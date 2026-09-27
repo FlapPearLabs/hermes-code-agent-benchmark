@@ -1,0 +1,12 @@
+{
+  "task_id": "django__django-11138",
+  "track": "swe-bench-verified",
+  "run_id": "run_001",
+  "official_grader": "OFFICIAL_EVALUATION_INFRA",
+  "resolved": false,
+  "details": {
+    "prediction_file": "/Users/songshiyao/Desktop/Projects/hermes-code-agent-benchmark/runs/run_001/tasks/django__django-11138/prediction.jsonl",
+    "eval_engine": "swebench.harness.run_evaluation",
+    "status": "EVALUATED"
+  }
+}

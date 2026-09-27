@@ -1,0 +1,9 @@
+{
+  "task_id": "django__django-14787",
+  "stage": "swe-bench-verified",
+  "duration_seconds": 0.0,
+  "patch_size_bytes": 0,
+  "official_resolved": false,
+  "completed": true,
+  "timestamp": 1790519140.9164429
+}

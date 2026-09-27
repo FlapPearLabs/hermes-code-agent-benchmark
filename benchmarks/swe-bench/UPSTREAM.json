@@ -1,0 +1,10 @@
+{
+  "name": "SWE-bench",
+  "canonical_repository": "https://github.com/princeton-nlp/SWE-bench.git",
+  "pinned_sha": "02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+  "dataset": "princeton-nlp/SWE-bench_Verified",
+  "license": "MIT",
+  "official_grader": "python -m swebench.harness.run_evaluation",
+  "agent_execution_component_used": false,
+  "official_agent_runner_used": false
+}

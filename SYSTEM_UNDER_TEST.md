@@ -1,0 +1,38 @@
+# System Under Test (SUT)
+
+## Role Definition
+**Hermes Code Bot is the exam taker.**
+**The third-party benchmark is the exam paper, exam room, and official grader.**
+
+`NO OFFICIAL BENCHMARK AGENT LOOP IS USED.`
+`OFFICIAL_AGENT_RUNNER_USED = NO`
+
+## System Specification
+- **System Name**: `HERMES_CODE_BOT_HARNESS`
+- **Hermes Version**: `v0.21.5+3172.g79dbb14 (2026.9.24)`
+- **Hermes Commit**: `79dbb1450ec404a2240529f5554526da4cfec498`
+- **Default Model**: `gemini-3.8-flash-tiered`
+- **Model Provider**: `custom:antigravity` (`http://127.0.0.1:8045/v1`)
+- **Reasoning Effort**: `high`
+- **Code Profile SOUL SHA256**: `2bd60a6faa55d7eefcc04d3a00a7fbdf9da19658fd81501144a03bb020ddc136`
+- **Code Profile Config SHA256**: `78ff40bcccdeee803a338ab14213e8389241201eb232495c2a7e9a3827ee91ca`
+- **Agent Engineering Governance Git SHA**: `6ebde952681486d7caaaf826bd2a77c96c3e13a8`
+
+## Harness Components
+- **Goal Mode**: Enabled (dynamic progress judge, budget tracking; does NOT substitute for official benchmark pass).
+- **Kanban Orchestration**: Enabled (durable task DAG, worktree isolation; max parallel workers = 2).
+- **Fresh Reviewer Runtime**: Enabled (isolated read-only subagent with exact-commit SHA binding).
+- **Repair Policy**: Append-only repair commits for accepted reviewer findings, invalidating prior approval and re-triggering fresh review.
+- **Skills**: Curated engineering skill suite (see `skill-inventory.json`).
+- **MCP Servers**: Sandboxed local services (`agentmemory`, `chrome-devtools`, `codegraph`; see `mcp-inventory.json`).
+- **Network Policy**: Isolated per benchmark protocol. No search for gold PRs, fixing commits, or external solutions during task solving.
+
+## Boundary Enforcement
+The official benchmark infrastructure is strictly restricted to:
+1. Environment setup and base commit checkout
+2. Sandbox lifecycle management
+3. Candidate patch application
+4. Official test and verifier execution
+5. Pass/Fail grading and report output
+
+All task comprehension, architectural/seam analysis, planning, ticket decomposition, tool invocation, code modifications, test-driven debugging, and self-governed review are executed solely by the Hermes Code Bot Harness.

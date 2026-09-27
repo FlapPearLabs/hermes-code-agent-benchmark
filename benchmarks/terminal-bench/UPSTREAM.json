@@ -1,0 +1,10 @@
+{
+  "name": "Terminal-Bench",
+  "canonical_repository": "https://github.com/harbor-framework/terminal-bench.git",
+  "pinned_sha": "4def1f367467b34b18e0dbdc086400ba71c3e037",
+  "dataset": "terminal-bench/terminal-bench",
+  "license": "MIT",
+  "official_grader": "harbor run -p tasks/<task_id> -e docker",
+  "agent_execution_component_used": false,
+  "official_agent_runner_used": false
+}

@@ -1,0 +1,22 @@
+# Environments & Virtual environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Docker & Container artifacts
+*.tar
+*.log
+ha.stderr.log
+
+# Private oracle / control plane separation
+# Agent workspaces are ephemeral or captured in runs
+agent-workspaces/
+benchmark-control/private-oracle/
+
+# Telemetry large blobs if needed
+runs/**/tmp/
+
+# OS artifacts
+.DS_Store
+benchmark-control/private-oracle/

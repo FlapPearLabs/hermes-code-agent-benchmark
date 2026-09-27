@@ -1,0 +1,41 @@
+{
+  "total_servers": 3,
+  "servers": {
+    "agentmemory": {
+      "command": "/usr/bin/python3",
+      "args": [
+        "/Users/songshiyao/.agentmemory-patches/runtime-guard-code/guard.py",
+        "mcp"
+      ],
+      "env": {
+        "AGENTMEMORY_URL": "http://localhost:3111",
+        "AGENTMEMORY_FORCE_PROXY": "1"
+      },
+      "timeout": 60,
+      "connect_timeout": 30,
+      "enabled": true
+    },
+    "codegraph": {
+      "command": "/Users/songshiyao/.local/bin/codegraph",
+      "args": [
+        "serve",
+        "--mcp"
+      ],
+      "timeout": 120,
+      "connect_timeout": 60,
+      "enabled": true
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--auto-connect"
+      ],
+      "timeout": 60,
+      "connect_timeout": 30,
+      "enabled": true
+    }
+  },
+  "policy": "Sandboxed, monitored, zero oracle access, strictly task-scoped"
+}

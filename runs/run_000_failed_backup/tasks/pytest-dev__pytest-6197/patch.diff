@@ -1,0 +1,4385 @@
+diff --git a/.github/PULL_REQUEST_TEMPLATE.md b/.github/PULL_REQUEST_TEMPLATE.md
+index f516959..7436f71 100644
+--- a/.github/PULL_REQUEST_TEMPLATE.md
++++ b/.github/PULL_REQUEST_TEMPLATE.md
+@@ -2,15 +2,14 @@
+ Thanks for submitting a PR, your contribution is really appreciated!
+ 
+ Here is a quick checklist that should be present in PRs.
+-(please delete this text from the final description, this is just a guideline)
+--->
+ 
+ - [ ] Target the `master` branch for bug fixes, documentation updates and trivial changes.
+ - [ ] Target the `features` branch for new features, improvements, and removals/deprecations.
+ - [ ] Include documentation when adding new features.
+ - [ ] Include new tests or update existing tests when applicable.
+ 
+-Unless your change is trivial or a small documentation fix (e.g.,  a typo or reword of a small section) please:
++Unless your change is trivial or a small documentation fix (e.g., a typo or reword of a small section) please:
+ 
+ - [ ] Create a new changelog file in the `changelog` folder, with a name like `<ISSUE NUMBER>.<TYPE>.rst`. See [changelog/README.rst](https://github.com/pytest-dev/pytest/blob/master/changelog/README.rst) for details.
+-- [ ] Add yourself to `AUTHORS` in alphabetical order;
++- [ ] Add yourself to `AUTHORS` in alphabetical order.
++-->
+diff --git a/.travis.yml b/.travis.yml
+index 41c23cf..1de8a30 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -35,33 +35,32 @@ jobs:
+         - test $(python -c 'import sys; print("%d%d" % sys.version_info[0:2])') = 37
+ 
+     # Full run of latest supported version, without xdist.
+-    - env: TOXENV=py37
++    # Coverage for:
++    # - test_sys_breakpoint_interception (via pexpect).
++    - env: TOXENV=py37-pexpect PYTEST_COVERAGE=1
+       python: '3.7'
+ 
+     # Coverage tracking is slow with pypy, skip it.
+     - env: TOXENV=pypy3-xdist
+       python: 'pypy3'
+ 
+-    - env: TOXENV=py35
+-      dist: trusty
+-      python: '3.5.0'
++    - env: TOXENV=py35-xdist
++      python: '3.5'
+ 
+     # Coverage for:
+     # - pytester's LsofFdLeakChecker
+     # - TestArgComplete (linux only)
+     # - numpy
++    # - old attrs
+     # Empty PYTEST_ADDOPTS to run this non-verbose.
+-    - env: TOXENV=py37-lsof-numpy-twisted-xdist PYTEST_COVERAGE=1 PYTEST_ADDOPTS=
++    - env: TOXENV=py37-lsof-oldattrs-numpy-twisted-xdist PYTEST_COVERAGE=1 PYTEST_ADDOPTS=
+ 
+     # Specialized factors for py37.
+-    # Coverage for:
+-    # - test_sys_breakpoint_interception (via pexpect).
+-    - env: TOXENV=py37-pexpect PYTEST_COVERAGE=1
+     - env: TOXENV=py37-pluggymaster-xdist
+     - env: TOXENV=py37-freeze
+ 
+     - env: TOXENV=py38-xdist
+-      python: '3.8-dev'
++      python: '3.8'
+ 
+     - stage: baseline
+       env: TOXENV=py36-xdist
+@@ -95,11 +94,6 @@ jobs:
+           tags: true
+           repo: pytest-dev/pytest
+ 
+-matrix:
+-  allow_failures:
+-    - python: '3.8-dev'
+-      env: TOXENV=py38-xdist
+-
+ before_script:
+   - |
+     # Do not (re-)upload coverage with cron runs.
+diff --git a/AUTHORS b/AUTHORS
+index a64c95a..d0e584f 100644
+--- a/AUTHORS
++++ b/AUTHORS
+@@ -70,6 +70,7 @@ Daniel Hahler
+ Daniel Nuri
+ Daniel Wandschneider
+ Danielle Jenkins
++Daniil Galiev
+ Dave Hunt
+ David Díaz-Barquero
+ David Mohr
+@@ -176,6 +177,7 @@ mbyt
+ Michael Aquilina
+ Michael Birtwell
+ Michael Droettboom
++Michael Goerz
+ Michael Seifert
+ Michal Wajszczuk
+ Mihai Capotă
+@@ -266,5 +268,6 @@ Wouter van Ackooy
+ Xixi Zhao
+ Xuan Luong
+ Xuecong Liao
++Yoav Caspi
+ Zac Hatfield-Dodds
+ Zoltán Máté
+diff --git a/CHANGELOG.rst b/CHANGELOG.rst
+index 4270d4d..87ffb9e 100644
+--- a/CHANGELOG.rst
++++ b/CHANGELOG.rst
+@@ -13,11 +13,111 @@ with advance notice in the **Deprecations** section of releases.
+     file is managed by towncrier. You *may* edit previous change logs to
+     fix problems like typo corrections or such.
+     To add a new change log entry, please see
+-    https://pip.pypa.io/en/latest/development/#adding-a-news-entry
++    https://pip.pypa.io/en/latest/development/contributing/#news-entries
+     we named the news folder changelog
+ 
+ .. towncrier release notes start
+ 
++pytest 5.2.3 (2019-11-14)
++=========================
++
++Bug Fixes
++---------
++
++- `#5830 <https://github.com/pytest-dev/pytest/issues/5830>`_: The first test in a package (``__init__.py``) marked with ``@pytest.mark.skip`` is now correctly skipped.
++
++
++- `#6099 <https://github.com/pytest-dev/pytest/issues/6099>`_: Fix ``--trace`` when used with parametrized functions.
++
++
++- `#6183 <https://github.com/pytest-dev/pytest/issues/6183>`_: Using ``request`` as a parameter name in ``@pytest.mark.parametrize`` now produces a more
++  user-friendly error.
++
++
++pytest 5.2.2 (2019-10-24)
++=========================
++
++Bug Fixes
++---------
++
++- `#5206 <https://github.com/pytest-dev/pytest/issues/5206>`_: Fix ``--nf`` to not forget about known nodeids with partial test selection.
++
++
++- `#5906 <https://github.com/pytest-dev/pytest/issues/5906>`_: Fix crash with ``KeyboardInterrupt`` during ``--setup-show``.
++
++
++- `#5946 <https://github.com/pytest-dev/pytest/issues/5946>`_: Fixed issue when parametrizing fixtures with numpy arrays (and possibly other sequence-like types).
++
++
++- `#6044 <https://github.com/pytest-dev/pytest/issues/6044>`_: Properly ignore ``FileNotFoundError`` exceptions when trying to remove old temporary directories,
++  for instance when multiple processes try to remove the same directory (common with ``pytest-xdist``
++  for example).
++
++
++pytest 5.2.1 (2019-10-06)
++=========================
++
++Bug Fixes
++---------
++
++- `#5902 <https://github.com/pytest-dev/pytest/issues/5902>`_: Fix warnings about deprecated ``cmp`` attribute in ``attrs>=19.2``.
++
++
++pytest 5.2.0 (2019-09-28)
++=========================
++
++Deprecations
++------------
++
++- `#1682 <https://github.com/pytest-dev/pytest/issues/1682>`_: Passing arguments to pytest.fixture() as positional arguments is deprecated - pass them
++  as a keyword argument instead.
++
++
++
++Features
++--------
++
++- `#1682 <https://github.com/pytest-dev/pytest/issues/1682>`_: The ``scope`` parameter of ``@pytest.fixture`` can now be a callable that receives
++  the fixture name and the ``config`` object as keyword-only parameters.
++  See `the docs <https://docs.pytest.org/en/latest/fixture.html#dynamic-scope>`__ for more information.
++
++
++- `#5764 <https://github.com/pytest-dev/pytest/issues/5764>`_: New behavior of the ``--pastebin`` option: failures to connect to the pastebin server are reported, without failing the pytest run
++
++
++
++Bug Fixes
++---------
++
++- `#5806 <https://github.com/pytest-dev/pytest/issues/5806>`_: Fix "lexer" being used when uploading to bpaste.net from ``--pastebin`` to "text".
++
++
++- `#5884 <https://github.com/pytest-dev/pytest/issues/5884>`_: Fix ``--setup-only`` and ``--setup-show`` for custom pytest items.
++
++
++
++Trivial/Internal Changes
++------------------------
++
++- `#5056 <https://github.com/pytest-dev/pytest/issues/5056>`_: The HelpFormatter uses ``py.io.get_terminal_width`` for better width detection.
++
++
++pytest 5.1.3 (2019-09-18)
++=========================
++
++Bug Fixes
++---------
++
++- `#5807 <https://github.com/pytest-dev/pytest/issues/5807>`_: Fix pypy3.6 (nightly) on windows.
++
++
++- `#5811 <https://github.com/pytest-dev/pytest/issues/5811>`_: Handle ``--fulltrace`` correctly with ``pytest.raises``.
++
++
++- `#5819 <https://github.com/pytest-dev/pytest/issues/5819>`_: Windows: Fix regression with conftest whose qualified name contains uppercase
++  characters (introduced by #5792).
++
++
+ pytest 5.1.2 (2019-08-30)
+ =========================
+ 
+@@ -150,9 +250,6 @@ Bug Fixes
+ - `#5477 <https://github.com/pytest-dev/pytest/issues/5477>`_: The XML file produced by ``--junitxml`` now correctly contain a ``<testsuites>`` root element.
+ 
+ 
+-- `#5523 <https://github.com/pytest-dev/pytest/issues/5523>`_: Fixed using multiple short options together in the command-line (for example ``-vs``) in Python 3.8+.
+-
+-
+ - `#5524 <https://github.com/pytest-dev/pytest/issues/5524>`_: Fix issue where ``tmp_path`` and ``tmpdir`` would not remove directories containing files marked as read-only,
+   which could lead to pytest crashing when executed a second time with the ``--basetemp`` option.
+ 
+@@ -436,6 +533,32 @@ Improved Documentation
+ - `#5416 <https://github.com/pytest-dev/pytest/issues/5416>`_: Fix PytestUnknownMarkWarning in run/skip example.
+ 
+ 
++pytest 4.6.6 (2019-10-11)
++=========================
++
++Bug Fixes
++---------
++
++- `#5523 <https://github.com/pytest-dev/pytest/issues/5523>`_: Fixed using multiple short options together in the command-line (for example ``-vs``) in Python 3.8+.
++
++
++- `#5537 <https://github.com/pytest-dev/pytest/issues/5537>`_: Replace ``importlib_metadata`` backport with ``importlib.metadata`` from the
++  standard library on Python 3.8+.
++
++
++- `#5806 <https://github.com/pytest-dev/pytest/issues/5806>`_: Fix "lexer" being used when uploading to bpaste.net from ``--pastebin`` to "text".
++
++
++- `#5902 <https://github.com/pytest-dev/pytest/issues/5902>`_: Fix warnings about deprecated ``cmp`` attribute in ``attrs>=19.2``.
++
++
++
++Trivial/Internal Changes
++------------------------
++
++- `#5801 <https://github.com/pytest-dev/pytest/issues/5801>`_: Fixes python version checks (detected by ``flake8-2020``) in case python4 becomes a thing.
++
++
+ pytest 4.6.5 (2019-08-05)
+ =========================
+ 
+diff --git a/README.rst b/README.rst
+index 4bf9cce..482dde6 100644
+--- a/README.rst
++++ b/README.rst
+@@ -111,15 +111,29 @@ Consult the `Changelog <https://docs.pytest.org/en/latest/changelog.html>`__ pag
+ Support pytest
+ --------------
+ 
+-You can support pytest by obtaining a `Tidelift subscription`_.
++`Open Collective`_ is an online funding platform for open and transparent communities.
++It provide tools to raise money and share your finances in full transparency.
+ 
+-Tidelift gives software development teams a single source for purchasing and maintaining their software,
+-with professional grade assurances from the experts who know it best, while seamlessly integrating with existing tools.
++It is the platform of choice for individuals and companies that want to make one-time or
++monthly donations directly to the project.
+ 
++See more datails in the `pytest collective`_.
+ 
+-.. _`Tidelift subscription`: https://tidelift.com/subscription/pkg/pypi-pytest?utm_source=pypi-pytest&utm_medium=referral&utm_campaign=readme
++.. _Open Collective: https://opencollective.com
++.. _pytest collective: https://opencollective.com/pytest
+ 
+ 
++pytest for enterprise
++---------------------
++
++Available as part of the Tidelift Subscription.
++
++The maintainers of pytest and thousands of other packages are working with Tidelift to deliver commercial support and
++maintenance for the open source dependencies you use to build your applications.
++Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use.
++
++`Learn more. <https://tidelift.com/subscription/pkg/pypi-pytest?utm_source=pypi-pytest&utm_medium=referral&utm_campaign=enterprise&utm_term=repo>`_
++
+ Security
+ ^^^^^^^^
+ 
+diff --git a/doc/en/Makefile b/doc/en/Makefile
+index bfeb96c..51b0fa9 100644
+--- a/doc/en/Makefile
++++ b/doc/en/Makefile
+@@ -16,7 +16,7 @@ REGENDOC_ARGS := \
+ 	--normalize "/[ \t]+\n/\n/" \
+ 	--normalize "~\$$REGENDOC_TMPDIR~/home/sweet/project~" \
+ 	--normalize "~/path/to/example~/home/sweet/project~" \
+-	--normalize "/in \d+.\d+s ==/in 0.12s ==/" \
++	--normalize "/in \d.\d\ds/in 0.12s/" \
+ 	--normalize "@/tmp/pytest-of-.*/pytest-\d+@PYTEST_TMPDIR@" \
+ 	--normalize "@pytest-(\d+)\\.[^ ,]+@pytest-\1.x.y@" \
+ 	--normalize "@(This is pytest version )(\d+)\\.[^ ,]+@\1\2.x.y@" \
+diff --git a/doc/en/_templates/globaltoc.html b/doc/en/_templates/globaltoc.html
+index 50c2239..30e9da6 100644
+--- a/doc/en/_templates/globaltoc.html
++++ b/doc/en/_templates/globaltoc.html
+@@ -12,6 +12,7 @@
+   <li><a href="{{ pathto('backwards-compatibility') }}">Backwards Compatibility</a></li>
+   <li><a href="{{ pathto('py27-py34-deprecation') }}">Python 2.7 and 3.4 Support</a></li>
+   <li><a href="{{ pathto('sponsor') }}">Sponsor</a></li>
++  <li><a href="{{ pathto('tidelift') }}">pytest for Enterprise</a></li>
+   <li><a href="{{ pathto('license') }}">License</a></li>
+   <li><a href="{{ pathto('contact') }}">Contact Channels</a></li>
+ </ul>
+diff --git a/doc/en/announce/index.rst b/doc/en/announce/index.rst
+index 81f977e..05530dd 100644
+--- a/doc/en/announce/index.rst
++++ b/doc/en/announce/index.rst
+@@ -6,6 +6,11 @@ Release announcements
+    :maxdepth: 2
+ 
+ 
++   release-5.2.3
++   release-5.2.2
++   release-5.2.1
++   release-5.2.0
++   release-5.1.3
+    release-5.1.2
+    release-5.1.1
+    release-5.1.0
+diff --git a/doc/en/announce/release-5.1.3.rst b/doc/en/announce/release-5.1.3.rst
+new file mode 100644
+index 0000000..882b79b
+--- /dev/null
++++ b/doc/en/announce/release-5.1.3.rst
+@@ -0,0 +1,23 @@
++pytest-5.1.3
++=======================================
++
++pytest 5.1.3 has just been released to PyPI.
++
++This is a bug-fix release, being a drop-in replacement. To upgrade::
++
++  pip install --upgrade pytest
++
++The full changelog is available at https://docs.pytest.org/en/latest/changelog.html.
++
++Thanks to all who contributed to this release, among them:
++
++* Anthony Sottile
++* Bruno Oliveira
++* Christian Neumüller
++* Daniel Hahler
++* Gene Wood
++* Hugo
++
++
++Happy testing,
++The pytest Development Team
+diff --git a/doc/en/announce/release-5.2.0.rst b/doc/en/announce/release-5.2.0.rst
+new file mode 100644
+index 0000000..8eae6dd
+--- /dev/null
++++ b/doc/en/announce/release-5.2.0.rst
+@@ -0,0 +1,35 @@
++pytest-5.2.0
++=======================================
++
++The pytest team is proud to announce the 5.2.0 release!
++
++pytest is a mature Python testing tool with more than a 2000 tests
++against itself, passing on many different interpreters and platforms.
++
++This release contains a number of bugs fixes and improvements, so users are encouraged
++to take a look at the CHANGELOG:
++
++    https://docs.pytest.org/en/latest/changelog.html
++
++For complete documentation, please visit:
++
++    https://docs.pytest.org/en/latest/
++
++As usual, you can upgrade from pypi via:
++
++    pip install -U pytest
++
++Thanks to all who contributed to this release, among them:
++
++* Andrzej Klajnert
++* Anthony Sottile
++* Bruno Oliveira
++* Daniel Hahler
++* James Cooke
++* Michael Goerz
++* Ran Benita
++* Tomáš Chvátal
++
++
++Happy testing,
++The Pytest Development Team
+diff --git a/doc/en/announce/release-5.2.1.rst b/doc/en/announce/release-5.2.1.rst
+new file mode 100644
+index 0000000..312cfd7
+--- /dev/null
++++ b/doc/en/announce/release-5.2.1.rst
+@@ -0,0 +1,23 @@
++pytest-5.2.1
++=======================================
++
++pytest 5.2.1 has just been released to PyPI.
++
++This is a bug-fix release, being a drop-in replacement. To upgrade::
++
++  pip install --upgrade pytest
++
++The full changelog is available at https://docs.pytest.org/en/latest/changelog.html.
++
++Thanks to all who contributed to this release, among them:
++
++* Anthony Sottile
++* Bruno Oliveira
++* Florian Bruhin
++* Hynek Schlawack
++* Kevin J. Foley
++* tadashigaki
++
++
++Happy testing,
++The pytest Development Team
+diff --git a/doc/en/announce/release-5.2.2.rst b/doc/en/announce/release-5.2.2.rst
+new file mode 100644
+index 0000000..8a2ced9
+--- /dev/null
++++ b/doc/en/announce/release-5.2.2.rst
+@@ -0,0 +1,29 @@
++pytest-5.2.2
++=======================================
++
++pytest 5.2.2 has just been released to PyPI.
++
++This is a bug-fix release, being a drop-in replacement. To upgrade::
++
++  pip install --upgrade pytest
++
++The full changelog is available at https://docs.pytest.org/en/latest/changelog.html.
++
++Thanks to all who contributed to this release, among them:
++
++* Albert Tugushev
++* Andrzej Klajnert
++* Anthony Sottile
++* Bruno Oliveira
++* Daniel Hahler
++* Florian Bruhin
++* Nattaphoom Chaipreecha
++* Oliver Bestwalter
++* Philipp Loose
++* Ran Benita
++* Victor Maryama
++* Yoav Caspi
++
++
++Happy testing,
++The pytest Development Team
+diff --git a/doc/en/announce/release-5.2.3.rst b/doc/en/announce/release-5.2.3.rst
+new file mode 100644
+index 0000000..bfb62a1
+--- /dev/null
++++ b/doc/en/announce/release-5.2.3.rst
+@@ -0,0 +1,28 @@
++pytest-5.2.3
++=======================================
++
++pytest 5.2.3 has just been released to PyPI.
++
++This is a bug-fix release, being a drop-in replacement. To upgrade::
++
++  pip install --upgrade pytest
++
++The full changelog is available at https://docs.pytest.org/en/latest/changelog.html.
++
++Thanks to all who contributed to this release, among them:
++
++* Anthony Sottile
++* Brett Cannon
++* Bruno Oliveira
++* Daniel Hahler
++* Daniil Galiev
++* David Szotten
++* Florian Bruhin
++* Patrick Harmon
++* Ran Benita
++* Zac Hatfield-Dodds
++* Zak Hassan
++
++
++Happy testing,
++The pytest Development Team
+diff --git a/doc/en/assert.rst b/doc/en/assert.rst
+index 04ee9c0..995edfa 100644
+--- a/doc/en/assert.rst
++++ b/doc/en/assert.rst
+@@ -279,7 +279,7 @@ the conftest file:
+    E            vals: 1 != 2
+ 
+    test_foocompare.py:12: AssertionError
+-   1 failed in 0.02s
++   1 failed in 0.12s
+ 
+ .. _assert-details:
+ .. _`assert introspection`:
+diff --git a/doc/en/builtin.rst b/doc/en/builtin.rst
+index fc8b3f4..7b8fd4a 100644
+--- a/doc/en/builtin.rst
++++ b/doc/en/builtin.rst
+@@ -104,6 +104,7 @@ For information about fixtures, see :ref:`fixtures`. To see a complete list of a
+ 
+         Captured logs are available through the following properties/methods::
+ 
++        * caplog.messages        -> list of format-interpolated log messages
+         * caplog.text            -> string containing formatted log output
+         * caplog.records         -> list of logging.LogRecord instances
+         * caplog.record_tuples   -> list of (logger_name, level, message) tuples
+@@ -160,7 +161,7 @@ For information about fixtures, see :ref:`fixtures`. To see a complete list of a
+             in python < 3.6 this is a pathlib2.Path
+ 
+ 
+-    no tests ran in 0.00s
++    no tests ran in 0.12s
+ 
+ You can also interactively ask for help, e.g. by typing on the Python interactive prompt something like:
+ 
+diff --git a/doc/en/cache.rst b/doc/en/cache.rst
+index 38e00cc..6c808fa 100644
+--- a/doc/en/cache.rst
++++ b/doc/en/cache.rst
+@@ -75,7 +75,7 @@ If you run this for the first time you will see two failures:
+     E           Failed: bad luck
+ 
+     test_50.py:7: Failed
+-    2 failed, 48 passed in 0.07s
++    2 failed, 48 passed in 0.12s
+ 
+ If you then run it with ``--lf``:
+ 
+@@ -230,7 +230,7 @@ If you run this command for the first time, you can see the print statement:
+     test_caching.py:20: AssertionError
+     -------------------------- Captured stdout setup ---------------------------
+     running expensive computation...
+-    1 failed in 0.02s
++    1 failed in 0.12s
+ 
+ If you run it a second time, the value will be retrieved from
+ the cache and nothing will be printed:
+@@ -249,7 +249,7 @@ the cache and nothing will be printed:
+     E       assert 42 == 23
+ 
+     test_caching.py:20: AssertionError
+-    1 failed in 0.02s
++    1 failed in 0.12s
+ 
+ See the :ref:`cache-api` for more details.
+ 
+@@ -277,7 +277,60 @@ You can always peek at the content of the cache using the
+        'test_caching.py::test_function': True,
+        'test_foocompare.py::test_compare': True}
+     cache/nodeids contains:
+-      ['test_caching.py::test_function']
++      ['test_assert1.py::test_function',
++       'test_assert2.py::test_set_comparison',
++       'test_foocompare.py::test_compare',
++       'test_50.py::test_num[0]',
++       'test_50.py::test_num[1]',
++       'test_50.py::test_num[2]',
++       'test_50.py::test_num[3]',
++       'test_50.py::test_num[4]',
++       'test_50.py::test_num[5]',
++       'test_50.py::test_num[6]',
++       'test_50.py::test_num[7]',
++       'test_50.py::test_num[8]',
++       'test_50.py::test_num[9]',
++       'test_50.py::test_num[10]',
++       'test_50.py::test_num[11]',
++       'test_50.py::test_num[12]',
++       'test_50.py::test_num[13]',
++       'test_50.py::test_num[14]',
++       'test_50.py::test_num[15]',
++       'test_50.py::test_num[16]',
++       'test_50.py::test_num[17]',
++       'test_50.py::test_num[18]',
++       'test_50.py::test_num[19]',
++       'test_50.py::test_num[20]',
++       'test_50.py::test_num[21]',
++       'test_50.py::test_num[22]',
++       'test_50.py::test_num[23]',
++       'test_50.py::test_num[24]',
++       'test_50.py::test_num[25]',
++       'test_50.py::test_num[26]',
++       'test_50.py::test_num[27]',
++       'test_50.py::test_num[28]',
++       'test_50.py::test_num[29]',
++       'test_50.py::test_num[30]',
++       'test_50.py::test_num[31]',
++       'test_50.py::test_num[32]',
++       'test_50.py::test_num[33]',
++       'test_50.py::test_num[34]',
++       'test_50.py::test_num[35]',
++       'test_50.py::test_num[36]',
++       'test_50.py::test_num[37]',
++       'test_50.py::test_num[38]',
++       'test_50.py::test_num[39]',
++       'test_50.py::test_num[40]',
++       'test_50.py::test_num[41]',
++       'test_50.py::test_num[42]',
++       'test_50.py::test_num[43]',
++       'test_50.py::test_num[44]',
++       'test_50.py::test_num[45]',
++       'test_50.py::test_num[46]',
++       'test_50.py::test_num[47]',
++       'test_50.py::test_num[48]',
++       'test_50.py::test_num[49]',
++       'test_caching.py::test_function']
+     cache/stepwise contains:
+       []
+     example/value contains:
+diff --git a/doc/en/contents.rst b/doc/en/contents.rst
+index 27cbb8c..c623d06 100644
+--- a/doc/en/contents.rst
++++ b/doc/en/contents.rst
+@@ -38,19 +38,24 @@ Full pytest documentation
+    customize
+    example/index
+    bash-completion
++   faq
+ 
+    backwards-compatibility
+    deprecations
+    py27-py34-deprecation
+-   historical-notes
+-   license
++
+    contributing
+    development_guide
++
++   sponsor
++   tidelift
++   license
++   contact
++
++   historical-notes
+    talks
+    projects
+-   faq
+-   contact
+-   sponsor
++
+ 
+ .. only:: html
+ 
+diff --git a/doc/en/customize.rst b/doc/en/customize.rst
+index 77217e9..8919223 100644
+--- a/doc/en/customize.rst
++++ b/doc/en/customize.rst
+@@ -107,8 +107,8 @@ check for ini-files as follows:
+ 
+     # first look for pytest.ini files
+     path/pytest.ini
+-    path/setup.cfg  # must also contain [tool:pytest] section to match
+     path/tox.ini    # must also contain [pytest] section to match
++    path/setup.cfg  # must also contain [tool:pytest] section to match
+     pytest.ini
+     ... # all the way down to the root
+ 
+@@ -134,10 +134,13 @@ progress output, you can write it into a configuration file:
+ .. code-block:: ini
+ 
+     # content of pytest.ini or tox.ini
+-    # setup.cfg files should use [tool:pytest] section instead
+     [pytest]
+     addopts = -ra -q
+ 
++    # content of setup.cfg
++    [tool:pytest]
++    addopts = -ra -q
++
+ Alternatively, you can set a ``PYTEST_ADDOPTS`` environment variable to add command
+ line options while the environment is in use:
+ 
+diff --git a/doc/en/doctest.rst b/doc/en/doctest.rst
+index 9ffd528..b73cc99 100644
+--- a/doc/en/doctest.rst
++++ b/doc/en/doctest.rst
+@@ -156,6 +156,8 @@ pytest also introduces new options:
+   a string! This means that it may not be appropriate to enable globally in
+   ``doctest_optionflags`` in your configuration file.
+ 
++  .. versionadded:: 5.1
++
+ 
+ Continue on failure
+ -------------------
+diff --git a/doc/en/example/costlysetup/conftest.py b/doc/en/example/costlysetup/conftest.py
+index 8fa9c9f..8035598 100644
+--- a/doc/en/example/costlysetup/conftest.py
++++ b/doc/en/example/costlysetup/conftest.py
+@@ -1,7 +1,7 @@
+ import pytest
+ 
+ 
+-@pytest.fixture("session")
++@pytest.fixture(scope="session")
+ def setup(request):
+     setup = CostlySetup()
+     yield setup
+diff --git a/doc/en/example/markers.rst b/doc/en/example/markers.rst
+index bb2fbb2..ccddb1f 100644
+--- a/doc/en/example/markers.rst
++++ b/doc/en/example/markers.rst
+@@ -499,7 +499,7 @@ The output is as follows:
+     $ pytest -q -s
+     Mark(name='my_marker', args=(<function hello_world at 0xdeadbeef>,), kwargs={})
+     .
+-    1 passed in 0.01s
++    1 passed in 0.12s
+ 
+ We can see that the custom marker has its argument set extended with the function ``hello_world``. This is the key difference between creating a custom marker as a callable, which invokes ``__call__`` behind the scenes, and using ``with_args``.
+ 
+@@ -551,7 +551,7 @@ Let's run this without capturing output and see what we get:
+     glob args=('class',) kwargs={'x': 2}
+     glob args=('module',) kwargs={'x': 1}
+     .
+-    1 passed in 0.02s
++    1 passed in 0.12s
+ 
+ marking platform specific tests with pytest
+ --------------------------------------------------------------
+diff --git a/doc/en/example/parametrize.rst b/doc/en/example/parametrize.rst
+index 19cdcc2..48ab95f 100644
+--- a/doc/en/example/parametrize.rst
++++ b/doc/en/example/parametrize.rst
+@@ -54,7 +54,7 @@ This means that we only run 2 tests if we do not pass ``--all``:
+ 
+     $ pytest -q test_compute.py
+     ..                                                                   [100%]
+-    2 passed in 0.01s
++    2 passed in 0.12s
+ 
+ We run only two computations, so we see two dots.
+ let's run the full monty:
+@@ -73,7 +73,7 @@ let's run the full monty:
+     E       assert 4 < 4
+ 
+     test_compute.py:4: AssertionError
+-    1 failed, 4 passed in 0.02s
++    1 failed, 4 passed in 0.12s
+ 
+ As expected when running the full range of ``param1`` values
+ we'll get an error on the last one.
+@@ -343,7 +343,7 @@ And then when we run the test:
+     E           Failed: deliberately failing for demo purposes
+ 
+     test_backends.py:8: Failed
+-    1 failed, 1 passed in 0.02s
++    1 failed, 1 passed in 0.12s
+ 
+ The first invocation with ``db == "DB1"`` passed while the second with ``db == "DB2"`` failed.  Our ``db`` fixture function has instantiated each of the DB values during the setup phase while the ``pytest_generate_tests`` generated two according calls to the ``test_db_initialized`` during the collection phase.
+ 
+@@ -454,7 +454,7 @@ argument sets to use for each test function.  Let's run it:
+     E       assert 1 == 2
+ 
+     test_parametrize.py:21: AssertionError
+-    1 failed, 2 passed in 0.03s
++    1 failed, 2 passed in 0.12s
+ 
+ Indirect parametrization with multiple fixtures
+ --------------------------------------------------------------
+@@ -479,7 +479,7 @@ Running it results in some skips if we don't have all the python interpreters in
+    ========================= short test summary info ==========================
+    SKIPPED [12] $REGENDOC_TMPDIR/CWD/multipython.py:30: 'python3.5' not found
+    SKIPPED [12] $REGENDOC_TMPDIR/CWD/multipython.py:30: 'python3.7' not found
+-   3 passed, 24 skipped in 0.24s
++   3 passed, 24 skipped in 0.12s
+ 
+ Indirect parametrization of optional implementations/imports
+ --------------------------------------------------------------------
+@@ -678,4 +678,4 @@ Or, if desired, you can ``pip install contextlib2`` and use:
+ 
+ .. code-block:: python
+ 
+-    from contextlib2 import ExitStack as does_not_raise
++    from contextlib2 import nullcontext as does_not_raise
+diff --git a/doc/en/example/simple.rst b/doc/en/example/simple.rst
+index 913769c..05ccbc9 100644
+--- a/doc/en/example/simple.rst
++++ b/doc/en/example/simple.rst
+@@ -65,7 +65,7 @@ Let's run this without supplying our new option:
+     test_sample.py:6: AssertionError
+     --------------------------- Captured stdout call ---------------------------
+     first
+-    1 failed in 0.02s
++    1 failed in 0.12s
+ 
+ And now with supplying a command line option:
+ 
+@@ -89,7 +89,7 @@ And now with supplying a command line option:
+     test_sample.py:6: AssertionError
+     --------------------------- Captured stdout call ---------------------------
+     second
+-    1 failed in 0.02s
++    1 failed in 0.12s
+ 
+ You can see that the command line option arrived in our test.  This
+ completes the basic pattern.  However, one often rather wants to process
+@@ -261,7 +261,7 @@ Let's run our little function:
+     E       Failed: not configured: 42
+ 
+     test_checkconfig.py:11: Failed
+-    1 failed in 0.02s
++    1 failed in 0.12s
+ 
+ If you only want to hide certain exceptions, you can set ``__tracebackhide__``
+ to a callable which gets the ``ExceptionInfo`` object. You can for example use
+@@ -302,34 +302,31 @@ running from a test you can do something like this:
+ 
+ .. code-block:: python
+ 
+-    # content of conftest.py
++    # content of your_module.py
+ 
+ 
+-    def pytest_configure(config):
+-        import sys
++    _called_from_test = False
+ 
+-        sys._called_from_test = True
++.. code-block:: python
+ 
++    # content of conftest.py
+ 
+-    def pytest_unconfigure(config):
+-        import sys
+ 
+-        del sys._called_from_test
++    def pytest_configure(config):
++        your_module._called_from_test = True
+ 
+-and then check for the ``sys._called_from_test`` flag:
++and then check for the ``your_module._called_from_test`` flag:
+ 
+ .. code-block:: python
+ 
+-    if hasattr(sys, "_called_from_test"):
++    if your_module._called_from_test:
+         # called from within a test run
+         ...
+     else:
+         # called "normally"
+         ...
+ 
+-accordingly in your application.  It's also a good idea
+-to use your own application module rather than ``sys``
+-for handling flag.
++accordingly in your application.
+ 
+ Adding info to test report header
+ --------------------------------------------------------------
+diff --git a/doc/en/example/special.rst b/doc/en/example/special.rst
+index 9ad55f3..6886b62 100644
+--- a/doc/en/example/special.rst
++++ b/doc/en/example/special.rst
+@@ -81,4 +81,4 @@ If you run this without output capturing:
+     .test other
+     .test_unit1 method called
+     .
+-    4 passed in 0.01s
++    4 passed in 0.12s
+diff --git a/doc/en/fixture.rst b/doc/en/fixture.rst
+index 3558c79..6e1e554 100644
+--- a/doc/en/fixture.rst
++++ b/doc/en/fixture.rst
+@@ -301,6 +301,36 @@ are finalized when the last test of a *package* finishes.
+     Use this new feature sparingly and please make sure to report any issues you find.
+ 
+ 
++.. _dynamic scope:
++
++Dynamic scope
++^^^^^^^^^^^^^
++
++.. versionadded:: 5.2
++
++In some cases, you might want to change the scope of the fixture without changing the code.
++To do that, pass a callable to ``scope``. The callable must return a string with a valid scope
++and will be executed only once - during the fixture definition. It will be called with two
++keyword arguments - ``fixture_name`` as a string and ``config`` with a configuration object.
++
++This can be especially useful when dealing with fixtures that need time for setup, like spawning
++a docker container. You can use the command-line argument to control the scope of the spawned
++containers for different environments. See the example below.
++
++.. code-block:: python
++
++    def determine_scope(fixture_name, config):
++        if config.getoption("--keep-containers"):
++            return "session"
++        return "function"
++
++
++    @pytest.fixture(scope=determine_scope)
++    def docker_container():
++        yield spawn_container()
++
++
++
+ Order: Higher-scoped fixtures are instantiated first
+ ----------------------------------------------------
+ 
+@@ -361,7 +391,7 @@ Let's execute it:
+     $ pytest -s -q --tb=no
+     FFteardown smtp
+ 
+-    2 failed in 0.79s
++    2 failed in 0.12s
+ 
+ We see that the ``smtp_connection`` instance is finalized after the two
+ tests finished execution.  Note that if we decorated our fixture
+@@ -515,7 +545,7 @@ again, nothing much has changed:
+     $ pytest -s -q --tb=no
+     FFfinalizing <smtplib.SMTP object at 0xdeadbeef> (smtp.gmail.com)
+ 
+-    2 failed in 0.77s
++    2 failed in 0.12s
+ 
+ Let's quickly create another test module that actually sets the
+ server URL in its module namespace:
+@@ -692,7 +722,7 @@ So let's just do another run:
+     test_module.py:13: AssertionError
+     ------------------------- Captured stdout teardown -------------------------
+     finalizing <smtplib.SMTP object at 0xdeadbeef>
+-    4 failed in 1.69s
++    4 failed in 0.12s
+ 
+ We see that our two test functions each ran twice, against the different
+ ``smtp_connection`` instances.  Note also, that with the ``mail.python.org``
+@@ -1043,7 +1073,7 @@ to verify our fixture is activated and the tests pass:
+ 
+     $ pytest -q
+     ..                                                                   [100%]
+-    2 passed in 0.01s
++    2 passed in 0.12s
+ 
+ You can specify multiple fixtures like this:
+ 
+@@ -1151,7 +1181,7 @@ If we run it, we get two passing tests:
+ 
+     $ pytest -q
+     ..                                                                   [100%]
+-    2 passed in 0.01s
++    2 passed in 0.12s
+ 
+ Here is how autouse fixtures work in other scopes:
+ 
+diff --git a/doc/en/getting-started.rst b/doc/en/getting-started.rst
+index 455e936..2bdd68e 100644
+--- a/doc/en/getting-started.rst
++++ b/doc/en/getting-started.rst
+@@ -108,7 +108,7 @@ Execute the test function with “quiet” reporting mode:
+ 
+     $ pytest -q test_sysexit.py
+     .                                                                    [100%]
+-    1 passed in 0.01s
++    1 passed in 0.12s
+ 
+ Group multiple tests in a class
+ --------------------------------------------------------------
+@@ -145,7 +145,7 @@ Once you develop multiple tests, you may want to group them into a class. pytest
+     E        +  where False = hasattr('hello', 'check')
+ 
+     test_class.py:8: AssertionError
+-    1 failed, 1 passed in 0.02s
++    1 failed, 1 passed in 0.12s
+ 
+ The first test passed and the second failed. You can easily see the intermediate values in the assertion to help you understand the reason for the failure.
+ 
+@@ -180,7 +180,7 @@ List the name ``tmpdir`` in the test function signature and ``pytest`` will look
+     test_tmpdir.py:3: AssertionError
+     --------------------------- Captured stdout call ---------------------------
+     PYTEST_TMPDIR/test_needsfiles0
+-    1 failed in 0.02s
++    1 failed in 0.12s
+ 
+ More info on tmpdir handling is available at :ref:`Temporary directories and files <tmpdir handling>`.
+ 
+diff --git a/doc/en/index.rst b/doc/en/index.rst
+index cb66f9d..b0abe74 100644
+--- a/doc/en/index.rst
++++ b/doc/en/index.rst
+@@ -83,6 +83,39 @@ Changelog
+ 
+ Consult the :ref:`Changelog <changelog>` page for fixes and enhancements of each version.
+ 
++Support pytest
++--------------
++
++`Open Collective`_ is an online funding platform for open and transparent communities.
++It provide tools to raise money and share your finances in full transparency.
++
++It is the platform of choice for individuals and companies that want to make one-time or
++monthly donations directly to the project.
++
++See more datails in the `pytest collective`_.
++
++.. _Open Collective: https://opencollective.com
++.. _pytest collective: https://opencollective.com/pytest
++
++
++pytest for enterprise
++---------------------
++
++Available as part of the Tidelift Subscription.
++
++The maintainers of pytest and thousands of other packages are working with Tidelift to deliver commercial support and
++maintenance for the open source dependencies you use to build your applications.
++Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use.
++
++`Learn more. <https://tidelift.com/subscription/pkg/pypi-pytest?utm_source=pypi-pytest&utm_medium=referral&utm_campaign=enterprise&utm_term=repo>`_
++
++Security
++^^^^^^^^
++
++pytest has never been associated with a security vunerability, but in any case, to report a
++security vulnerability please use the `Tidelift security contact <https://tidelift.com/security>`_.
++Tidelift will coordinate the fix and disclosure.
++
+ 
+ License
+ -------
+diff --git a/doc/en/logging.rst b/doc/en/logging.rst
+index c32205f..e6f91cd 100644
+--- a/doc/en/logging.rst
++++ b/doc/en/logging.rst
+@@ -161,7 +161,7 @@ the records for the ``setup`` and ``call`` stages during teardown like so:
+         yield window
+         for when in ("setup", "call"):
+             messages = [
+-                x.message for x in caplog.get_records(when) if x.level == logging.WARNING
++                x.message for x in caplog.get_records(when) if x.levelno == logging.WARNING
+             ]
+             if messages:
+                 pytest.fail(
+diff --git a/doc/en/parametrize.rst b/doc/en/parametrize.rst
+index e02ff2e..072065c 100644
+--- a/doc/en/parametrize.rst
++++ b/doc/en/parametrize.rst
+@@ -205,7 +205,7 @@ If we now pass two stringinput values, our test will run twice:
+ 
+     $ pytest -q --stringinput="hello" --stringinput="world" test_strings.py
+     ..                                                                   [100%]
+-    2 passed in 0.01s
++    2 passed in 0.12s
+ 
+ Let's also run with a stringinput that will lead to a failing test:
+ 
+@@ -225,7 +225,7 @@ Let's also run with a stringinput that will lead to a failing test:
+     E        +    where <built-in method isalpha of str object at 0xdeadbeef> = '!'.isalpha
+ 
+     test_strings.py:4: AssertionError
+-    1 failed in 0.02s
++    1 failed in 0.12s
+ 
+ As expected our test function fails.
+ 
+@@ -239,7 +239,7 @@ list:
+     s                                                                    [100%]
+     ========================= short test summary info ==========================
+     SKIPPED [1] test_strings.py: got empty parameter set ['stringinput'], function test_valid_string at $REGENDOC_TMPDIR/test_strings.py:2
+-    1 skipped in 0.00s
++    1 skipped in 0.12s
+ 
+ Note that when calling ``metafunc.parametrize`` multiple times with different parameter sets, all parameter names across
+ those sets cannot be duplicated, otherwise an error will be raised.
+diff --git a/doc/en/projects.rst b/doc/en/projects.rst
+index 2263585..751d0ab 100644
+--- a/doc/en/projects.rst
++++ b/doc/en/projects.rst
+@@ -38,7 +38,8 @@ Here are some examples of projects using ``pytest`` (please send notes via :ref:
+ * `execnet <http://codespeak.net/execnet>`_ rapid multi-Python deployment
+ * `pylib <https://pylib.readthedocs.io/en/stable/>`_ cross-platform path, IO, dynamic code library
+ * `bbfreeze <https://pypi.org/project/bbfreeze/>`_ create standalone executables from Python scripts
+-* `pdb++ <http://bitbucket.org/antocuni/pdb>`_ a fancier version of PDB
++* `pdb++ <https://github.com/pdbpp/pdbpp>`_ a fancier version of PDB
++* `pudb <https://github.com/inducer/pudb>`_ full-screen console debugger for python
+ * `py-s3fuse <http://code.google.com/p/py-s3fuse/>`_ Amazon S3 FUSE based filesystem
+ * `waskr <http://code.google.com/p/waskr/>`_ WSGI Stats Middleware
+ * `guachi <http://code.google.com/p/guachi/>`_ global persistent configs for Python modules
+diff --git a/doc/en/py27-py34-deprecation.rst b/doc/en/py27-py34-deprecation.rst
+index 5411978..06a7319 100644
+--- a/doc/en/py27-py34-deprecation.rst
++++ b/doc/en/py27-py34-deprecation.rst
+@@ -24,3 +24,8 @@ branch will continue to exist so the community itself can contribute patches. Th
+ be happy to accept those patches and make new ``4.6`` releases **until mid-2020**.
+ 
+ .. _`python_requires`: https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
++
++Technical Aspects
++-----------------
++
++The technical aspects of the Python 2.7 and 3.4 support plan (such as when releases will occurr, how to backport fixes, etc) is described in issue `#5275 <https://github.com/pytest-dev/pytest/issues/5275>`__.
+diff --git a/doc/en/reference.rst b/doc/en/reference.rst
+index 991050c..4391cfc 100644
+--- a/doc/en/reference.rst
++++ b/doc/en/reference.rst
+@@ -59,7 +59,7 @@ pytest.raises
+ 
+ **Tutorial**: :ref:`assertraises`.
+ 
+-.. autofunction:: pytest.raises(expected_exception: Exception, [match], [message])
++.. autofunction:: pytest.raises(expected_exception: Exception [, *, match])
+     :with: excinfo
+ 
+ pytest.deprecated_call
+@@ -1003,7 +1003,7 @@ passed multiple times. The expected format is ``name=value``. For example::
+         [pytest]
+         addopts = --maxfail=2 -rf  # exit after 2 failures, report fail info
+ 
+-   issuing ``pytest test_hello.py`` actually means::
++   issuing ``pytest test_hello.py`` actually means:
+ 
+    .. code-block:: bash
+ 
+diff --git a/doc/en/sponsor.rst b/doc/en/sponsor.rst
+index 48bc48d..1023928 100644
+--- a/doc/en/sponsor.rst
++++ b/doc/en/sponsor.rst
+@@ -8,18 +8,6 @@ compensation when possible is welcome to justify time away from friends, family
+ Money is also used to fund local sprints, merchandising (stickers to distribute in conferences for example)
+ and every few years a large sprint involving all members.
+ 
+-If you or your company benefit from pytest and would like to contribute to the project financially,
+-we are members of two online donation platforms to better suit your needs.
+-
+-Tidelift
+---------
+-
+-`Tidelift`_ aims to make Open Source sustainable by offering subscriptions to companies which rely
+-on Open Source packages. This subscription allows it to pay maintainers of those Open Source
+-packages to aid sustainability of the work.
+-
+-You can help pytest and the ecosystem by obtaining a `Tidelift subscription`_.
+-
+ OpenCollective
+ --------------
+ 
+@@ -32,7 +20,6 @@ monthly donations directly to the project.
+ See more datails in the `pytest collective`_.
+ 
+ 
+-
+ .. _Tidelift: https://tidelift.com
+ .. _Tidelift subscription: https://tidelift.com/subscription/pkg/pypi-pytest
+ .. _Open Collective: https://opencollective.com
+diff --git a/doc/en/talks.rst b/doc/en/talks.rst
+index eb1eadb..04eb97c 100644
+--- a/doc/en/talks.rst
++++ b/doc/en/talks.rst
+@@ -2,10 +2,6 @@
+ Talks and Tutorials
+ ==========================
+ 
+-.. sidebar:: Next Open Trainings
+-
+-   - `3 day hands-on workshop covering pytest, tox and devpi: "Professional Testing with Python" <https://python-academy.com/courses/specialtopics/python_course_testing.html>`_ (English), October 21 - 23, 2019, Leipzig, Germany.
+-
+ .. _`funcargs`: funcargs.html
+ 
+ Books
+diff --git a/doc/en/tidelift.rst b/doc/en/tidelift.rst
+new file mode 100644
+index 0000000..8ce55e9
+--- /dev/null
++++ b/doc/en/tidelift.rst
+@@ -0,0 +1,45 @@
++pytest for enterprise
++=====================
++
++`Tidelift`_ is working with the maintainers of pytest and thousands of other
++open source projects to deliver commercial support and maintenance for the open source dependencies you use
++to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the
++exact dependencies you use.
++
++`Get more details <https://tidelift.com/subscription/pkg/pypi-pytest?utm_source=pypi-pytest&utm_medium=referral&utm_campaign=enterprise>`_
++
++The Tidelift Subscription is a managed open source subscription for application dependencies covering millions of open source projects across JavaScript, Python, Java, PHP, Ruby, .NET, and more.
++
++Your subscription includes:
++
++* **Security updates**
++
++  - Tidelift's security response team coordinates patches for new breaking security vulnerabilities and alerts immediately through a private channel, so your software supply chain is always secure.
++
++* **Licensing verification and indemnification**
++
++  - Tidelift verifies license information to enable easy policy enforcement and adds intellectual property indemnification to cover creators and users in case something goes wrong. You always have a 100% up-to-date bill of materials for your dependencies to share with your legal team, customers, or partners.
++
++* **Maintenance and code improvement**
++
++  - Tidelift ensures the software you rely on keeps working as long as you need it to work. Your managed dependencies are actively maintained and we recruit additional maintainers where required.
++
++* **Package selection and version guidance**
++
++  - Tidelift helps you choose the best open source packages from the start—and then guide you through updates to stay on the best releases as new issues arise.
++
++* **Roadmap input**
++
++  - Take a seat at the table with the creators behind the software you use. Tidelift's participating maintainers earn more income as their software is used by more subscribers, so they're interested in knowing what you need.
++
++* **Tooling and cloud integration**
++
++  - Tidelift works with GitHub, GitLab, BitBucket, and every cloud platform (and other deployment targets, too).
++
++The end result? All of the capabilities you expect from commercial-grade software, for the full breadth of open
++source you use. That means less time grappling with esoteric open source trivia, and more time building your own
++applications—and your business.
++
++`Request a demo <https://tidelift.com/subscription/request-a-demo?utm_source=pypi-pytest&utm_medium=referral&utm_campaign=enterprise>`_
++
++.. _Tidelift: https://tidelift.com
+diff --git a/doc/en/unittest.rst b/doc/en/unittest.rst
+index dc55cc0..0f6737c 100644
+--- a/doc/en/unittest.rst
++++ b/doc/en/unittest.rst
+@@ -219,7 +219,7 @@ Running this test module ...:
+ 
+     $ pytest -q test_unittest_cleandir.py
+     .                                                                    [100%]
+-    1 passed in 0.01s
++    1 passed in 0.12s
+ 
+ ... gives us one passed test because the ``initdir`` fixture function
+ was executed ahead of the ``test_method``.
+diff --git a/doc/en/usage.rst b/doc/en/usage.rst
+index 777c14b..167c7fa 100644
+--- a/doc/en/usage.rst
++++ b/doc/en/usage.rst
+@@ -718,6 +718,11 @@ for example ``-x`` if you only want to send one particular failure.
+ 
+ Currently only pasting to the http://bpaste.net service is implemented.
+ 
++.. versionchanged:: 5.2
++
++If creating the URL fails for any reason, a warning is generated instead of failing the
++entire test suite.
++
+ Early loading plugins
+ ---------------------
+ 
+diff --git a/doc/en/warnings.rst b/doc/en/warnings.rst
+index 90245a0..54bb60d 100644
+--- a/doc/en/warnings.rst
++++ b/doc/en/warnings.rst
+@@ -64,7 +64,7 @@ them into errors:
+     E       UserWarning: api v1, should use functions from v2
+ 
+     test_show_warnings.py:5: UserWarning
+-    1 failed in 0.02s
++    1 failed in 0.12s
+ 
+ The same option can be set in the ``pytest.ini`` file using the ``filterwarnings`` ini option.
+ For example, the configuration below will ignore all user warnings, but will transform
+@@ -407,7 +407,7 @@ defines an ``__init__`` constructor, as this prevents the class from being insta
+         class Test:
+ 
+     -- Docs: https://docs.pytest.org/en/latest/warnings.html
+-    1 warnings in 0.00s
++    1 warnings in 0.12s
+ 
+ These warnings might be filtered using the same builtin mechanisms used to filter other types of warnings.
+ 
+diff --git a/scripts/report-coverage.sh b/scripts/report-coverage.sh
+index 755783d..165426a 100755
+--- a/scripts/report-coverage.sh
++++ b/scripts/report-coverage.sh
+@@ -13,4 +13,6 @@ fi
+ python -m coverage combine
+ python -m coverage xml
+ python -m coverage report -m
+-bash <(curl -s https://codecov.io/bash) -Z -X gcov -X coveragepy -X search -X xcode -X gcovout -X fix -f coverage.xml
++# Set --connect-timeout to work around https://github.com/curl/curl/issues/4461
++curl -S -L --connect-timeout 5 --retry 6 -s https://codecov.io/bash -o codecov-upload.sh
++bash codecov-upload.sh -Z -X fix -f coverage.xml
+diff --git a/setup.cfg b/setup.cfg
+index 60e8665..0c0cb48 100644
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -57,7 +57,7 @@ upload-dir = doc/en/build/html
+ 
+ [check-manifest]
+ ignore =
+-  _pytest/_version.py
++  src/_pytest/_version.py
+ 
+ [devpi:upload]
+ formats = sdist.tgz,bdist_wheel
+diff --git a/setup.py b/setup.py
+index adbafb5..dcf63f6 100644
+--- a/setup.py
++++ b/setup.py
+@@ -5,7 +5,7 @@ from setuptools import setup
+ INSTALL_REQUIRES = [
+     "py>=1.5.0",
+     "packaging",
+-    "attrs>=17.4.0",
++    "attrs>=17.4.0",  # should match oldattrs tox env.
+     "more-itertools>=4.0.0",
+     "atomicwrites>=1.0",
+     'pathlib2>=2.2.0;python_version<"3.6"',
+diff --git a/src/_pytest/_code/code.py b/src/_pytest/_code/code.py
+index a0f4d15..19d2a0e 100644
+--- a/src/_pytest/_code/code.py
++++ b/src/_pytest/_code/code.py
+@@ -4,11 +4,17 @@ import sys
+ import traceback
+ from inspect import CO_VARARGS
+ from inspect import CO_VARKEYWORDS
++from io import StringIO
+ from traceback import format_exception_only
++from types import CodeType
+ from types import TracebackType
++from typing import Any
++from typing import Dict
+ from typing import Generic
++from typing import List
+ from typing import Optional
+ from typing import Pattern
++from typing import Set
+ from typing import Tuple
+ from typing import TypeVar
+ from typing import Union
+@@ -29,7 +35,7 @@ if False:  # TYPE_CHECKING
+ class Code:
+     """ wrapper around Python code objects """
+ 
+-    def __init__(self, rawcode):
++    def __init__(self, rawcode) -> None:
+         if not hasattr(rawcode, "co_filename"):
+             rawcode = getrawcode(rawcode)
+         try:
+@@ -38,7 +44,7 @@ class Code:
+             self.name = rawcode.co_name
+         except AttributeError:
+             raise TypeError("not a code object: {!r}".format(rawcode))
+-        self.raw = rawcode
++        self.raw = rawcode  # type: CodeType
+ 
+     def __eq__(self, other):
+         return self.raw == other.raw
+@@ -131,7 +137,7 @@ class Frame:
+     def exec_(self, code, **vars):
+         """ exec 'code' in the frame
+ 
+-            'vars' are optiona; additional local variables
++            'vars' are optional; additional local variables
+         """
+         f_locals = self.f_locals.copy()
+         f_locals.update(vars)
+@@ -201,7 +207,7 @@ class TracebackEntry:
+ 
+     @property
+     def locals(self):
+-        """ locals of underlaying frame """
++        """ locals of underlying frame """
+         return self.frame.f_locals
+ 
+     def getfirstlinesource(self):
+@@ -268,7 +274,7 @@ class TracebackEntry:
+ 
+     @property
+     def name(self):
+-        """ co_name of underlaying code """
++        """ co_name of underlying code """
+         return self.frame.code.raw.co_name
+ 
+ 
+@@ -296,7 +302,7 @@ class Traceback(list):
+     def cut(self, path=None, lineno=None, firstlineno=None, excludepath=None):
+         """ return a Traceback instance wrapping part of this Traceback
+ 
+-            by provding any combination of path, lineno and firstlineno, the
++            by providing any combination of path, lineno and firstlineno, the
+             first frame to start the to-be-returned traceback is determined
+ 
+             this allows cutting the first part of a Traceback instance e.g.
+@@ -351,7 +357,7 @@ class Traceback(list):
+         """ return the index of the frame/TracebackEntry where recursion
+             originates if appropriate, None if no recursion occurred
+         """
+-        cache = {}
++        cache = {}  # type: Dict[Tuple[Any, int, int], List[Dict[str, Any]]]
+         for i, entry in enumerate(self):
+             # id for the code.raw is needed to work around
+             # the strange metaprogramming in the decorator lib from pypi
+@@ -650,7 +656,7 @@ class FormattedExcinfo:
+                 args.append((argname, saferepr(argvalue)))
+             return ReprFuncArgs(args)
+ 
+-    def get_source(self, source, line_index=-1, excinfo=None, short=False):
++    def get_source(self, source, line_index=-1, excinfo=None, short=False) -> List[str]:
+         """ return formatted and marked up source lines. """
+         import _pytest._code
+ 
+@@ -722,7 +728,7 @@ class FormattedExcinfo:
+         else:
+             line_index = entry.lineno - entry.getfirstlinesource()
+ 
+-        lines = []
++        lines = []  # type: List[str]
+         style = entry._repr_style
+         if style is None:
+             style = self.style
+@@ -799,7 +805,7 @@ class FormattedExcinfo:
+                 exc_msg=str(e),
+                 max_frames=max_frames,
+                 total=len(traceback),
+-            )
++            )  # type: Optional[str]
+             traceback = traceback[:max_frames] + traceback[-max_frames:]
+         else:
+             if recursionindex is not None:
+@@ -812,10 +818,12 @@ class FormattedExcinfo:
+ 
+     def repr_excinfo(self, excinfo):
+ 
+-        repr_chain = []
++        repr_chain = (
++            []
++        )  # type: List[Tuple[ReprTraceback, Optional[ReprFileLocation], Optional[str]]]
+         e = excinfo.value
+         descr = None
+-        seen = set()
++        seen = set()  # type: Set[int]
+         while e is not None and id(e) not in seen:
+             seen.add(id(e))
+             if excinfo:
+@@ -858,7 +866,7 @@ class TerminalRepr:
+     def __str__(self):
+         # FYI this is called from pytest-xdist's serialization of exception
+         # information.
+-        io = py.io.TextIO()
++        io = StringIO()
+         tw = py.io.TerminalWriter(file=io)
+         self.toterminal(tw)
+         return io.getvalue().strip()
+@@ -868,8 +876,8 @@ class TerminalRepr:
+ 
+ 
+ class ExceptionRepr(TerminalRepr):
+-    def __init__(self):
+-        self.sections = []
++    def __init__(self) -> None:
++        self.sections = []  # type: List[Tuple[str, str, str]]
+ 
+     def addsection(self, name, content, sep="-"):
+         self.sections.append((name, content, sep))
+@@ -995,7 +1003,7 @@ class ReprFileLocation(TerminalRepr):
+ 
+     def toterminal(self, tw):
+         # filename and lineno output for each entry,
+-        # using an output format that most editors unterstand
++        # using an output format that most editors understand
+         msg = self.message
+         i = msg.find("\n")
+         if i != -1:
+diff --git a/src/_pytest/_code/source.py b/src/_pytest/_code/source.py
+index ea2fc5e..db78bbd 100644
+--- a/src/_pytest/_code/source.py
++++ b/src/_pytest/_code/source.py
+@@ -7,6 +7,7 @@ import tokenize
+ import warnings
+ from ast import PyCF_ONLY_AST as _AST_FLAG
+ from bisect import bisect_right
++from typing import List
+ 
+ import py
+ 
+@@ -19,11 +20,11 @@ class Source:
+     _compilecounter = 0
+ 
+     def __init__(self, *parts, **kwargs):
+-        self.lines = lines = []
++        self.lines = lines = []  # type: List[str]
+         de = kwargs.get("deindent", True)
+         for part in parts:
+             if not part:
+-                partlines = []
++                partlines = []  # type: List[str]
+             elif isinstance(part, Source):
+                 partlines = part.lines
+             elif isinstance(part, (tuple, list)):
+@@ -157,8 +158,7 @@ class Source:
+         source = "\n".join(self.lines) + "\n"
+         try:
+             co = compile(source, filename, mode, flag)
+-        except SyntaxError:
+-            ex = sys.exc_info()[1]
++        except SyntaxError as ex:
+             # re-represent syntax errors from parsing python strings
+             msglines = self.lines[: ex.lineno]
+             if ex.offset:
+@@ -173,7 +173,8 @@ class Source:
+             if flag & _AST_FLAG:
+                 return co
+             lines = [(x + "\n") for x in self.lines]
+-            linecache.cache[filename] = (1, None, lines, filename)
++            # Type ignored because linecache.cache is private.
++            linecache.cache[filename] = (1, None, lines, filename)  # type: ignore
+             return co
+ 
+ 
+@@ -282,7 +283,7 @@ def get_statement_startend2(lineno, node):
+     return start, end
+ 
+ 
+-def getstatementrange_ast(lineno, source, assertion=False, astnode=None):
++def getstatementrange_ast(lineno, source: Source, assertion=False, astnode=None):
+     if astnode is None:
+         content = str(source)
+         # See #4260:
+diff --git a/src/_pytest/assertion/__init__.py b/src/_pytest/assertion/__init__.py
+index 126929b..3b42b35 100644
+--- a/src/_pytest/assertion/__init__.py
++++ b/src/_pytest/assertion/__init__.py
+@@ -2,6 +2,7 @@
+ support for presenting detailed information in failing assertions.
+ """
+ import sys
++from typing import Optional
+ 
+ from _pytest.assertion import rewrite
+ from _pytest.assertion import truncate
+@@ -52,7 +53,9 @@ def register_assert_rewrite(*names):
+             importhook = hook
+             break
+     else:
+-        importhook = DummyRewriteHook()
++        # TODO(typing): Add a protocol for mark_rewrite() and use it
++        # for importhook and for PytestPluginManager.rewrite_hook.
++        importhook = DummyRewriteHook()  # type: ignore
+     importhook.mark_rewrite(*names)
+ 
+ 
+@@ -69,7 +72,7 @@ class AssertionState:
+     def __init__(self, config, mode):
+         self.mode = mode
+         self.trace = config.trace.root.get("assertion")
+-        self.hook = None
++        self.hook = None  # type: Optional[rewrite.AssertionRewritingHook]
+ 
+ 
+ def install_importhook(config):
+@@ -108,6 +111,7 @@ def pytest_runtest_setup(item):
+     """
+ 
+     def callbinrepr(op, left, right):
++        # type: (str, object, object) -> Optional[str]
+         """Call the pytest_assertrepr_compare hook and prepare the result
+ 
+         This uses the first result from the hook and then ensures the
+@@ -133,12 +137,13 @@ def pytest_runtest_setup(item):
+                 if item.config.getvalue("assertmode") == "rewrite":
+                     res = res.replace("%", "%%")
+                 return res
++        return None
+ 
+     util._reprcompare = callbinrepr
+ 
+     if item.ihook.pytest_assertion_pass.get_hookimpls():
+ 
+-        def call_assertion_pass_hook(lineno, expl, orig):
++        def call_assertion_pass_hook(lineno, orig, expl):
+             item.ihook.pytest_assertion_pass(
+                 item=item, lineno=lineno, orig=orig, expl=expl
+             )
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index 7627cb9..c225eff 100644
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -2,6 +2,7 @@
+ import ast
+ import errno
+ import functools
++import importlib.abc
+ import importlib.machinery
+ import importlib.util
+ import io
+@@ -16,6 +17,7 @@ from typing import Dict
+ from typing import List
+ from typing import Optional
+ from typing import Set
++from typing import Tuple
+ 
+ import atomicwrites
+ 
+@@ -34,7 +36,7 @@ PYC_EXT = ".py" + (__debug__ and "c" or "o")
+ PYC_TAIL = "." + PYTEST_TAG + PYC_EXT
+ 
+ 
+-class AssertionRewritingHook:
++class AssertionRewritingHook(importlib.abc.MetaPathFinder):
+     """PEP302/PEP451 import hook which rewrites asserts."""
+ 
+     def __init__(self, config):
+@@ -44,13 +46,13 @@ class AssertionRewritingHook:
+         except ValueError:
+             self.fnpats = ["test_*.py", "*_test.py"]
+         self.session = None
+-        self._rewritten_names = set()
+-        self._must_rewrite = set()
++        self._rewritten_names = set()  # type: Set[str]
++        self._must_rewrite = set()  # type: Set[str]
+         # flag to guard against trying to rewrite a pyc file while we are already writing another pyc file,
+         # which might result in infinite recursion (#3506)
+         self._writing_pyc = False
+         self._basenames_to_check_rewrite = {"conftest"}
+-        self._marked_for_rewrite_cache = {}
++        self._marked_for_rewrite_cache = {}  # type: Dict[str, bool]
+         self._session_paths_checked = False
+ 
+     def set_session(self, session):
+@@ -199,7 +201,7 @@ class AssertionRewritingHook:
+ 
+         return self._is_marked_for_rewrite(name, state)
+ 
+-    def _is_marked_for_rewrite(self, name, state):
++    def _is_marked_for_rewrite(self, name: str, state):
+         try:
+             return self._marked_for_rewrite_cache[name]
+         except KeyError:
+@@ -214,7 +216,7 @@ class AssertionRewritingHook:
+             self._marked_for_rewrite_cache[name] = False
+             return False
+ 
+-    def mark_rewrite(self, *names):
++    def mark_rewrite(self, *names: str) -> None:
+         """Mark import names as needing to be rewritten.
+ 
+         The named module or package as well as any nested modules will
+@@ -381,6 +383,7 @@ def _format_boolop(explanations, is_or):
+ 
+ 
+ def _call_reprcompare(ops, results, expls, each_obj):
++    # type: (Tuple[str, ...], Tuple[bool, ...], Tuple[str, ...], Tuple[object, ...]) -> str
+     for i, res, expl in zip(range(len(ops)), results, expls):
+         try:
+             done = not res
+@@ -396,11 +399,13 @@ def _call_reprcompare(ops, results, expls, each_obj):
+ 
+ 
+ def _call_assertion_pass(lineno, orig, expl):
++    # type: (int, str, str) -> None
+     if util._assertion_pass is not None:
+-        util._assertion_pass(lineno=lineno, orig=orig, expl=expl)
++        util._assertion_pass(lineno, orig, expl)
+ 
+ 
+ def _check_if_assertion_pass_impl():
++    # type: () -> bool
+     """Checks if any plugins implement the pytest_assertion_pass hook
+     in order not to generate explanation unecessarily (might be expensive)"""
+     return True if util._assertion_pass else False
+@@ -574,7 +579,7 @@ class AssertionRewriter(ast.NodeVisitor):
+     def _assert_expr_to_lineno(self):
+         return _get_assertion_exprs(self.source)
+ 
+-    def run(self, mod):
++    def run(self, mod: ast.Module) -> None:
+         """Find all assert statements in *mod* and rewrite them."""
+         if not mod.body:
+             # Nothing to do.
+@@ -616,12 +621,12 @@ class AssertionRewriter(ast.NodeVisitor):
+         ]
+         mod.body[pos:pos] = imports
+         # Collect asserts.
+-        nodes = [mod]
++        nodes = [mod]  # type: List[ast.AST]
+         while nodes:
+             node = nodes.pop()
+             for name, field in ast.iter_fields(node):
+                 if isinstance(field, list):
+-                    new = []
++                    new = []  # type: List
+                     for i, child in enumerate(field):
+                         if isinstance(child, ast.Assert):
+                             # Transform assert.
+@@ -695,7 +700,7 @@ class AssertionRewriter(ast.NodeVisitor):
+         .explanation_param().
+ 
+         """
+-        self.explanation_specifiers = {}
++        self.explanation_specifiers = {}  # type: Dict[str, ast.expr]
+         self.stack.append(self.explanation_specifiers)
+ 
+     def pop_format_context(self, expl_expr):
+@@ -738,7 +743,8 @@ class AssertionRewriter(ast.NodeVisitor):
+             from _pytest.warning_types import PytestAssertRewriteWarning
+             import warnings
+ 
+-            warnings.warn_explicit(
++            # Ignore type: typeshed bug https://github.com/python/typeshed/pull/3121
++            warnings.warn_explicit(  # type: ignore
+                 PytestAssertRewriteWarning(
+                     "assertion is always true, perhaps remove parentheses?"
+                 ),
+@@ -747,15 +753,15 @@ class AssertionRewriter(ast.NodeVisitor):
+                 lineno=assert_.lineno,
+             )
+ 
+-        self.statements = []
+-        self.variables = []
++        self.statements = []  # type: List[ast.stmt]
++        self.variables = []  # type: List[str]
+         self.variable_counter = itertools.count()
+ 
+         if self.enable_assertion_pass_hook:
+-            self.format_variables = []
++            self.format_variables = []  # type: List[str]
+ 
+-        self.stack = []
+-        self.expl_stmts = []
++        self.stack = []  # type: List[Dict[str, ast.expr]]
++        self.expl_stmts = []  # type: List[ast.stmt]
+         self.push_format_context()
+         # Rewrite assert into a bunch of statements.
+         top_condition, explanation = self.visit(assert_.test)
+@@ -893,7 +899,7 @@ warn_explicit(
+         # Process each operand, short-circuiting if needed.
+         for i, v in enumerate(boolop.values):
+             if i:
+-                fail_inner = []
++                fail_inner = []  # type: List[ast.stmt]
+                 # cond is set in a prior loop iteration below
+                 self.expl_stmts.append(ast.If(cond, fail_inner, []))  # noqa
+                 self.expl_stmts = fail_inner
+@@ -904,10 +910,10 @@ warn_explicit(
+             call = ast.Call(app, [expl_format], [])
+             self.expl_stmts.append(ast.Expr(call))
+             if i < levels:
+-                cond = res
++                cond = res  # type: ast.expr
+                 if is_or:
+                     cond = ast.UnaryOp(ast.Not(), cond)
+-                inner = []
++                inner = []  # type: List[ast.stmt]
+                 self.statements.append(ast.If(cond, inner, []))
+                 self.statements = body = inner
+         self.statements = save
+@@ -973,7 +979,7 @@ warn_explicit(
+         expl = pat % (res_expl, res_expl, value_expl, attr.attr)
+         return res, expl
+ 
+-    def visit_Compare(self, comp):
++    def visit_Compare(self, comp: ast.Compare):
+         self.push_format_context()
+         left_res, left_expl = self.visit(comp.left)
+         if isinstance(comp.left, (ast.Compare, ast.BoolOp)):
+@@ -1006,7 +1012,7 @@ warn_explicit(
+             ast.Tuple(results, ast.Load()),
+         )
+         if len(comp.ops) > 1:
+-            res = ast.BoolOp(ast.And(), load_names)
++            res = ast.BoolOp(ast.And(), load_names)  # type: ast.expr
+         else:
+             res = load_names[0]
+         return res, self.explanation_param(self.pop_format_context(expl_call))
+diff --git a/src/_pytest/assertion/util.py b/src/_pytest/assertion/util.py
+index 732194e..d1a11d0 100644
+--- a/src/_pytest/assertion/util.py
++++ b/src/_pytest/assertion/util.py
+@@ -1,20 +1,24 @@
+ """Utilities for assertion debugging"""
+ import pprint
+ from collections.abc import Sequence
++from typing import Callable
++from typing import List
++from typing import Optional
+ 
+ import _pytest._code
+ from _pytest import outcomes
+ from _pytest._io.saferepr import saferepr
++from _pytest.compat import ATTRS_EQ_FIELD
+ 
+ # The _reprcompare attribute on the util module is used by the new assertion
+ # interpretation code and assertion rewriter to detect this plugin was
+ # loaded and in turn call the hooks defined here as part of the
+ # DebugInterpreter.
+-_reprcompare = None
++_reprcompare = None  # type: Optional[Callable[[str, object, object], Optional[str]]]
+ 
+ # Works similarly as _reprcompare attribute. Is populated with the hook call
+ # when pytest_runtest_setup is called.
+-_assertion_pass = None
++_assertion_pass = None  # type: Optional[Callable[[int, str, str], None]]
+ 
+ 
+ def format_explanation(explanation):
+@@ -27,7 +31,6 @@ def format_explanation(explanation):
+     for when one explanation needs to span multiple lines, e.g. when
+     displaying diffs.
+     """
+-    explanation = explanation
+     lines = _split_explanation(explanation)
+     result = _format_lines(lines)
+     return "\n".join(result)
+@@ -177,7 +180,7 @@ def _diff_text(left, right, verbose=0):
+     """
+     from difflib import ndiff
+ 
+-    explanation = []
++    explanation = []  # type: List[str]
+ 
+     def escape_for_readable_diff(binary_text):
+         """
+@@ -235,7 +238,7 @@ def _compare_eq_verbose(left, right):
+     left_lines = repr(left).splitlines(keepends)
+     right_lines = repr(right).splitlines(keepends)
+ 
+-    explanation = []
++    explanation = []  # type: List[str]
+     explanation += ["-" + line for line in left_lines]
+     explanation += ["+" + line for line in right_lines]
+ 
+@@ -259,7 +262,7 @@ def _compare_eq_iterable(left, right, verbose=0):
+ 
+ def _compare_eq_sequence(left, right, verbose=0):
+     comparing_bytes = isinstance(left, bytes) and isinstance(right, bytes)
+-    explanation = []
++    explanation = []  # type: List[str]
+     len_left = len(left)
+     len_right = len(right)
+     for i in range(min(len_left, len_right)):
+@@ -327,7 +330,7 @@ def _compare_eq_set(left, right, verbose=0):
+ 
+ 
+ def _compare_eq_dict(left, right, verbose=0):
+-    explanation = []
++    explanation = []  # type: List[str]
+     set_left = set(left)
+     set_right = set(right)
+     common = set_left.intersection(set_right)
+@@ -372,7 +375,9 @@ def _compare_eq_cls(left, right, verbose, type_fns):
+         fields_to_check = [field for field, info in all_fields.items() if info.compare]
+     elif isattrs(left):
+         all_fields = left.__attrs_attrs__
+-        fields_to_check = [field.name for field in all_fields if field.cmp]
++        fields_to_check = [
++            field.name for field in all_fields if getattr(field, ATTRS_EQ_FIELD)
++        ]
+ 
+     same = []
+     diff = []
+diff --git a/src/_pytest/cacheprovider.py b/src/_pytest/cacheprovider.py
+index 496931e..0339a68 100755
+--- a/src/_pytest/cacheprovider.py
++++ b/src/_pytest/cacheprovider.py
+@@ -135,7 +135,7 @@ class Cache:
+         readme_path.write_text(README_CONTENT)
+ 
+         gitignore_path = self._cachedir.joinpath(".gitignore")
+-        msg = "# Created by pytest automatically.\n*"
++        msg = "# Created by pytest automatically.\n*\n"
+         gitignore_path.write_text(msg, encoding="UTF-8")
+ 
+         cachedir_tag_path = self._cachedir.joinpath("CACHEDIR.TAG")
+@@ -264,8 +264,8 @@ class NFPlugin:
+         self.cached_nodeids = config.cache.get("cache/nodeids", [])
+ 
+     def pytest_collection_modifyitems(self, session, config, items):
++        new_items = OrderedDict()
+         if self.active:
+-            new_items = OrderedDict()
+             other_items = OrderedDict()
+             for item in items:
+                 if item.nodeid not in self.cached_nodeids:
+@@ -276,7 +276,11 @@ class NFPlugin:
+             items[:] = self._get_increasing_order(
+                 new_items.values()
+             ) + self._get_increasing_order(other_items.values())
+-        self.cached_nodeids = [x.nodeid for x in items if isinstance(x, pytest.Item)]
++        else:
++            for item in items:
++                if item.nodeid not in self.cached_nodeids:
++                    new_items[item.nodeid] = item
++        self.cached_nodeids.extend(new_items)
+ 
+     def _get_increasing_order(self, items):
+         return sorted(items, key=lambda item: item.fspath.mtime(), reverse=True)
+diff --git a/src/_pytest/capture.py b/src/_pytest/capture.py
+index f89aaef..e4e58b3 100644
+--- a/src/_pytest/capture.py
++++ b/src/_pytest/capture.py
+@@ -789,7 +789,11 @@ def _py36_windowsconsoleio_workaround(stream):
+ 
+     See https://github.com/pytest-dev/py/issues/103
+     """
+-    if not sys.platform.startswith("win32") or sys.version_info[:2] < (3, 6):
++    if (
++        not sys.platform.startswith("win32")
++        or sys.version_info[:2] < (3, 6)
++        or hasattr(sys, "pypy_version_info")
++    ):
+         return
+ 
+     # bail out if ``stream`` doesn't seem like a proper ``io`` stream (#2666)
+diff --git a/src/_pytest/compat.py b/src/_pytest/compat.py
+index 3d1531e..3898fb2 100644
+--- a/src/_pytest/compat.py
++++ b/src/_pytest/compat.py
+@@ -354,3 +354,9 @@ if sys.version_info < (3, 5, 2):  # pragma: no cover
+ 
+     def overload(f):  # noqa: F811
+         return f
++
++
++if getattr(attr, "__version_info__", ()) >= (19, 2):
++    ATTRS_EQ_FIELD = "eq"
++else:
++    ATTRS_EQ_FIELD = "cmp"
+diff --git a/src/_pytest/config/__init__.py b/src/_pytest/config/__init__.py
+index 3a0eca5..1bab987 100644
+--- a/src/_pytest/config/__init__.py
++++ b/src/_pytest/config/__init__.py
+@@ -9,6 +9,15 @@ import types
+ import warnings
+ from functools import lru_cache
+ from pathlib import Path
++from types import TracebackType
++from typing import Any
++from typing import Callable
++from typing import Dict
++from typing import List
++from typing import Optional
++from typing import Sequence
++from typing import Set
++from typing import Tuple
+ 
+ import attr
+ import py
+@@ -30,9 +39,12 @@ from _pytest._code import filter_traceback
+ from _pytest.compat import importlib_metadata
+ from _pytest.outcomes import fail
+ from _pytest.outcomes import Skipped
+-from _pytest.pathlib import unique_path
+ from _pytest.warning_types import PytestConfigWarning
+ 
++if False:  # TYPE_CHECKING
++    from typing import Type
++
++
+ hookimpl = HookimplMarker("pytest")
+ hookspec = HookspecMarker("pytest")
+ 
+@@ -41,7 +53,7 @@ class ConftestImportFailure(Exception):
+     def __init__(self, path, excinfo):
+         Exception.__init__(self, path, excinfo)
+         self.path = path
+-        self.excinfo = excinfo
++        self.excinfo = excinfo  # type: Tuple[Type[Exception], Exception, TracebackType]
+ 
+ 
+ def main(args=None, plugins=None):
+@@ -183,7 +195,6 @@ def get_plugin_manager():
+ 
+ 
+ def _prepareconfig(args=None, plugins=None):
+-    warning = None
+     if args is None:
+         args = sys.argv[1:]
+     elif isinstance(args, py.path.local):
+@@ -201,10 +212,6 @@ def _prepareconfig(args=None, plugins=None):
+                     pluginmanager.consider_pluginarg(plugin)
+                 else:
+                     pluginmanager.register(plugin)
+-        if warning:
+-            from _pytest.warnings import _issue_warning_captured
+-
+-            _issue_warning_captured(warning, hook=config.hook, stacklevel=4)
+         return pluginmanager.hook.pytest_cmdline_parse(
+             pluginmanager=pluginmanager, args=args
+         )
+@@ -238,14 +245,18 @@ class PytestPluginManager(PluginManager):
+ 
+     def __init__(self):
+         super().__init__("pytest")
+-        self._conftest_plugins = set()
++        # The objects are module objects, only used generically.
++        self._conftest_plugins = set()  # type: Set[object]
+ 
+         # state related to local conftest plugins
+-        self._dirpath2confmods = {}
+-        self._conftestpath2mod = {}
++        # Maps a py.path.local to a list of module objects.
++        self._dirpath2confmods = {}  # type: Dict[Any, List[object]]
++        # Maps a py.path.local to a module object.
++        self._conftestpath2mod = {}  # type: Dict[Any, object]
+         self._confcutdir = None
+         self._noconftest = False
+-        self._duplicatepaths = set()
++        # Set of py.path.local's.
++        self._duplicatepaths = set()  # type: Set[Any]
+ 
+         self.add_hookspecs(_pytest.hookspec)
+         self.register(self)
+@@ -367,7 +378,7 @@ class PytestPluginManager(PluginManager):
+         """
+         current = py.path.local()
+         self._confcutdir = (
+-            unique_path(current.join(namespace.confcutdir, abs=True))
++            current.join(namespace.confcutdir, abs=True)
+             if namespace.confcutdir
+             else None
+         )
+@@ -406,13 +417,11 @@ class PytestPluginManager(PluginManager):
+         else:
+             directory = path
+ 
+-        directory = unique_path(directory)
+-
+         # XXX these days we may rather want to use config.rootdir
+         # and allow users to opt into looking into the rootdir parent
+         # directories instead of requiring to specify confcutdir
+         clist = []
+-        for parent in directory.parts():
++        for parent in directory.realpath().parts():
+             if self._confcutdir and self._confcutdir.relto(parent):
+                 continue
+             conftestpath = parent.join("conftest.py")
+@@ -432,12 +441,14 @@ class PytestPluginManager(PluginManager):
+         raise KeyError(name)
+ 
+     def _importconftest(self, conftestpath):
+-        # Use realpath to avoid loading the same conftest twice
++        # Use a resolved Path object as key to avoid loading the same conftest twice
+         # with build systems that create build directories containing
+         # symlinks to actual files.
+-        conftestpath = unique_path(conftestpath)
++        # Using Path().resolve() is better than py.path.realpath because
++        # it resolves to the correct path/drive in case-insensitive file systems (#5792)
++        key = Path(str(conftestpath)).resolve()
+         try:
+-            return self._conftestpath2mod[conftestpath]
++            return self._conftestpath2mod[key]
+         except KeyError:
+             pkgpath = conftestpath.pypkgpath()
+             if pkgpath is None:
+@@ -454,7 +465,7 @@ class PytestPluginManager(PluginManager):
+                 raise ConftestImportFailure(conftestpath, sys.exc_info())
+ 
+             self._conftest_plugins.add(mod)
+-            self._conftestpath2mod[conftestpath] = mod
++            self._conftestpath2mod[key] = mod
+             dirpath = conftestpath.dirpath()
+             if dirpath in self._dirpath2confmods:
+                 for path, mods in self._dirpath2confmods.items():
+@@ -647,6 +658,8 @@ class Config:
+     class InvocationParams:
+         """Holds parameters passed during ``pytest.main()``
+ 
++        .. versionadded:: 5.1
++
+         .. note::
+ 
+             Currently the environment variable PYTEST_ADDOPTS is also handled by
+@@ -657,7 +670,7 @@ class Config:
+ 
+         args = attr.ib()
+         plugins = attr.ib()
+-        dir = attr.ib()
++        dir = attr.ib(type=Path)
+ 
+     def __init__(self, pluginmanager, *, invocation_params=None):
+         from .argparsing import Parser, FILE_OR_DIR
+@@ -678,10 +691,10 @@ class Config:
+         self.pluginmanager = pluginmanager
+         self.trace = self.pluginmanager.trace.root.get("config")
+         self.hook = self.pluginmanager.hook
+-        self._inicache = {}
+-        self._override_ini = ()
+-        self._opt2dest = {}
+-        self._cleanup = []
++        self._inicache = {}  # type: Dict[str, Any]
++        self._override_ini = ()  # type: Sequence[str]
++        self._opt2dest = {}  # type: Dict[str, str]
++        self._cleanup = []  # type: List[Callable[[], None]]
+         self.pluginmanager.register(self, "pytestconfig")
+         self._configured = False
+         self.hook.pytest_addoption.call_historic(kwargs=dict(parser=self._parser))
+@@ -782,7 +795,7 @@ class Config:
+     def pytest_load_initial_conftests(self, early_config):
+         self.pluginmanager._set_initial_conftests(early_config.known_args_namespace)
+ 
+-    def _initini(self, args):
++    def _initini(self, args) -> None:
+         ns, unknown_args = self._parser.parse_known_and_unknown_args(
+             args, namespace=copy.copy(self.option)
+         )
+@@ -883,8 +896,7 @@ class Config:
+             self.hook.pytest_load_initial_conftests(
+                 early_config=self, args=args, parser=self._parser
+             )
+-        except ConftestImportFailure:
+-            e = sys.exc_info()[1]
++        except ConftestImportFailure as e:
+             if ns.help or ns.version:
+                 # we don't want to prevent --help/--version to work
+                 # so just let is pass and print a warning at the end
+@@ -950,7 +962,7 @@ class Config:
+         assert isinstance(x, list)
+         x.append(line)  # modifies the cached list inline
+ 
+-    def getini(self, name):
++    def getini(self, name: str):
+         """ return configuration value from an :ref:`ini file <inifiles>`. If the
+         specified name hasn't been registered through a prior
+         :py:func:`parser.addini <_pytest.config.Parser.addini>`
+@@ -961,7 +973,7 @@ class Config:
+             self._inicache[name] = val = self._getini(name)
+             return val
+ 
+-    def _getini(self, name):
++    def _getini(self, name: str) -> Any:
+         try:
+             description, type, default = self._parser._inidict[name]
+         except KeyError:
+@@ -1006,7 +1018,7 @@ class Config:
+             values.append(relroot)
+         return values
+ 
+-    def _get_override_ini_value(self, name):
++    def _get_override_ini_value(self, name: str) -> Optional[str]:
+         value = None
+         # override_ini is a list of "ini=value" options
+         # always use the last item if multiple values are set for same ini-name,
+@@ -1021,7 +1033,7 @@ class Config:
+                     value = user_ini_value
+         return value
+ 
+-    def getoption(self, name, default=notset, skip=False):
++    def getoption(self, name: str, default=notset, skip: bool = False):
+         """ return command line option value.
+ 
+         :arg name: name of the option.  You may also specify
+diff --git a/src/_pytest/config/argparsing.py b/src/_pytest/config/argparsing.py
+index 8994ff7..9b526ff 100644
+--- a/src/_pytest/config/argparsing.py
++++ b/src/_pytest/config/argparsing.py
+@@ -2,6 +2,11 @@ import argparse
+ import sys
+ import warnings
+ from gettext import gettext
++from typing import Any
++from typing import Dict
++from typing import List
++from typing import Optional
++from typing import Tuple
+ 
+ import py
+ 
+@@ -21,12 +26,12 @@ class Parser:
+ 
+     def __init__(self, usage=None, processopt=None):
+         self._anonymous = OptionGroup("custom options", parser=self)
+-        self._groups = []
++        self._groups = []  # type: List[OptionGroup]
+         self._processopt = processopt
+         self._usage = usage
+-        self._inidict = {}
+-        self._ininames = []
+-        self.extra_info = {}
++        self._inidict = {}  # type: Dict[str, Tuple[str, Optional[str], Any]]
++        self._ininames = []  # type: List[str]
++        self.extra_info = {}  # type: Dict[str, Any]
+ 
+     def processoption(self, option):
+         if self._processopt:
+@@ -80,7 +85,7 @@ class Parser:
+         args = [str(x) if isinstance(x, py.path.local) else x for x in args]
+         return self.optparser.parse_args(args, namespace=namespace)
+ 
+-    def _getparser(self):
++    def _getparser(self) -> "MyOptionParser":
+         from _pytest._argcomplete import filescompleter
+ 
+         optparser = MyOptionParser(self, self.extra_info, prog=self.prog)
+@@ -94,7 +99,10 @@ class Parser:
+                     a = option.attrs()
+                     arggroup.add_argument(*n, **a)
+         # bash like autocompletion for dirs (appending '/')
+-        optparser.add_argument(FILE_OR_DIR, nargs="*").completer = filescompleter
++        # Type ignored because typeshed doesn't know about argcomplete.
++        optparser.add_argument(  # type: ignore
++            FILE_OR_DIR, nargs="*"
++        ).completer = filescompleter
+         return optparser
+ 
+     def parse_setoption(self, args, option, namespace=None):
+@@ -103,13 +111,15 @@ class Parser:
+             setattr(option, name, value)
+         return getattr(parsedoption, FILE_OR_DIR)
+ 
+-    def parse_known_args(self, args, namespace=None):
++    def parse_known_args(self, args, namespace=None) -> argparse.Namespace:
+         """parses and returns a namespace object with known arguments at this
+         point.
+         """
+         return self.parse_known_and_unknown_args(args, namespace=namespace)[0]
+ 
+-    def parse_known_and_unknown_args(self, args, namespace=None):
++    def parse_known_and_unknown_args(
++        self, args, namespace=None
++    ) -> Tuple[argparse.Namespace, List[str]]:
+         """parses and returns a namespace object with known arguments, and
+         the remaining arguments unknown at this point.
+         """
+@@ -163,8 +173,8 @@ class Argument:
+     def __init__(self, *names, **attrs):
+         """store parms in private vars for use in add_argument"""
+         self._attrs = attrs
+-        self._short_opts = []
+-        self._long_opts = []
++        self._short_opts = []  # type: List[str]
++        self._long_opts = []  # type: List[str]
+         self.dest = attrs.get("dest")
+         if "%default" in (attrs.get("help") or ""):
+             warnings.warn(
+@@ -268,8 +278,8 @@ class Argument:
+                     )
+                 self._long_opts.append(opt)
+ 
+-    def __repr__(self):
+-        args = []
++    def __repr__(self) -> str:
++        args = []  # type: List[str]
+         if self._short_opts:
+             args += ["_short_opts: " + repr(self._short_opts)]
+         if self._long_opts:
+@@ -286,7 +296,7 @@ class OptionGroup:
+     def __init__(self, name, description="", parser=None):
+         self.name = name
+         self.description = description
+-        self.options = []
++        self.options = []  # type: List[Argument]
+         self.parser = parser
+ 
+     def addoption(self, *optnames, **attrs):
+@@ -405,6 +415,12 @@ class DropShorterLongHelpFormatter(argparse.HelpFormatter):
+     - cache result on action object as this is called at least 2 times
+     """
+ 
++    def __init__(self, *args, **kwargs):
++        """Use more accurate terminal width via pylib."""
++        if "width" not in kwargs:
++            kwargs["width"] = py.io.get_terminal_width()
++        super().__init__(*args, **kwargs)
++
+     def _format_action_invocation(self, action):
+         orgstr = argparse.HelpFormatter._format_action_invocation(self, action)
+         if orgstr and orgstr[0] != "-":  # only optional arguments
+@@ -421,7 +437,7 @@ class DropShorterLongHelpFormatter(argparse.HelpFormatter):
+         option_map = getattr(action, "map_long_option", {})
+         if option_map is None:
+             option_map = {}
+-        short_long = {}
++        short_long = {}  # type: Dict[str, str]
+         for option in options:
+             if len(option) == 2 or option[2] == " ":
+                 continue
+diff --git a/src/_pytest/config/findpaths.py b/src/_pytest/config/findpaths.py
+index ec99131..f06c9cf 100644
+--- a/src/_pytest/config/findpaths.py
++++ b/src/_pytest/config/findpaths.py
+@@ -1,10 +1,15 @@
+ import os
++from typing import List
++from typing import Optional
+ 
+ import py
+ 
+ from .exceptions import UsageError
+ from _pytest.outcomes import fail
+ 
++if False:
++    from . import Config  # noqa: F401
++
+ 
+ def exists(path, ignore=EnvironmentError):
+     try:
+@@ -102,7 +107,12 @@ def get_dirs_from_args(args):
+ CFG_PYTEST_SECTION = "[pytest] section in {filename} files is no longer supported, change to [tool:pytest] instead."
+ 
+ 
+-def determine_setup(inifile, args, rootdir_cmd_arg=None, config=None):
++def determine_setup(
++    inifile: str,
++    args: List[str],
++    rootdir_cmd_arg: Optional[str] = None,
++    config: Optional["Config"] = None,
++):
+     dirs = get_dirs_from_args(args)
+     if inifile:
+         iniconfig = py.iniconfig.IniConfig(inifile)
+diff --git a/src/_pytest/debugging.py b/src/_pytest/debugging.py
+index 2e3d49c..3f3c58b 100644
+--- a/src/_pytest/debugging.py
++++ b/src/_pytest/debugging.py
+@@ -1,5 +1,6 @@
+ """ interactive debugging with PDB, the Python Debugger. """
+ import argparse
++import functools
+ import pdb
+ import sys
+ from doctest import UnexpectedException
+@@ -274,13 +275,16 @@ class PdbTrace:
+ def _test_pytest_function(pyfuncitem):
+     _pdb = pytestPDB._init_pdb("runcall")
+     testfunction = pyfuncitem.obj
+-    pyfuncitem.obj = _pdb.runcall
+-    if "func" in pyfuncitem._fixtureinfo.argnames:  # pragma: no branch
+-        raise ValueError("--trace can't be used with a fixture named func!")
+-    pyfuncitem.funcargs["func"] = testfunction
+-    new_list = list(pyfuncitem._fixtureinfo.argnames)
+-    new_list.append("func")
+-    pyfuncitem._fixtureinfo.argnames = tuple(new_list)
++
++    # we can't just return `partial(pdb.runcall, testfunction)` because (on
++    # python < 3.7.4) runcall's first param is `func`, which means we'd get
++    # an exception if one of the kwargs to testfunction was called `func`
++    @functools.wraps(testfunction)
++    def wrapper(*args, **kwargs):
++        func = functools.partial(testfunction, *args, **kwargs)
++        _pdb.runcall(func)
++
++    pyfuncitem.obj = wrapper
+ 
+ 
+ def _enter_pdb(node, excinfo, rep):
+diff --git a/src/_pytest/deprecated.py b/src/_pytest/deprecated.py
+index c069089..5186067 100644
+--- a/src/_pytest/deprecated.py
++++ b/src/_pytest/deprecated.py
+@@ -29,3 +29,8 @@ RESULT_LOG = PytestDeprecationWarning(
+     "--result-log is deprecated and scheduled for removal in pytest 6.0.\n"
+     "See https://docs.pytest.org/en/latest/deprecations.html#result-log-result-log for more information."
+ )
++
++FIXTURE_POSITIONAL_ARGUMENTS = PytestDeprecationWarning(
++    "Passing arguments to pytest.fixture() as positional arguments is deprecated - pass them "
++    "as a keyword argument instead."
++)
+diff --git a/src/_pytest/fixtures.py b/src/_pytest/fixtures.py
+index e78ed01..aae1371 100644
+--- a/src/_pytest/fixtures.py
++++ b/src/_pytest/fixtures.py
+@@ -2,6 +2,7 @@ import functools
+ import inspect
+ import itertools
+ import sys
++import warnings
+ from collections import defaultdict
+ from collections import deque
+ from collections import OrderedDict
+@@ -27,6 +28,7 @@ from _pytest.compat import getlocation
+ from _pytest.compat import is_generator
+ from _pytest.compat import NOTSET
+ from _pytest.compat import safe_getattr
++from _pytest.deprecated import FIXTURE_POSITIONAL_ARGUMENTS
+ from _pytest.outcomes import fail
+ from _pytest.outcomes import TEST_OUTCOME
+ 
+@@ -58,7 +60,6 @@ def pytest_sessionstart(session):
+ 
+ scopename2class = {}  # type: Dict[str, Type[nodes.Node]]
+ 
+-
+ scope2props = dict(session=())  # type: Dict[str, Tuple[str, ...]]
+ scope2props["package"] = ("fspath",)
+ scope2props["module"] = ("fspath", "module")
+@@ -792,6 +793,25 @@ def _teardown_yield_fixture(fixturefunc, it):
+         )
+ 
+ 
++def _eval_scope_callable(scope_callable, fixture_name, config):
++    try:
++        result = scope_callable(fixture_name=fixture_name, config=config)
++    except Exception:
++        raise TypeError(
++            "Error evaluating {} while defining fixture '{}'.\n"
++            "Expected a function with the signature (*, fixture_name, config)".format(
++                scope_callable, fixture_name
++            )
++        )
++    if not isinstance(result, str):
++        fail(
++            "Expected {} to return a 'str' while defining fixture '{}', but it returned:\n"
++            "{!r}".format(scope_callable, fixture_name, result),
++            pytrace=False,
++        )
++    return result
++
++
+ class FixtureDef:
+     """ A container for a factory definition. """
+ 
+@@ -811,6 +831,8 @@ class FixtureDef:
+         self.has_location = baseid is not None
+         self.func = func
+         self.argname = argname
++        if callable(scope):
++            scope = _eval_scope_callable(scope, argname, fixturemanager.config)
+         self.scope = scope
+         self.scopenum = scope2index(
+             scope or "function",
+@@ -995,7 +1017,57 @@ class FixtureFunctionMarker:
+         return function
+ 
+ 
+-def fixture(scope="function", params=None, autouse=False, ids=None, name=None):
++FIXTURE_ARGS_ORDER = ("scope", "params", "autouse", "ids", "name")
++
++
++def _parse_fixture_args(callable_or_scope, *args, **kwargs):
++    arguments = {
++        "scope": "function",
++        "params": None,
++        "autouse": False,
++        "ids": None,
++        "name": None,
++    }
++    kwargs = {
++        key: value for key, value in kwargs.items() if arguments.get(key) != value
++    }
++
++    fixture_function = None
++    if isinstance(callable_or_scope, str):
++        args = list(args)
++        args.insert(0, callable_or_scope)
++    else:
++        fixture_function = callable_or_scope
++
++    positionals = set()
++    for positional, argument_name in zip(args, FIXTURE_ARGS_ORDER):
++        arguments[argument_name] = positional
++        positionals.add(argument_name)
++
++    duplicated_kwargs = {kwarg for kwarg in kwargs.keys() if kwarg in positionals}
++    if duplicated_kwargs:
++        raise TypeError(
++            "The fixture arguments are defined as positional and keyword: {}. "
++            "Use only keyword arguments.".format(", ".join(duplicated_kwargs))
++        )
++
++    if positionals:
++        warnings.warn(FIXTURE_POSITIONAL_ARGUMENTS, stacklevel=2)
++
++    arguments.update(kwargs)
++
++    return fixture_function, arguments
++
++
++def fixture(
++    callable_or_scope=None,
++    *args,
++    scope="function",
++    params=None,
++    autouse=False,
++    ids=None,
++    name=None
++):
+     """Decorator to mark a fixture factory function.
+ 
+     This decorator can be used, with or without parameters, to define a
+@@ -1016,9 +1088,13 @@ def fixture(scope="function", params=None, autouse=False, ids=None, name=None):
+ 
+     :arg scope: the scope for which this fixture is shared, one of
+                 ``"function"`` (default), ``"class"``, ``"module"``,
+-                ``"package"`` or ``"session"``.
++                ``"package"`` or ``"session"`` (``"package"`` is considered **experimental**
++                at this time).
++
++                This parameter may also be a callable which receives ``(fixture_name, config)``
++                as parameters, and must return a ``str`` with one of the values mentioned above.
+ 
+-                ``"package"`` is considered **experimental** at this time.
++                See :ref:`dynamic scope` in the docs for more information.
+ 
+     :arg params: an optional list of parameters which will cause multiple
+                 invocations of the fixture function and all of the tests
+@@ -1041,21 +1117,56 @@ def fixture(scope="function", params=None, autouse=False, ids=None, name=None):
+                 ``fixture_<fixturename>`` and then use
+                 ``@pytest.fixture(name='<fixturename>')``.
+     """
+-    if callable(scope) and params is None and autouse is False:
+-        # direct decoration
+-        return FixtureFunctionMarker("function", params, autouse, name=name)(scope)
+-    if params is not None and not isinstance(params, (list, tuple)):
++    if params is not None:
+         params = list(params)
++
++    fixture_function, arguments = _parse_fixture_args(
++        callable_or_scope,
++        *args,
++        scope=scope,
++        params=params,
++        autouse=autouse,
++        ids=ids,
++        name=name
++    )
++    scope = arguments.get("scope")
++    params = arguments.get("params")
++    autouse = arguments.get("autouse")
++    ids = arguments.get("ids")
++    name = arguments.get("name")
++
++    if fixture_function and params is None and autouse is False:
++        # direct decoration
++        return FixtureFunctionMarker(scope, params, autouse, name=name)(
++            fixture_function
++        )
++
+     return FixtureFunctionMarker(scope, params, autouse, ids=ids, name=name)
+ 
+ 
+-def yield_fixture(scope="function", params=None, autouse=False, ids=None, name=None):
++def yield_fixture(
++    callable_or_scope=None,
++    *args,
++    scope="function",
++    params=None,
++    autouse=False,
++    ids=None,
++    name=None
++):
+     """ (return a) decorator to mark a yield-fixture factory function.
+ 
+     .. deprecated:: 3.0
+         Use :py:func:`pytest.fixture` directly instead.
+     """
+-    return fixture(scope=scope, params=params, autouse=autouse, ids=ids, name=name)
++    return fixture(
++        callable_or_scope,
++        *args,
++        scope=scope,
++        params=params,
++        autouse=autouse,
++        ids=ids,
++        name=name
++    )
+ 
+ 
+ defaultfuncargprefixmarker = fixture()
+diff --git a/src/_pytest/hookspec.py b/src/_pytest/hookspec.py
+index 59fc569..10a9857 100644
+--- a/src/_pytest/hookspec.py
++++ b/src/_pytest/hookspec.py
+@@ -488,6 +488,8 @@ def pytest_assertion_pass(item, lineno, orig, expl):
+     """
+     **(Experimental)**
+ 
++    .. versionadded:: 5.0
++
+     Hook called whenever an assertion *passes*.
+ 
+     Use this hook to do some processing after a passing assertion.
+diff --git a/src/_pytest/junitxml.py b/src/_pytest/junitxml.py
+index ba0f48e..fb95110 100644
+--- a/src/_pytest/junitxml.py
++++ b/src/_pytest/junitxml.py
+@@ -513,7 +513,7 @@ class LogXML:
+         key = nodeid, slavenode
+ 
+         if key in self.node_reporters:
+-            # TODO: breasks for --dist=each
++            # TODO: breaks for --dist=each
+             return self.node_reporters[key]
+ 
+         reporter = _NodeReporter(nodeid, self)
+diff --git a/src/_pytest/logging.py b/src/_pytest/logging.py
+index 2861bae..de85769 100644
+--- a/src/_pytest/logging.py
++++ b/src/_pytest/logging.py
+@@ -2,8 +2,7 @@
+ import logging
+ import re
+ from contextlib import contextmanager
+-
+-import py
++from io import StringIO
+ 
+ import pytest
+ from _pytest.compat import nullcontext
+@@ -218,7 +217,7 @@ class LogCaptureHandler(logging.StreamHandler):
+ 
+     def __init__(self):
+         """Creates a new log handler."""
+-        logging.StreamHandler.__init__(self, py.io.TextIO())
++        logging.StreamHandler.__init__(self, StringIO())
+         self.records = []
+ 
+     def emit(self, record):
+@@ -228,7 +227,7 @@ class LogCaptureHandler(logging.StreamHandler):
+ 
+     def reset(self):
+         self.records = []
+-        self.stream = py.io.TextIO()
++        self.stream = StringIO()
+ 
+ 
+ class LogCaptureFixture:
+@@ -356,6 +355,7 @@ def caplog(request):
+ 
+     Captured logs are available through the following properties/methods::
+ 
++    * caplog.messages        -> list of format-interpolated log messages
+     * caplog.text            -> string containing formatted log output
+     * caplog.records         -> list of logging.LogRecord instances
+     * caplog.record_tuples   -> list of (logger_name, level, message) tuples
+diff --git a/src/_pytest/main.py b/src/_pytest/main.py
+index 23eff52..3c20502 100644
+--- a/src/_pytest/main.py
++++ b/src/_pytest/main.py
+@@ -20,6 +20,8 @@ from _pytest.runner import collect_one_node
+ 
+ class ExitCode(enum.IntEnum):
+     """
++    .. versionadded:: 5.0
++
+     Encodes the valid exit codes by pytest.
+ 
+     Currently users and plugins may supply other exit codes as well.
+@@ -427,7 +429,7 @@ class Session(nodes.FSCollector):
+             # one or more conftests are not in use at this fspath
+             proxy = FSHookProxy(fspath, pm, remove_mods)
+         else:
+-            # all plugis are active for this fspath
++            # all plugins are active for this fspath
+             proxy = self.config.hook
+         return proxy
+ 
+diff --git a/src/_pytest/mark/evaluate.py b/src/_pytest/mark/evaluate.py
+index 898278e..53822e9 100644
+--- a/src/_pytest/mark/evaluate.py
++++ b/src/_pytest/mark/evaluate.py
+@@ -28,7 +28,7 @@ class MarkEvaluator:
+         self._mark_name = name
+ 
+     def __bool__(self):
+-        # dont cache here to prevent staleness
++        # don't cache here to prevent staleness
+         return bool(self._get_marks())
+ 
+     __nonzero__ = __bool__
+@@ -51,6 +51,8 @@ class MarkEvaluator:
+         except TEST_OUTCOME:
+             self.exc = sys.exc_info()
+             if isinstance(self.exc[1], SyntaxError):
++                # TODO: Investigate why SyntaxError.offset is Optional, and if it can be None here.
++                assert self.exc[1].offset is not None
+                 msg = [" " * (self.exc[1].offset + 4) + "^"]
+                 msg.append("SyntaxError: invalid syntax")
+             else:
+diff --git a/src/_pytest/mark/legacy.py b/src/_pytest/mark/legacy.py
+index d14ea3a..3721e3b 100644
+--- a/src/_pytest/mark/legacy.py
++++ b/src/_pytest/mark/legacy.py
+@@ -1,6 +1,6 @@
+ """
+ this is a place where we put datastructures used by legacy apis
+-we hope ot remove
++we hope to remove
+ """
+ import keyword
+ 
+diff --git a/src/_pytest/mark/structures.py b/src/_pytest/mark/structures.py
+index 332c86b..2cab96d 100644
+--- a/src/_pytest/mark/structures.py
++++ b/src/_pytest/mark/structures.py
+@@ -8,6 +8,7 @@ from typing import Set
+ import attr
+ 
+ from ..compat import ascii_escaped
++from ..compat import ATTRS_EQ_FIELD
+ from ..compat import getfslineno
+ from ..compat import NOTSET
+ from _pytest.outcomes import fail
+@@ -292,7 +293,7 @@ class MarkGenerator:
+     _config = None
+     _markers = set()  # type: Set[str]
+ 
+-    def __getattr__(self, name):
++    def __getattr__(self, name: str) -> MarkDecorator:
+         if name[0] == "_":
+             raise AttributeError("Marker name must NOT start with underscore")
+ 
+@@ -367,7 +368,8 @@ class NodeKeywords(MutableMapping):
+         return "<NodeKeywords for node {}>".format(self.node)
+ 
+ 
+-@attr.s(cmp=False, hash=False)
++# mypy cannot find this overload, remove when on attrs>=19.2
++@attr.s(hash=False, **{ATTRS_EQ_FIELD: False})  # type: ignore
+ class NodeMarkers:
+     """
+     internal structure for storing marks belonging to a node
+diff --git a/src/_pytest/nodes.py b/src/_pytest/nodes.py
+index 9b78dca..e6dee15 100644
+--- a/src/_pytest/nodes.py
++++ b/src/_pytest/nodes.py
+@@ -1,14 +1,26 @@
+ import os
+ import warnings
+ from functools import lru_cache
++from typing import Any
++from typing import Dict
++from typing import List
++from typing import Set
++from typing import Tuple
++from typing import Union
+ 
+ import py
+ 
+ import _pytest._code
+ from _pytest.compat import getfslineno
++from _pytest.mark.structures import Mark
++from _pytest.mark.structures import MarkDecorator
+ from _pytest.mark.structures import NodeKeywords
+ from _pytest.outcomes import fail
+ 
++if False:  # TYPE_CHECKING
++    # Imported here due to circular import.
++    from _pytest.fixtures import FixtureDef
++
+ SEP = "/"
+ 
+ tracebackcutdir = py.path.local(_pytest.__file__).dirpath()
+@@ -78,13 +90,13 @@ class Node:
+         self.keywords = NodeKeywords(self)
+ 
+         #: the marker objects belonging to this node
+-        self.own_markers = []
++        self.own_markers = []  # type: List[Mark]
+ 
+         #: allow adding of extra keywords to use for matching
+-        self.extra_keyword_matches = set()
++        self.extra_keyword_matches = set()  # type: Set[str]
+ 
+         # used for storing artificial fixturedefs for direct parametrization
+-        self._name2pseudofixturedef = {}
++        self._name2pseudofixturedef = {}  # type: Dict[str, FixtureDef]
+ 
+         if nodeid is not None:
+             assert "::()" not in nodeid
+@@ -127,7 +139,8 @@ class Node:
+                 )
+             )
+         path, lineno = get_fslocation_from_item(self)
+-        warnings.warn_explicit(
++        # Type ignored: https://github.com/python/typeshed/pull/3121
++        warnings.warn_explicit(  # type: ignore
+             warning,
+             category=None,
+             filename=str(path),
+@@ -160,7 +173,9 @@ class Node:
+         chain.reverse()
+         return chain
+ 
+-    def add_marker(self, marker, append=True):
++    def add_marker(
++        self, marker: Union[str, MarkDecorator], append: bool = True
++    ) -> None:
+         """dynamically add a marker object to the node.
+ 
+         :type marker: ``str`` or ``pytest.mark.*``  object
+@@ -168,17 +183,19 @@ class Node:
+             ``append=True`` whether to append the marker,
+             if ``False`` insert at position ``0``.
+         """
+-        from _pytest.mark import MarkDecorator, MARK_GEN
++        from _pytest.mark import MARK_GEN
+ 
+-        if isinstance(marker, str):
+-            marker = getattr(MARK_GEN, marker)
+-        elif not isinstance(marker, MarkDecorator):
++        if isinstance(marker, MarkDecorator):
++            marker_ = marker
++        elif isinstance(marker, str):
++            marker_ = getattr(MARK_GEN, marker)
++        else:
+             raise ValueError("is not a string or pytest.mark.* Marker")
+-        self.keywords[marker.name] = marker
++        self.keywords[marker_.name] = marker
+         if append:
+-            self.own_markers.append(marker.mark)
++            self.own_markers.append(marker_.mark)
+         else:
+-            self.own_markers.insert(0, marker.mark)
++            self.own_markers.insert(0, marker_.mark)
+ 
+     def iter_markers(self, name=None):
+         """
+@@ -211,7 +228,7 @@ class Node:
+ 
+     def listextrakeywords(self):
+         """ Return a set of all extra keywords in self and any parents."""
+-        extra_keywords = set()
++        extra_keywords = set()  # type: Set[str]
+         for item in self.listchain():
+             extra_keywords.update(item.extra_keyword_matches)
+         return extra_keywords
+@@ -239,13 +256,13 @@ class Node:
+         pass
+ 
+     def _repr_failure_py(self, excinfo, style=None):
+-        if excinfo.errisinstance(fail.Exception):
++        # Type ignored: see comment where fail.Exception is defined.
++        if excinfo.errisinstance(fail.Exception):  # type: ignore
+             if not excinfo.value.pytrace:
+                 return str(excinfo.value)
+         fm = self.session._fixturemanager
+         if excinfo.errisinstance(fm.FixtureLookupError):
+             return excinfo.value.formatrepr()
+-        tbfilter = True
+         if self.config.getoption("fulltrace", False):
+             style = "long"
+         else:
+@@ -253,7 +270,6 @@ class Node:
+             self._prunetraceback(excinfo)
+             if len(excinfo.traceback) == 0:
+                 excinfo.traceback = tb
+-            tbfilter = False  # prunetraceback already does it
+             if style == "auto":
+                 style = "long"
+         # XXX should excinfo.getrepr record all data and toterminal() process it?
+@@ -279,7 +295,7 @@ class Node:
+             abspath=abspath,
+             showlocals=self.config.getoption("showlocals", False),
+             style=style,
+-            tbfilter=tbfilter,
++            tbfilter=False,  # pruned already, or in --fulltrace mode.
+             truncate_locals=truncate_locals,
+         )
+ 
+@@ -385,13 +401,13 @@ class Item(Node):
+ 
+     def __init__(self, name, parent=None, config=None, session=None, nodeid=None):
+         super().__init__(name, parent, config, session, nodeid=nodeid)
+-        self._report_sections = []
++        self._report_sections = []  # type: List[Tuple[str, str, str]]
+ 
+         #: user properties is a list of tuples (name, value) that holds user
+         #: defined properties for this test.
+-        self.user_properties = []
++        self.user_properties = []  # type: List[Tuple[str, Any]]
+ 
+-    def add_report_section(self, when, key, content):
++    def add_report_section(self, when: str, key: str, content: str) -> None:
+         """
+         Adds a new report section, similar to what's done internally to add stdout and
+         stderr captured output::
+diff --git a/src/_pytest/pastebin.py b/src/_pytest/pastebin.py
+index 91aa5f1..77b4e26 100644
+--- a/src/_pytest/pastebin.py
++++ b/src/_pytest/pastebin.py
+@@ -59,20 +59,25 @@ def create_new_paste(contents):
+     Creates a new paste using bpaste.net service.
+ 
+     :contents: paste contents as utf-8 encoded bytes
+-    :returns: url to the pasted contents
++    :returns: url to the pasted contents or error message
+     """
+     import re
+     from urllib.request import urlopen
+     from urllib.parse import urlencode
+ 
+-    params = {"code": contents, "lexer": "python3", "expiry": "1week"}
++    params = {"code": contents, "lexer": "text", "expiry": "1week"}
+     url = "https://bpaste.net"
+-    response = urlopen(url, data=urlencode(params).encode("ascii")).read()
+-    m = re.search(r'href="/raw/(\w+)"', response.decode("utf-8"))
++    try:
++        response = (
++            urlopen(url, data=urlencode(params).encode("ascii")).read().decode("utf-8")
++        )
++    except OSError as exc_info:  # urllib errors
++        return "bad response: %s" % exc_info
++    m = re.search(r'href="/raw/(\w+)"', response)
+     if m:
+         return "{}/show/{}".format(url, m.group(1))
+     else:
+-        return "bad response: " + response.decode("utf-8")
++        return "bad response: invalid format ('" + response + "')"
+ 
+ 
+ def pytest_terminal_summary(terminalreporter):
+diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py
+index 0403b69..f45b0ba 100644
+--- a/src/_pytest/pathlib.py
++++ b/src/_pytest/pathlib.py
+@@ -11,7 +11,6 @@ from functools import partial
+ from os.path import expanduser
+ from os.path import expandvars
+ from os.path import isabs
+-from os.path import normcase
+ from os.path import sep
+ from posixpath import sep as posix_sep
+ 
+@@ -39,21 +38,35 @@ def ensure_reset_dir(path):
+     path.mkdir()
+ 
+ 
+-def on_rm_rf_error(func, path: str, exc, *, start_path):
+-    """Handles known read-only errors during rmtree."""
+-    excvalue = exc[1]
++def on_rm_rf_error(func, path: str, exc, *, start_path) -> bool:
++    """Handles known read-only errors during rmtree.
++
++    The returned value is used only by our own tests.
++    """
++    exctype, excvalue = exc[:2]
++
++    # another process removed the file in the middle of the "rm_rf" (xdist for example)
++    # more context: https://github.com/pytest-dev/pytest/issues/5974#issuecomment-543799018
++    if isinstance(excvalue, FileNotFoundError):
++        return False
+ 
+     if not isinstance(excvalue, PermissionError):
+         warnings.warn(
+-            PytestWarning("(rm_rf) error removing {}: {}".format(path, excvalue))
++            PytestWarning(
++                "(rm_rf) error removing {}\n{}: {}".format(path, exctype, excvalue)
++            )
+         )
+-        return
++        return False
+ 
+     if func not in (os.rmdir, os.remove, os.unlink):
+         warnings.warn(
+-            PytestWarning("(rm_rf) error removing {}: {}".format(path, excvalue))
++            PytestWarning(
++                "(rm_rf) unknown function {} when removing {}:\n{}: {}".format(
++                    path, func, exctype, excvalue
++                )
++            )
+         )
+-        return
++        return False
+ 
+     # Chmod + retry.
+     import stat
+@@ -74,6 +87,7 @@ def on_rm_rf_error(func, path: str, exc, *, start_path):
+     chmod_rw(str(path))
+ 
+     func(path)
++    return True
+ 
+ 
+ def rm_rf(path: Path):
+@@ -335,12 +349,3 @@ def fnmatch_ex(pattern, path):
+ def parts(s):
+     parts = s.split(sep)
+     return {sep.join(parts[: i + 1]) or sep for i in range(len(parts))}
+-
+-
+-def unique_path(path):
+-    """Returns a unique path in case-insensitive (but case-preserving) file
+-    systems such as Windows.
+-
+-    This is needed only for ``py.path.local``; ``pathlib.Path`` handles this
+-    natively with ``resolve()``."""
+-    return type(path)(normcase(str(path.realpath())))
+diff --git a/src/_pytest/pytester.py b/src/_pytest/pytester.py
+index 94058f7..e1db9b1 100644
+--- a/src/_pytest/pytester.py
++++ b/src/_pytest/pytester.py
+@@ -10,6 +10,7 @@ import time
+ import traceback
+ from collections.abc import Sequence
+ from fnmatch import fnmatch
++from io import StringIO
+ from weakref import WeakKeyDictionary
+ 
+ import py
+@@ -351,15 +352,14 @@ class RunResult:
+ 
+     Attributes:
+ 
+-    :ret: the return value
+-    :outlines: list of lines captured from stdout
+-    :errlines: list of lines captures from stderr
+-    :stdout: :py:class:`LineMatcher` of stdout, use ``stdout.str()`` to
++    :ivar ret: the return value
++    :ivar outlines: list of lines captured from stdout
++    :ivar errlines: list of lines captured from stderr
++    :ivar stdout: :py:class:`LineMatcher` of stdout, use ``stdout.str()`` to
+        reconstruct stdout or the commonly used ``stdout.fnmatch_lines()``
+        method
+-    :stderr: :py:class:`LineMatcher` of stderr
+-    :duration: duration in seconds
+-
++    :ivar stderr: :py:class:`LineMatcher` of stderr
++    :ivar duration: duration in seconds
+     """
+ 
+     def __init__(self, ret, outlines, errlines, duration):
+@@ -454,9 +454,9 @@ class Testdir:
+ 
+     Attributes:
+ 
+-    :tmpdir: The :py:class:`py.path.local` instance of the temporary directory.
++    :ivar tmpdir: The :py:class:`py.path.local` instance of the temporary directory.
+ 
+-    :plugins: A list of plugins to use with :py:meth:`parseconfig` and
++    :ivar plugins: A list of plugins to use with :py:meth:`parseconfig` and
+        :py:meth:`runpytest`.  Initially this is an empty list but plugins can
+        be added to the list.  The type of items to add to the list depends on
+        the method using them so refer to them for details.
+@@ -1219,7 +1219,7 @@ def getdecoded(out):
+ 
+ class LineComp:
+     def __init__(self):
+-        self.stringio = py.io.TextIO()
++        self.stringio = StringIO()
+ 
+     def assert_contains_lines(self, lines2):
+         """Assert that lines2 are contained (linearly) in lines1.
+diff --git a/src/_pytest/python.py b/src/_pytest/python.py
+index 913a93b..306e5f2 100644
+--- a/src/_pytest/python.py
++++ b/src/_pytest/python.py
+@@ -210,8 +210,8 @@ def pytest_pycollect_makeitem(collector, name, obj):
+         # mock seems to store unbound methods (issue473), normalize it
+         obj = getattr(obj, "__func__", obj)
+         # We need to try and unwrap the function if it's a functools.partial
+-        # or a funtools.wrapped.
+-        # We musn't if it's been wrapped with mock.patch (python 2 only)
++        # or a functools.wrapped.
++        # We mustn't if it's been wrapped with mock.patch (python 2 only)
+         if not (inspect.isfunction(obj) or inspect.isfunction(get_real_func(obj))):
+             filename, lineno = getfslineno(obj)
+             warnings.warn_explicit(
+@@ -251,18 +251,21 @@ class PyobjMixin(PyobjContext):
+     @property
+     def obj(self):
+         """Underlying Python object."""
++        self._mount_obj_if_needed()
++        return self._obj
++
++    @obj.setter
++    def obj(self, value):
++        self._obj = value
++
++    def _mount_obj_if_needed(self):
+         obj = getattr(self, "_obj", None)
+         if obj is None:
+             self._obj = obj = self._getobj()
+             # XXX evil hack
+             # used to avoid Instance collector marker duplication
+             if self._ALLOW_MARKERS:
+-                self.own_markers.extend(get_unpacked_marks(self.obj))
+-        return obj
+-
+-    @obj.setter
+-    def obj(self, value):
+-        self._obj = value
++                self.own_markers.extend(get_unpacked_marks(obj))
+ 
+     def _getobj(self):
+         """Gets the underlying Python object. May be overwritten by subclasses."""
+@@ -429,6 +432,14 @@ class PyCollector(PyobjMixin, nodes.Collector):
+ class Module(nodes.File, PyCollector):
+     """ Collector for test classes and functions. """
+ 
++    def __init__(self, fspath, parent=None, config=None, session=None, nodeid=None):
++        if fspath.basename == "__init__.py":
++            self._ALLOW_MARKERS = False
++
++        nodes.FSCollector.__init__(
++            self, fspath, parent=parent, config=config, session=session, nodeid=nodeid
++        )
++
+     def _getobj(self):
+         return self._importtestmodule()
+ 
+@@ -595,7 +606,7 @@ class Package(Module):
+             # one or more conftests are not in use at this fspath
+             proxy = FSHookProxy(fspath, pm, remove_mods)
+         else:
+-            # all plugis are active for this fspath
++            # all plugins are active for this fspath
+             proxy = self.config.hook
+         return proxy
+ 
+@@ -628,6 +639,7 @@ class Package(Module):
+         return path in self.session._initialpaths
+ 
+     def collect(self):
++        self._mount_obj_if_needed()
+         this_path = self.fspath.dirpath()
+         init_module = this_path.join("__init__.py")
+         if init_module.check(file=1) and path_matches_patterns(
+@@ -965,6 +977,12 @@ class Metafunc(fixtures.FuncargnamesCompatAttr):
+         )
+         del argvalues
+ 
++        if "request" in argnames:
++            fail(
++                "'request' is a reserved name and cannot be used in @pytest.mark.parametrize",
++                pytrace=False,
++            )
++
+         if scope is None:
+             scope = _find_parametrized_scope(argnames, self._arg2fixturedefs, indirect)
+ 
+diff --git a/src/_pytest/reports.py b/src/_pytest/reports.py
+index 56aea24..49eec61 100644
+--- a/src/_pytest/reports.py
++++ b/src/_pytest/reports.py
+@@ -1,5 +1,7 @@
++from io import StringIO
+ from pprint import pprint
+ from typing import Optional
++from typing import Union
+ 
+ import py
+ 
+@@ -179,7 +181,7 @@ class BaseReport:
+ 
+ def _report_unserialization_failure(type_name, report_class, reportdict):
+     url = "https://github.com/pytest-dev/pytest/issues"
+-    stream = py.io.TextIO()
++    stream = StringIO()
+     pprint("-" * 100, stream=stream)
+     pprint("INTERNALERROR: Unknown entry type returned: %s" % type_name, stream=stream)
+     pprint("report_name: %s" % report_class, stream=stream)
+@@ -267,7 +269,8 @@ class TestReport(BaseReport):
+             if not isinstance(excinfo, ExceptionInfo):
+                 outcome = "failed"
+                 longrepr = excinfo
+-            elif excinfo.errisinstance(skip.Exception):
++            # Type ignored -- see comment where skip.Exception is defined.
++            elif excinfo.errisinstance(skip.Exception):  # type: ignore
+                 outcome = "skipped"
+                 r = excinfo._getreprcrash()
+                 longrepr = (str(r.path), r.lineno, r.message)
+@@ -431,7 +434,7 @@ def _report_kwargs_from_json(reportdict):
+                 reprlocals=reprlocals,
+                 filelocrepr=reprfileloc,
+                 style=data["style"],
+-            )
++            )  # type: Union[ReprEntry, ReprEntryNative]
+         elif entry_type == "ReprEntryNative":
+             reprentry = ReprEntryNative(data["lines"])
+         else:
+diff --git a/src/_pytest/runner.py b/src/_pytest/runner.py
+index 8aae163..fce4c1e 100644
+--- a/src/_pytest/runner.py
++++ b/src/_pytest/runner.py
+@@ -3,6 +3,10 @@ import bdb
+ import os
+ import sys
+ from time import time
++from typing import Callable
++from typing import Dict
++from typing import List
++from typing import Tuple
+ 
+ import attr
+ 
+@@ -10,10 +14,14 @@ from .reports import CollectErrorRepr
+ from .reports import CollectReport
+ from .reports import TestReport
+ from _pytest._code.code import ExceptionInfo
++from _pytest.nodes import Node
+ from _pytest.outcomes import Exit
+ from _pytest.outcomes import Skipped
+ from _pytest.outcomes import TEST_OUTCOME
+ 
++if False:  # TYPE_CHECKING
++    from typing import Type
++
+ #
+ # pytest plugin hooks
+ 
+@@ -99,8 +107,8 @@ def show_test_item(item):
+     tw = item.config.get_terminal_writer()
+     tw.line()
+     tw.write(" " * 8)
+-    tw.write(item._nodeid)
+-    used_fixtures = sorted(item._fixtureinfo.name2fixturedefs.keys())
++    tw.write(item.nodeid)
++    used_fixtures = sorted(getattr(item, "fixturenames", []))
+     if used_fixtures:
+         tw.write(" (fixtures used: {})".format(", ".join(used_fixtures)))
+ 
+@@ -118,6 +126,7 @@ def pytest_runtest_call(item):
+     except Exception:
+         # Store trace info to allow postmortem debugging
+         type, value, tb = sys.exc_info()
++        assert tb is not None
+         tb = tb.tb_next  # Skip *this* frame
+         sys.last_type = type
+         sys.last_value = value
+@@ -185,7 +194,7 @@ def check_interactive_exception(call, report):
+ def call_runtest_hook(item, when, **kwds):
+     hookname = "pytest_runtest_" + when
+     ihook = getattr(item.ihook, hookname)
+-    reraise = (Exit,)
++    reraise = (Exit,)  # type: Tuple[Type[BaseException], ...]
+     if not item.config.getoption("usepdb", False):
+         reraise += (KeyboardInterrupt,)
+     return CallInfo.from_call(
+@@ -252,7 +261,8 @@ def pytest_make_collect_report(collector):
+         skip_exceptions = [Skipped]
+         unittest = sys.modules.get("unittest")
+         if unittest is not None:
+-            skip_exceptions.append(unittest.SkipTest)
++            # Type ignored because unittest is loaded dynamically.
++            skip_exceptions.append(unittest.SkipTest)  # type: ignore
+         if call.excinfo.errisinstance(tuple(skip_exceptions)):
+             outcome = "skipped"
+             r = collector._repr_failure_py(call.excinfo, "line").reprcrash
+@@ -266,7 +276,7 @@ def pytest_make_collect_report(collector):
+     rep = CollectReport(
+         collector.nodeid, outcome, longrepr, getattr(call, "result", None)
+     )
+-    rep.call = call  # see collect_one_node
++    rep.call = call  # type: ignore # see collect_one_node
+     return rep
+ 
+ 
+@@ -274,8 +284,8 @@ class SetupState:
+     """ shared state for setting up/tearing down test items or collectors. """
+ 
+     def __init__(self):
+-        self.stack = []
+-        self._finalizers = {}
++        self.stack = []  # type: List[Node]
++        self._finalizers = {}  # type: Dict[Node, List[Callable[[], None]]]
+ 
+     def addfinalizer(self, finalizer, colitem):
+         """ attach a finalizer to the given colitem. """
+@@ -302,6 +312,7 @@ class SetupState:
+                     exc = sys.exc_info()
+         if exc:
+             _, val, tb = exc
++            assert val is not None
+             raise val.with_traceback(tb)
+ 
+     def _teardown_with_finalization(self, colitem):
+@@ -335,6 +346,7 @@ class SetupState:
+                     exc = sys.exc_info()
+         if exc:
+             _, val, tb = exc
++            assert val is not None
+             raise val.with_traceback(tb)
+ 
+     def prepare(self, colitem):
+diff --git a/src/_pytest/setuponly.py b/src/_pytest/setuponly.py
+index 70d6ed1..6393497 100644
+--- a/src/_pytest/setuponly.py
++++ b/src/_pytest/setuponly.py
+@@ -1,5 +1,3 @@
+-import sys
+-
+ import pytest
+ 
+ 
+@@ -51,7 +49,6 @@ def _show_fixture_action(fixturedef, msg):
+     capman = config.pluginmanager.getplugin("capturemanager")
+     if capman:
+         capman.suspend_global_capture()
+-        out, err = capman.read_global_capture()
+ 
+     tw = config.get_terminal_writer()
+     tw.line()
+@@ -74,8 +71,6 @@ def _show_fixture_action(fixturedef, msg):
+ 
+     if capman:
+         capman.resume_global_capture()
+-        sys.stdout.write(out)
+-        sys.stderr.write(err)
+ 
+ 
+ @pytest.hookimpl(tryfirst=True)
+diff --git a/src/_pytest/skipping.py b/src/_pytest/skipping.py
+index 5373781..d18f61e 100644
+--- a/src/_pytest/skipping.py
++++ b/src/_pytest/skipping.py
+@@ -122,7 +122,7 @@ def pytest_runtest_makereport(item, call):
+     outcome = yield
+     rep = outcome.get_result()
+     evalxfail = getattr(item, "_evalxfail", None)
+-    # unitttest special case, see setting of _unexpectedsuccess
++    # unittest special case, see setting of _unexpectedsuccess
+     if hasattr(item, "_unexpectedsuccess") and rep.when == "call":
+ 
+         if item._unexpectedsuccess:
+@@ -132,7 +132,7 @@ def pytest_runtest_makereport(item, call):
+         rep.outcome = "failed"
+ 
+     elif item.config.option.runxfail:
+-        pass  # don't interefere
++        pass  # don't interfere
+     elif call.excinfo and call.excinfo.errisinstance(xfail.Exception):
+         rep.wasxfail = "reason: " + call.excinfo.value.msg
+         rep.outcome = "skipped"
+diff --git a/testing/code/test_excinfo.py b/testing/code/test_excinfo.py
+index bdd7a5a..5673b81 100644
+--- a/testing/code/test_excinfo.py
++++ b/testing/code/test_excinfo.py
+@@ -399,6 +399,13 @@ def test_match_raises_error(testdir):
+     result = testdir.runpytest()
+     assert result.ret != 0
+     result.stdout.fnmatch_lines(["*AssertionError*Pattern*[123]*not found*"])
++    assert "__tracebackhide__ = True" not in result.stdout.str()
++
++    result = testdir.runpytest("--fulltrace")
++    assert result.ret != 0
++    result.stdout.fnmatch_lines(
++        ["*__tracebackhide__ = True*", "*AssertionError*Pattern*[123]*not found*"]
++    )
+ 
+ 
+ class TestFormattedExcinfo:
+diff --git a/testing/conftest.py b/testing/conftest.py
+index d7f94ce..a03efb0 100644
+--- a/testing/conftest.py
++++ b/testing/conftest.py
+@@ -88,3 +88,30 @@ def tw_mock():
+         fullwidth = 80
+ 
+     return TWMock()
++
++
++@pytest.fixture
++def dummy_yaml_custom_test(testdir):
++    """Writes a conftest file that collects and executes a dummy yaml test.
++
++    Taken from the docs, but stripped down to the bare minimum, useful for
++    tests which needs custom items collected.
++    """
++    testdir.makeconftest(
++        """
++        import pytest
++
++        def pytest_collect_file(parent, path):
++            if path.ext == ".yaml" and path.basename.startswith("test"):
++                return YamlFile(path, parent)
++
++        class YamlFile(pytest.File):
++            def collect(self):
++                yield YamlItem(self.fspath.basename, self)
++
++        class YamlItem(pytest.Item):
++            def runtest(self):
++                pass
++    """
++    )
++    testdir.makefile(".yaml", test1="")
+diff --git a/testing/freeze/runtests_script.py b/testing/freeze/runtests_script.py
+index d03bca8..5918630 100644
+--- a/testing/freeze/runtests_script.py
++++ b/testing/freeze/runtests_script.py
+@@ -1,6 +1,6 @@
+ """
+ This is the script that is actually frozen into an executable: simply executes
+-py.test main().
++pytest main().
+ """
+ 
+ if __name__ == "__main__":
+diff --git a/testing/python/collect.py b/testing/python/collect.py
+index e6dd3e8..f0c12df 100644
+--- a/testing/python/collect.py
++++ b/testing/python/collect.py
+@@ -1148,7 +1148,7 @@ def test_dont_collect_non_function_callable(testdir):
+     """Test for issue https://github.com/pytest-dev/pytest/issues/331
+ 
+     In this case an INTERNALERROR occurred trying to report the failure of
+-    a test like this one because py test failed to get the source lines.
++    a test like this one because pytest failed to get the source lines.
+     """
+     testdir.makepyfile(
+         """
+diff --git a/testing/python/fixtures.py b/testing/python/fixtures.py
+index 43a05e7..45c56f9 100644
+--- a/testing/python/fixtures.py
++++ b/testing/python/fixtures.py
+@@ -2217,6 +2217,68 @@ class TestFixtureMarker:
+             ["*ScopeMismatch*You tried*function*session*request*"]
+         )
+ 
++    def test_dynamic_scope(self, testdir):
++        testdir.makeconftest(
++            """
++            import pytest
++
++
++            def pytest_addoption(parser):
++                parser.addoption("--extend-scope", action="store_true", default=False)
++
++
++            def dynamic_scope(fixture_name, config):
++                if config.getoption("--extend-scope"):
++                    return "session"
++                return "function"
++
++
++            @pytest.fixture(scope=dynamic_scope)
++            def dynamic_fixture(calls=[]):
++                calls.append("call")
++                return len(calls)
++
++        """
++        )
++
++        testdir.makepyfile(
++            """
++            def test_first(dynamic_fixture):
++                assert dynamic_fixture == 1
++
++
++            def test_second(dynamic_fixture):
++                assert dynamic_fixture == 2
++
++        """
++        )
++
++        reprec = testdir.inline_run()
++        reprec.assertoutcome(passed=2)
++
++        reprec = testdir.inline_run("--extend-scope")
++        reprec.assertoutcome(passed=1, failed=1)
++
++    def test_dynamic_scope_bad_return(self, testdir):
++        testdir.makepyfile(
++            """
++            import pytest
++
++            def dynamic_scope(**_):
++                return "wrong-scope"
++
++            @pytest.fixture(scope=dynamic_scope)
++            def fixture():
++                pass
++
++        """
++        )
++        result = testdir.runpytest()
++        result.stdout.fnmatch_lines(
++            "Fixture 'fixture' from test_dynamic_scope_bad_return.py "
++            "got an unexpected scope value 'wrong-scope'"
++        )
++
+     def test_register_only_with_mark(self, testdir):
+         testdir.makeconftest(
+             """
+@@ -4044,12 +4106,43 @@ def test_fixture_named_request(testdir):
+     )
+ 
+ 
++def test_fixture_duplicated_arguments(testdir):
++    """Raise error if there are positional and keyword arguments for the same parameter (#1682)."""
++    with pytest.raises(TypeError) as excinfo:
++
++        @pytest.fixture("session", scope="session")
++        def arg(arg):
++            pass
++
++    assert (
++        str(excinfo.value)
++        == "The fixture arguments are defined as positional and keyword: scope. "
++        "Use only keyword arguments."
++    )
++
++
++def test_fixture_with_positionals(testdir):
++    """Raise warning, but the positionals should still works (#1682)."""
++    from _pytest.deprecated import FIXTURE_POSITIONAL_ARGUMENTS
++
++    with pytest.warns(pytest.PytestDeprecationWarning) as warnings:
++
++        @pytest.fixture("function", [0], True)
++        def fixture_with_positionals():
++            pass
++
++    assert str(warnings[0].message) == str(FIXTURE_POSITIONAL_ARGUMENTS)
++
++    assert fixture_with_positionals._pytestfixturefunction.scope == "function"
++    assert fixture_with_positionals._pytestfixturefunction.params == (0,)
++    assert fixture_with_positionals._pytestfixturefunction.autouse
++
++
+ def test_indirect_fixture_does_not_break_scope(testdir):
+     """Ensure that fixture scope is respected when using indirect fixtures (#570)"""
+     testdir.makepyfile(
+         """
+         import pytest
+-
+         instantiated  = []
+ 
+         @pytest.fixture(scope="session")
+@@ -4094,3 +4187,23 @@ def test_indirect_fixture_does_not_break_scope(testdir):
+     )
+     result = testdir.runpytest()
+     result.assert_outcomes(passed=7)
++
++
++def test_fixture_parametrization_nparray(testdir):
++    pytest.importorskip("numpy")
++
++    testdir.makepyfile(
++        """
++        from numpy import linspace
++        from pytest import fixture
++
++        @fixture(params=linspace(1, 10, 10))
++        def value(request):
++            return request.param
++
++        def test_bug(value):
++            assert value == value
++    """
++    )
++    result = testdir.runpytest()
++    result.assert_outcomes(passed=10)
+diff --git a/testing/python/metafunc.py b/testing/python/metafunc.py
+index 4273ab7..860b21f 100644
+--- a/testing/python/metafunc.py
++++ b/testing/python/metafunc.py
+@@ -15,7 +15,7 @@ class TestMetafunc:
+     def Metafunc(self, func, config=None):
+         # the unit tests of this class check if things work correctly
+         # on the funcarg level, so we don't need a full blown
+-        # initiliazation
++        # initialization
+         class FixtureInfo:
+             name2fixturedefs = None
+ 
+@@ -72,6 +72,19 @@ class TestMetafunc:
+         ):
+             metafunc.parametrize("x", [1], scope="doggy")
+ 
++    def test_parametrize_request_name(self, testdir):
++        """Show proper error  when 'request' is used as a parameter name in parametrize (#6183)"""
++
++        def func(request):
++            raise NotImplementedError()
++
++        metafunc = self.Metafunc(func)
++        with pytest.raises(
++            pytest.fail.Exception,
++            match=r"'request' is a reserved name and cannot be used in @pytest.mark.parametrize",
++        ):
++            metafunc.parametrize("request", [1])
++
+     def test_find_parametrized_scope(self):
+         """unittest for _find_parametrized_scope (#3941)"""
+         from _pytest.python import _find_parametrized_scope
+diff --git a/testing/python/setup_only.py b/testing/python/setup_only.py
+index 4ae24b1..02bc65f 100644
+--- a/testing/python/setup_only.py
++++ b/testing/python/setup_only.py
+@@ -1,4 +1,5 @@
+ import pytest
++from _pytest.main import ExitCode
+ 
+ 
+ @pytest.fixture(params=["--setup-only", "--setup-plan", "--setup-show"], scope="module")
+@@ -6,8 +7,8 @@ def mode(request):
+     return request.param
+ 
+ 
+-def test_show_only_active_fixtures(testdir, mode):
+-    p = testdir.makepyfile(
++def test_show_only_active_fixtures(testdir, mode, dummy_yaml_custom_test):
++    testdir.makepyfile(
+         '''
+         import pytest
+         @pytest.fixture
+@@ -21,7 +22,7 @@ def test_show_only_active_fixtures(testdir, mode):
+     '''
+     )
+ 
+-    result = testdir.runpytest(mode, p)
++    result = testdir.runpytest(mode)
+     assert result.ret == 0
+ 
+     result.stdout.fnmatch_lines(
+@@ -267,3 +268,27 @@ def test_show_fixtures_and_execute_test(testdir):
+     result.stdout.fnmatch_lines(
+         ["*SETUP    F arg*", "*test_arg (fixtures used: arg)F*", "*TEARDOWN F arg*"]
+     )
++
++
++def test_setup_show_with_KeyboardInterrupt_in_test(testdir):
++    p = testdir.makepyfile(
++        """
++        import pytest
++        @pytest.fixture
++        def arg():
++            pass
++        def test_arg(arg):
++            raise KeyboardInterrupt()
++    """
++    )
++    result = testdir.runpytest("--setup-show", p, no_reraise_ctrlc=True)
++    result.stdout.fnmatch_lines(
++        [
++            "*SETUP    F arg*",
++            "*test_arg (fixtures used: arg)*",
++            "*TEARDOWN F arg*",
++            "*! KeyboardInterrupt !*",
++            "*= no tests ran in *",
++        ]
++    )
++    assert result.ret == ExitCode.INTERRUPTED
+diff --git a/testing/python/setup_plan.py b/testing/python/setup_plan.py
+index 0321939..e323ba2 100644
+--- a/testing/python/setup_plan.py
++++ b/testing/python/setup_plan.py
+@@ -1,6 +1,6 @@
+-def test_show_fixtures_and_test(testdir):
++def test_show_fixtures_and_test(testdir, dummy_yaml_custom_test):
+     """ Verifies that fixtures are not executed. """
+-    p = testdir.makepyfile(
++    testdir.makepyfile(
+         """
+         import pytest
+         @pytest.fixture
+@@ -11,7 +11,7 @@ def test_show_fixtures_and_test(testdir):
+     """
+     )
+ 
+-    result = testdir.runpytest("--setup-plan", p)
++    result = testdir.runpytest("--setup-plan")
+     assert result.ret == 0
+ 
+     result.stdout.fnmatch_lines(
+diff --git a/testing/test_assertion.py b/testing/test_assertion.py
+index bf23e32..8fce5e2 100644
+--- a/testing/test_assertion.py
++++ b/testing/test_assertion.py
+@@ -9,6 +9,7 @@ import pytest
+ from _pytest import outcomes
+ from _pytest.assertion import truncate
+ from _pytest.assertion import util
++from _pytest.compat import ATTRS_EQ_FIELD
+ 
+ 
+ def mock_config():
+@@ -687,7 +688,7 @@ class TestAssert_reprcompare_attrsclass:
+         @attr.s
+         class SimpleDataObject:
+             field_a = attr.ib()
+-            field_b = attr.ib(cmp=False)
++            field_b = attr.ib(**{ATTRS_EQ_FIELD: False})
+ 
+         left = SimpleDataObject(1, "b")
+         right = SimpleDataObject(1, "b")
+diff --git a/testing/test_cacheprovider.py b/testing/test_cacheprovider.py
+index cbba27e..4fe10c6 100644
+--- a/testing/test_cacheprovider.py
++++ b/testing/test_cacheprovider.py
+@@ -982,8 +982,13 @@ class TestNewFirst:
+         )
+         testdir.tmpdir.join("test_1/test_1.py").setmtime(1)
+ 
+-        result = testdir.runpytest("-v", "--nf")
++        # Running only a subset does not forget about existing ones.
++        result = testdir.runpytest("-v", "--nf", "test_2/test_2.py")
++        result.stdout.fnmatch_lines(
++            ["*test_2/test_2.py::test_1[1*", "*test_2/test_2.py::test_1[2*"]
++        )
+ 
++        result = testdir.runpytest("-v", "--nf")
+         result.stdout.fnmatch_lines(
+             [
+                 "*test_1/test_1.py::test_1[3*",
+@@ -1029,7 +1034,7 @@ def test_gitignore(testdir):
+     config = testdir.parseconfig()
+     cache = Cache.for_config(config)
+     cache.set("foo", "bar")
+-    msg = "# Created by pytest automatically.\n*"
++    msg = "# Created by pytest automatically.\n*\n"
+     gitignore_path = cache._cachedir.joinpath(".gitignore")
+     assert gitignore_path.read_text(encoding="UTF-8") == msg
+ 
+diff --git a/testing/test_capture.py b/testing/test_capture.py
+index f5b1935..139655c 100644
+--- a/testing/test_capture.py
++++ b/testing/test_capture.py
+@@ -5,10 +5,9 @@ import pickle
+ import subprocess
+ import sys
+ import textwrap
++from io import StringIO
+ from io import UnsupportedOperation
+ 
+-import py
+-
+ import pytest
+ from _pytest import capture
+ from _pytest.capture import CaptureManager
+@@ -892,10 +891,10 @@ def test_dupfile_on_bytesio():
+ 
+ 
+ def test_dupfile_on_textio():
+-    tio = py.io.TextIO()
+-    f = capture.safe_text_dupfile(tio, "wb")
++    sio = StringIO()
++    f = capture.safe_text_dupfile(sio, "wb")
+     f.write("hello")
+-    assert tio.getvalue() == "hello"
++    assert sio.getvalue() == "hello"
+     assert not hasattr(f, "name")
+ 
+ 
+diff --git a/testing/test_config.py b/testing/test_config.py
+index fc3659d..71dae5c 100644
+--- a/testing/test_config.py
++++ b/testing/test_config.py
+@@ -1194,6 +1194,21 @@ def test_help_and_version_after_argument_error(testdir):
+     assert result.ret == ExitCode.USAGE_ERROR
+ 
+ 
++def test_help_formatter_uses_py_get_terminal_width(testdir, monkeypatch):
++    from _pytest.config.argparsing import DropShorterLongHelpFormatter
++
++    monkeypatch.setenv("COLUMNS", "90")
++    formatter = DropShorterLongHelpFormatter("prog")
++    assert formatter._width == 90
++
++    monkeypatch.setattr("py.io.get_terminal_width", lambda: 160)
++    formatter = DropShorterLongHelpFormatter("prog")
++    assert formatter._width == 160
++
++    formatter = DropShorterLongHelpFormatter("prog", width=42)
++    assert formatter._width == 42
++
++
+ def test_config_does_not_load_blocked_plugin_from_args(testdir):
+     """This tests that pytest's config setup handles "-p no:X"."""
+     p = testdir.makepyfile("def test(capfd): pass")
+diff --git a/testing/test_conftest.py b/testing/test_conftest.py
+index 9888f54..3f08ee3 100644
+--- a/testing/test_conftest.py
++++ b/testing/test_conftest.py
+@@ -1,12 +1,12 @@
+-import os.path
++import os
+ import textwrap
++from pathlib import Path
+ 
+ import py
+ 
+ import pytest
+ from _pytest.config import PytestPluginManager
+ from _pytest.main import ExitCode
+-from _pytest.pathlib import unique_path
+ 
+ 
+ def ConftestWithSetinitial(path):
+@@ -143,11 +143,11 @@ def test_conftestcutdir(testdir):
+     # but we can still import a conftest directly
+     conftest._importconftest(conf)
+     values = conftest._getconftestmodules(conf.dirpath())
+-    assert values[0].__file__.startswith(str(unique_path(conf)))
++    assert values[0].__file__.startswith(str(conf))
+     # and all sub paths get updated properly
+     values = conftest._getconftestmodules(p)
+     assert len(values) == 1
+-    assert values[0].__file__.startswith(str(unique_path(conf)))
++    assert values[0].__file__.startswith(str(conf))
+ 
+ 
+ def test_conftestcutdir_inplace_considered(testdir):
+@@ -156,7 +156,7 @@ def test_conftestcutdir_inplace_considered(testdir):
+     conftest_setinitial(conftest, [conf.dirpath()], confcutdir=conf.dirpath())
+     values = conftest._getconftestmodules(conf.dirpath())
+     assert len(values) == 1
+-    assert values[0].__file__.startswith(str(unique_path(conf)))
++    assert values[0].__file__.startswith(str(conf))
+ 
+ 
+ @pytest.mark.parametrize("name", "test tests whatever .dotdir".split())
+@@ -165,11 +165,12 @@ def test_setinitial_conftest_subdirs(testdir, name):
+     subconftest = sub.ensure("conftest.py")
+     conftest = PytestPluginManager()
+     conftest_setinitial(conftest, [sub.dirpath()], confcutdir=testdir.tmpdir)
++    key = Path(str(subconftest)).resolve()
+     if name not in ("whatever", ".dotdir"):
+-        assert unique_path(subconftest) in conftest._conftestpath2mod
++        assert key in conftest._conftestpath2mod
+         assert len(conftest._conftestpath2mod) == 1
+     else:
+-        assert subconftest not in conftest._conftestpath2mod
++        assert key not in conftest._conftestpath2mod
+         assert len(conftest._conftestpath2mod) == 0
+ 
+ 
+@@ -282,7 +283,7 @@ def test_conftest_symlink_files(testdir):
+     reason="only relevant for case insensitive file systems",
+ )
+ def test_conftest_badcase(testdir):
+-    """Check conftest.py loading when directory casing is wrong."""
++    """Check conftest.py loading when directory casing is wrong (#5792)."""
+     testdir.tmpdir.mkdir("JenkinsRoot").mkdir("test")
+     source = {"setup.py": "", "test/__init__.py": "", "test/conftest.py": ""}
+     testdir.makepyfile(**{"JenkinsRoot/%s" % k: v for k, v in source.items()})
+@@ -292,6 +293,16 @@ def test_conftest_badcase(testdir):
+     assert result.ret == ExitCode.NO_TESTS_COLLECTED
+ 
+ 
++def test_conftest_uppercase(testdir):
++    """Check conftest.py whose qualified name contains uppercase characters (#5819)"""
++    source = {"__init__.py": "", "Foo/conftest.py": "", "Foo/__init__.py": ""}
++    testdir.makepyfile(**source)
++
++    testdir.tmpdir.chdir()
++    result = testdir.runpytest()
++    assert result.ret == ExitCode.NO_TESTS_COLLECTED
++
++
+ def test_no_conftest(testdir):
+     testdir.makeconftest("assert 0")
+     result = testdir.runpytest("--noconftest")
+diff --git a/testing/test_mark.py b/testing/test_mark.py
+index c8d5851..764d523 100644
+--- a/testing/test_mark.py
++++ b/testing/test_mark.py
+@@ -482,7 +482,7 @@ class TestFunctional:
+         items, rec = testdir.inline_genitems(p)
+         base_item, sub_item, sub_item_other = items
+         print(items, [x.nodeid for x in items])
+-        # new api seregates
++        # new api segregates
+         assert not list(base_item.iter_markers(name="b"))
+         assert not list(sub_item_other.iter_markers(name="b"))
+         assert list(sub_item.iter_markers(name="b"))
+diff --git a/testing/test_meta.py b/testing/test_meta.py
+new file mode 100644
+index 0000000..7aa100e
+--- /dev/null
++++ b/testing/test_meta.py
+@@ -0,0 +1,28 @@
++import pkgutil
++import subprocess
++import sys
++
++import _pytest
++import pytest
++
++
++def _modules():
++    return sorted(
++        n
++        for _, n, _ in pkgutil.walk_packages(
++            _pytest.__path__, prefix=_pytest.__name__ + "."
++        )
++    )
++
++
++@pytest.mark.parametrize("module", _modules())
++def test_no_warnings(module):
++    # fmt: off
++    subprocess.check_call((
++        sys.executable,
++        "-W", "error",
++        # https://github.com/pytest-dev/pytest/issues/5901
++        "-W", "ignore:The usage of `cmp` is deprecated and will be removed on or after 2021-06-01.  Please use `eq` and `order` instead.:DeprecationWarning",  # noqa: E501
++        "-c", "import {}".format(module),
++    ))
++    # fmt: on
+diff --git a/testing/test_nose.py b/testing/test_nose.py
+index 16d8d1f..8a30755 100644
+--- a/testing/test_nose.py
++++ b/testing/test_nose.py
+@@ -229,7 +229,7 @@ def test_nose_setup_ordering(testdir):
+ 
+ def test_apiwrapper_problem_issue260(testdir):
+     # this would end up trying a call an optional teardown on the class
+-    # for plain unittests we dont want nose behaviour
++    # for plain unittests we don't want nose behaviour
+     testdir.makepyfile(
+         """
+         import unittest
+diff --git a/testing/test_parseopt.py b/testing/test_parseopt.py
+index dd7bc87..9157473 100644
+--- a/testing/test_parseopt.py
++++ b/testing/test_parseopt.py
+@@ -1,6 +1,7 @@
+ import argparse
+ import distutils.spawn
+ import os
++import shlex
+ import sys
+ 
+ import py
+@@ -298,8 +299,12 @@ def test_argcomplete(testdir, monkeypatch):
+         # redirect output from argcomplete to stdin and stderr is not trivial
+         # http://stackoverflow.com/q/12589419/1307905
+         # so we use bash
+-        fp.write('COMP_WORDBREAKS="$COMP_WORDBREAKS" python -m pytest 8>&1 9>&2')
+-    # alternative would be exteneded Testdir.{run(),_run(),popen()} to be able
++        fp.write(
++            'COMP_WORDBREAKS="$COMP_WORDBREAKS" {} -m pytest 8>&1 9>&2'.format(
++                shlex.quote(sys.executable)
++            )
++        )
++    # alternative would be extended Testdir.{run(),_run(),popen()} to be able
+     # to handle a keyword argument env that replaces os.environ in popen or
+     # extends the copy, advantage: could not forget to restore
+     monkeypatch.setenv("_ARGCOMPLETE", "1")
+diff --git a/testing/test_pastebin.py b/testing/test_pastebin.py
+index 4e8bac5..86a42f9 100644
+--- a/testing/test_pastebin.py
++++ b/testing/test_pastebin.py
+@@ -82,6 +82,47 @@ class TestPaste:
+     def pastebin(self, request):
+         return request.config.pluginmanager.getplugin("pastebin")
+ 
++    @pytest.fixture
++    def mocked_urlopen_fail(self, monkeypatch):
++        """
++        monkeypatch the actual urlopen call to emulate a HTTP Error 400
++        """
++        calls = []
++
++        import urllib.error
++        import urllib.request
++
++        def mocked(url, data):
++            calls.append((url, data))
++            raise urllib.error.HTTPError(url, 400, "Bad request", None, None)
++
++        monkeypatch.setattr(urllib.request, "urlopen", mocked)
++        return calls
++
++    @pytest.fixture
++    def mocked_urlopen_invalid(self, monkeypatch):
++        """
++        monkeypatch the actual urlopen calls done by the internal plugin
++        function that connects to bpaste service, but return a url in an
++        unexpected format
++        """
++        calls = []
++
++        def mocked(url, data):
++            calls.append((url, data))
++
++            class DummyFile:
++                def read(self):
++                    # part of html of a normal response
++                    return b'View <a href="/invalid/3c0c6750bd">raw</a>.'
++
++            return DummyFile()
++
++        import urllib.request
++
++        monkeypatch.setattr(urllib.request, "urlopen", mocked)
++        return calls
++
+     @pytest.fixture
+     def mocked_urlopen(self, monkeypatch):
+         """
+@@ -105,13 +146,26 @@ class TestPaste:
+         monkeypatch.setattr(urllib.request, "urlopen", mocked)
+         return calls
+ 
++    def test_pastebin_invalid_url(self, pastebin, mocked_urlopen_invalid):
++        result = pastebin.create_new_paste(b"full-paste-contents")
++        assert (
++            result
++            == "bad response: invalid format ('View <a href=\"/invalid/3c0c6750bd\">raw</a>.')"
++        )
++        assert len(mocked_urlopen_invalid) == 1
++
++    def test_pastebin_http_error(self, pastebin, mocked_urlopen_fail):
++        result = pastebin.create_new_paste(b"full-paste-contents")
++        assert result == "bad response: HTTP Error 400: Bad request"
++        assert len(mocked_urlopen_fail) == 1
++
+     def test_create_new_paste(self, pastebin, mocked_urlopen):
+         result = pastebin.create_new_paste(b"full-paste-contents")
+         assert result == "https://bpaste.net/show/3c0c6750bd"
+         assert len(mocked_urlopen) == 1
+         url, data = mocked_urlopen[0]
+         assert type(data) is bytes
+-        lexer = "python3"
++        lexer = "text"
+         assert url == "https://bpaste.net"
+         assert "lexer=%s" % lexer in data.decode()
+         assert "code=full-paste-contents" in data.decode()
+@@ -127,4 +181,4 @@ class TestPaste:
+ 
+         monkeypatch.setattr(urllib.request, "urlopen", response)
+         result = pastebin.create_new_paste(b"full-paste-contents")
+-        assert result == "bad response: something bad occurred"
++        assert result == "bad response: invalid format ('something bad occurred')"
+diff --git a/testing/test_pdb.py b/testing/test_pdb.py
+index 3c56f40..55a7230 100644
+--- a/testing/test_pdb.py
++++ b/testing/test_pdb.py
+@@ -17,6 +17,14 @@ else:
+ _ENVIRON_PYTHONBREAKPOINT = os.environ.get("PYTHONBREAKPOINT", "")
+ 
+ 
++@pytest.fixture(autouse=True)
++def pdb_env(request):
++    if "testdir" in request.fixturenames:
++        # Disable pdb++ with inner tests.
++        testdir = request.getfixturevalue("testdir")
++        testdir._env_run_update["PDBPP_HIJACK_PDB"] = "0"
++
++
+ def runpdb_and_get_report(testdir, source):
+     p = testdir.makepyfile(source)
+     result = testdir.runpytest_inprocess("--pdb", p)
+@@ -573,7 +581,7 @@ class TestPDB:
+         # No extra newline.
+         assert child.before.endswith(b"c\r\nprint_from_foo\r\n")
+ 
+-        # set_debug should not raise outcomes.Exit, if used recrursively.
++        # set_debug should not raise outcomes. Exit, if used recursively.
+         child.sendline("debug 42")
+         child.sendline("q")
+         child.expect("LEAVING RECURSIVE DEBUGGER")
+@@ -1017,6 +1025,51 @@ class TestTraceOption:
+         assert "Exit: Quitting debugger" not in child.before.decode("utf8")
+         TestPDB.flush(child)
+ 
++    def test_trace_with_parametrize_handles_shared_fixtureinfo(self, testdir):
++        p1 = testdir.makepyfile(
++            """
++            import pytest
++            @pytest.mark.parametrize('myparam', [1,2])
++            def test_1(myparam, request):
++                assert myparam in (1, 2)
++                assert request.function.__name__ == "test_1"
++            @pytest.mark.parametrize('func', [1,2])
++            def test_func(func, request):
++                assert func in (1, 2)
++                assert request.function.__name__ == "test_func"
++            @pytest.mark.parametrize('myparam', [1,2])
++            def test_func_kw(myparam, request, func="func_kw"):
++                assert myparam in (1, 2)
++                assert func == "func_kw"
++                assert request.function.__name__ == "test_func_kw"
++            """
++        )
++        child = testdir.spawn_pytest("--trace " + str(p1))
++        for func, argname in [
++            ("test_1", "myparam"),
++            ("test_func", "func"),
++            ("test_func_kw", "myparam"),
++        ]:
++            child.expect_exact("> PDB runcall (IO-capturing turned off) >")
++            child.expect_exact(func)
++            child.expect_exact("Pdb")
++            child.sendline("args")
++            child.expect_exact("{} = 1\r\n".format(argname))
++            child.expect_exact("Pdb")
++            child.sendline("c")
++            child.expect_exact("Pdb")
++            child.sendline("args")
++            child.expect_exact("{} = 2\r\n".format(argname))
++            child.expect_exact("Pdb")
++            child.sendline("c")
++            child.expect_exact("> PDB continue (IO-capturing resumed) >")
++        rest = child.read().decode("utf8")
++        assert "6 passed in" in rest
++        assert "reading from stdin while output" not in rest
++        # Only printed once - not on stderr.
++        assert "Exit: Quitting debugger" not in child.before.decode("utf8")
++        TestPDB.flush(child)
++
+ 
+ def test_trace_after_runpytest(testdir):
+     """Test that debugging's pytest_configure is re-entrant."""
+@@ -1142,7 +1195,6 @@ def test_pdbcls_via_local_module(testdir):
+ 
+                 def runcall(self, *args, **kwds):
+                     print("runcall_called", args, kwds)
+-                    assert "func" in kwds
+         """,
+     )
+     result = testdir.runpytest(
+diff --git a/testing/test_reports.py b/testing/test_reports.py
+index 8bac024..9f6c561 100644
+--- a/testing/test_reports.py
++++ b/testing/test_reports.py
+@@ -133,17 +133,17 @@ class TestReportSerialization:
+         """
+         reprec = testdir.inline_runsource(
+             """
+-            import py
++            import pytest
+             def test_pass(): pass
+             def test_fail(): 0/0
+-            @py.test.mark.skipif("True")
++            @pytest.mark.skipif("True")
+             def test_skip(): pass
+             def test_skip_imperative():
+-                py.test.skip("hello")
+-            @py.test.mark.xfail("True")
++                pytest.skip("hello")
++            @pytest.mark.xfail("True")
+             def test_xfail(): 0/0
+             def test_xfail_imperative():
+-                py.test.xfail("hello")
++                pytest.xfail("hello")
+         """
+         )
+         reports = reprec.getreports("pytest_runtest_logreport")
+diff --git a/testing/test_resultlog.py b/testing/test_resultlog.py
+index 9e8f621..b6f957b 100644
+--- a/testing/test_resultlog.py
++++ b/testing/test_resultlog.py
+@@ -1,6 +1,5 @@
+ import os
+-
+-import py
++from io import StringIO
+ 
+ import _pytest._code
+ import pytest
+@@ -13,7 +12,7 @@ pytestmark = pytest.mark.filterwarnings("ignore:--result-log is deprecated")
+ 
+ def test_write_log_entry():
+     reslog = ResultLog(None, None)
+-    reslog.logfile = py.io.TextIO()
++    reslog.logfile = StringIO()
+     reslog.write_log_entry("name", ".", "")
+     entry = reslog.logfile.getvalue()
+     assert entry[-1] == "\n"
+@@ -21,7 +20,7 @@ def test_write_log_entry():
+     assert len(entry_lines) == 1
+     assert entry_lines[0] == ". name"
+ 
+-    reslog.logfile = py.io.TextIO()
++    reslog.logfile = StringIO()
+     reslog.write_log_entry("name", "s", "Skipped")
+     entry = reslog.logfile.getvalue()
+     assert entry[-1] == "\n"
+@@ -30,7 +29,7 @@ def test_write_log_entry():
+     assert entry_lines[0] == "s name"
+     assert entry_lines[1] == " Skipped"
+ 
+-    reslog.logfile = py.io.TextIO()
++    reslog.logfile = StringIO()
+     reslog.write_log_entry("name", "s", "Skipped\n")
+     entry = reslog.logfile.getvalue()
+     assert entry[-1] == "\n"
+@@ -39,7 +38,7 @@ def test_write_log_entry():
+     assert entry_lines[0] == "s name"
+     assert entry_lines[1] == " Skipped"
+ 
+-    reslog.logfile = py.io.TextIO()
++    reslog.logfile = StringIO()
+     longrepr = " tb1\n tb 2\nE tb3\nSome Error"
+     reslog.write_log_entry("name", "F", longrepr)
+     entry = reslog.logfile.getvalue()
+@@ -118,7 +117,7 @@ class TestWithFunctionIntegration:
+             raise ValueError
+         except ValueError:
+             excinfo = _pytest._code.ExceptionInfo.from_current()
+-        reslog = ResultLog(None, py.io.TextIO())
++        reslog = ResultLog(None, StringIO())
+         reslog.pytest_internalerror(excinfo.getrepr(style=style))
+         entry = reslog.logfile.getvalue()
+         entry_lines = entry.splitlines()
+diff --git a/testing/test_runner.py b/testing/test_runner.py
+index 82e4135..63a94d2 100644
+--- a/testing/test_runner.py
++++ b/testing/test_runner.py
+@@ -567,9 +567,19 @@ def test_pytest_exit_msg(testdir):
+     result.stderr.fnmatch_lines(["Exit: oh noes"])
+ 
+ 
++def _strip_resource_warnings(lines):
++    # Assert no output on stderr, except for unreliable ResourceWarnings.
++    # (https://github.com/pytest-dev/pytest/issues/5088)
++    return [
++        x
++        for x in lines
++        if not x.startswith(("Exception ignored in:", "ResourceWarning"))
++    ]
++
++
+ def test_pytest_exit_returncode(testdir):
+     testdir.makepyfile(
+-        """
++        """\
+         import pytest
+         def test_foo():
+             pytest.exit("some exit msg", 99)
+@@ -577,19 +587,13 @@ def test_pytest_exit_returncode(testdir):
+     )
+     result = testdir.runpytest()
+     result.stdout.fnmatch_lines(["*! *Exit: some exit msg !*"])
+-    # Assert no output on stderr, except for unreliable ResourceWarnings.
+-    # (https://github.com/pytest-dev/pytest/issues/5088)
+-    assert [
+-        x
+-        for x in result.stderr.lines
+-        if not x.startswith("Exception ignored in:")
+-        and not x.startswith("ResourceWarning")
+-    ] == [""]
++
++    assert _strip_resource_warnings(result.stderr.lines) == [""]
+     assert result.ret == 99
+ 
+     # It prints to stderr also in case of exit during pytest_sessionstart.
+     testdir.makeconftest(
+-        """
++        """\
+         import pytest
+ 
+         def pytest_sessionstart():
+@@ -598,7 +602,10 @@ def test_pytest_exit_returncode(testdir):
+     )
+     result = testdir.runpytest()
+     result.stdout.fnmatch_lines(["*! *Exit: during_sessionstart !*"])
+-    assert result.stderr.lines == ["Exit: during_sessionstart", ""]
++    assert _strip_resource_warnings(result.stderr.lines) == [
++        "Exit: during_sessionstart",
++        "",
++    ]
+     assert result.ret == 98
+ 
+ 
+diff --git a/testing/test_skipping.py b/testing/test_skipping.py
+index 8bba479..371c3a4 100644
+--- a/testing/test_skipping.py
++++ b/testing/test_skipping.py
+@@ -1162,3 +1162,26 @@ def test_importorskip():
+         match="^could not import 'doesnotexist': No module named .*",
+     ):
+         pytest.importorskip("doesnotexist")
++
++
++def test_skip_package(testdir):
++    testdir.makepyfile(
++        __init__="""
++        import pytest
++        pytestmark = pytest.mark.skip
++    """
++    )
++
++    testdir.makepyfile(
++        """
++        import pytest
++        def test_skip1():
++            assert 0
++        def test_skip2():
++            assert 0
++    """
++    )
++
++    result = testdir.inline_run()
++    _, skipped, _ = result.listoutcomes()
++    assert len(skipped) == 2
+diff --git a/testing/test_stepwise.py b/testing/test_stepwise.py
+index f61425b..032351e 100644
+--- a/testing/test_stepwise.py
++++ b/testing/test_stepwise.py
+@@ -4,7 +4,7 @@ import pytest
+ @pytest.fixture
+ def stepwise_testdir(testdir):
+     # Rather than having to modify our testfile between tests, we introduce
+-    # a flag for wether or not the second test should fail.
++    # a flag for whether or not the second test should fail.
+     testdir.makeconftest(
+         """
+ def pytest_addoption(parser):
+diff --git a/testing/test_terminal.py b/testing/test_terminal.py
+index 88f96f8..2cdfc6c 100644
+--- a/testing/test_terminal.py
++++ b/testing/test_terminal.py
+@@ -5,6 +5,7 @@ import collections
+ import os
+ import sys
+ import textwrap
++from io import StringIO
+ 
+ import pluggy
+ import py
+@@ -268,7 +269,7 @@ class TestTerminal:
+ 
+     def test_rewrite(self, testdir, monkeypatch):
+         config = testdir.parseconfig()
+-        f = py.io.TextIO()
++        f = StringIO()
+         monkeypatch.setattr(f, "isatty", lambda *args: True)
+         tr = TerminalReporter(config, f)
+         tr._tw.fullwidth = 10
+diff --git a/testing/test_tmpdir.py b/testing/test_tmpdir.py
+index ebde904..0ebed22 100644
+--- a/testing/test_tmpdir.py
++++ b/testing/test_tmpdir.py
+@@ -383,6 +383,10 @@ class TestRmRf:
+             on_rm_rf_error(os.unlink, str(fn), exc_info, start_path=tmp_path)
+             assert fn.is_file()
+ 
++        # we ignore FileNotFoundError
++        exc_info = (None, FileNotFoundError(), None)
++        assert not on_rm_rf_error(None, str(fn), exc_info, start_path=tmp_path)
++
+         # unknown function
+         with pytest.warns(pytest.PytestWarning):
+             exc_info = (None, PermissionError(), None)
+diff --git a/tox.ini b/tox.ini
+index 1536082..b039416 100644
+--- a/tox.ini
++++ b/tox.ini
+@@ -41,6 +41,8 @@ setenv =
+     xdist: _PYTEST_TOX_POSARGS_XDIST=-n auto
+ extras = testing
+ deps =
++    oldattrs: attrs==17.4.0
++    oldattrs: hypothesis<=4.38.1
+     numpy: numpy
+     pexpect: pexpect
+     pluggymaster: git+https://github.com/pytest-dev/pluggy.git@master
+@@ -77,7 +79,7 @@ commands =
+ [testenv:regen]
+ changedir = doc/en
+ skipsdist = True
+-basepython = python3.6
++basepython = python3
+ deps =
+     sphinx
+     PyYAML
+@@ -103,7 +105,7 @@ commands =
+ 
+ [testenv:release]
+ decription = do a release, required posarg of the version number
+-basepython = python3.6
++basepython = python3
+ usedevelop = True
+ passenv = *
+ deps =
+@@ -116,7 +118,7 @@ commands = python scripts/release.py {posargs}
+ 
+ [testenv:publish_gh_release_notes]
+ description = create GitHub release after deployment
+-basepython = python3.6
++basepython = python3
+ usedevelop = True
+ passenv = GH_RELEASE_NOTES_TOKEN TRAVIS_TAG TRAVIS_REPO_SLUG
+ deps =
+@@ -140,6 +142,8 @@ filterwarnings =
+     error
+     default:Using or importing the ABCs:DeprecationWarning:unittest2.*
+     ignore:Module already imported so cannot be rewritten:pytest.PytestWarning
++    # https://github.com/pytest-dev/pytest/issues/5974
++    default:\(rm_rf\) error removing.*:pytest.PytestWarning
+     # produced by python3.6/site.py itself (3.6.7 on Travis, could not trigger it with 3.6.8).
+     ignore:.*U.*mode is deprecated:DeprecationWarning:(?!(pytest|_pytest))
+     # produced by pytest-xdist

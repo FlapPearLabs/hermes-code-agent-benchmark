@@ -1,0 +1,21 @@
+{
+  "system_name": "HERMES_CODE_BOT_HARNESS",
+  "harness_components": {
+    "hermes_agent_version": "v0.21.5+3172.g79dbb14",
+    "hermes_agent_sha": "79dbb1450ec404a2240529f5554526da4cfec498",
+    "code_profile_soul_sha256": "2bd60a6faa55d7eefcc04d3a00a7fbdf9da19658fd81501144a03bb020ddc136",
+    "code_profile_config_sha256": "78ff40bcccdeee803a338ab14213e8389241201eb232495c2a7e9a3827ee91ca",
+    "governance_repo_sha": "6ebde952681486d7caaaf826bd2a77c96c3e13a8",
+    "model": "gemini-3.8-flash-tiered",
+    "provider": "custom:antigravity",
+    "reasoning_effort": "high",
+    "goal_mode": true,
+    "kanban": true,
+    "max_parallel_workers": 2,
+    "fresh_reviewer_policy": "delegate_task read-only subagent with exact-sha binding",
+    "repair_policy": "append-only repair commit for accepted findings with fresh re-review",
+    "network_policy": "isolated per benchmark protocol; agent offline during execution where required",
+    "official_agent_runner_used": false,
+    "no_official_benchmark_agent_loop_is_used": true
+  }
+}

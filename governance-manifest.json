@@ -1,0 +1,13 @@
+{
+  "governance_repo_path": "/Users/songshiyao/Desktop/Projects/agent-engineering-governance",
+  "governance_git_sha": "6ebde952681486d7caaaf826bd2a77c96c3e13a8",
+  "core_invariants": [
+    "PRE-REPAIR FAILURE EVIDENCE REQUIRED",
+    "MINIMAL AUTHORIZED CHANGE",
+    "FRESH REVIEWER RUNTIME REQUIRED",
+    "NO ORACLE / GOLD LEAKAGE",
+    "OFFICIAL GRADER IS OUTCOME AUTHORITY"
+  ],
+  "rules_path": "/Users/songshiyao/Desktop/Projects/agent-engineering-governance/RULES.md",
+  "agents_path": "/Users/songshiyao/Desktop/Projects/agent-engineering-governance/AGENTS.md"
+}

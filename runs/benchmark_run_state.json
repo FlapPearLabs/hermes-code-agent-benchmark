@@ -1,0 +1,102 @@
+{
+  "status": "FINISHED",
+  "current_track": "track_c",
+  "completed_tasks": {
+    "matplotlib__matplotlib-25122": {
+      "resolved": false,
+      "completed_at": 1790511353.963872
+    },
+    "instance_navidrome__navidrome-5001518260732e36d9a42fb8d4c054b28afab310": {
+      "resolved": false,
+      "completed_at": 1790511632.6171992
+    },
+    "payments-pipeline-fix": {
+      "resolved": false,
+      "completed_at": 1790511883.2325099
+    },
+    "django__django-14787": {
+      "resolved": false,
+      "completed_at": 1790512281.385102
+    },
+    "pylint-dev__pylint-6903": {
+      "resolved": false,
+      "completed_at": 1790512684.3610508
+    },
+    "pydata__xarray-4687": {
+      "resolved": false,
+      "completed_at": 1790512982.154602
+    },
+    "django__django-13513": {
+      "resolved": false,
+      "completed_at": 1790513360.971574
+    },
+    "django__django-11138": {
+      "stage": "track_a",
+      "duration_seconds": 312.0,
+      "completed_at": 1790513727.055439,
+      "official_resolved": false
+    },
+    "pytest-dev__pytest-6197": {
+      "resolved": false,
+      "completed_at": 1790514029.1166441
+    },
+    "instance_element-hq__element-web-f3534b42df3dcfe36dc48bddbf14034085af6d30-vnan": {
+      "resolved": false,
+      "completed_at": 1790514330.117728
+    },
+    "instance_ansible__ansible-3889ddeb4b780ab4bac9ca2e75f8c1991bcabe83-v0f01c69f1e2528b935359cfe578530722bca2c59": {
+      "resolved": false,
+      "completed_at": 1790514602.990457
+    },
+    "instance_element-hq__element-web-72a8f8f03b1a01bb70ef8a5bb61759416991b32c-vnan": {
+      "resolved": false,
+      "completed_at": 1790514894.47997
+    },
+    "instance_flipt-io__flipt-abaa5953795afb9c621605bb18cb32ac48b4508c": {
+      "resolved": false,
+      "completed_at": 1790515216.9893692
+    },
+    "instance_flipt-io__flipt-9f8127f225a86245fa35dca4885c2daef824ee55": {
+      "resolved": false,
+      "completed_at": 1790515442.813556
+    },
+    "instance_internetarchive__openlibrary-fad4a40acf5ff5f06cd7441a5c7baf41a7d81fe4-vfa6ff903cb27f336e17654595dd900fa943dcd91": {
+      "resolved": false,
+      "completed_at": 1790515776.949049
+    },
+    "instance_ansible__ansible-d72025be751c894673ba85caa063d835a0ad3a8c-v390e508d27db7a51eece36bb6d9698b63a5b638a": {
+      "resolved": false,
+      "completed_at": 1790516079.850566
+    },
+    "instance_flipt-io__flipt-3d5a345f94c2adc8a0eaa102c189c08ad4c0f8e8": {
+      "resolved": false,
+      "completed_at": 1790516566.881223
+    },
+    "instance_ansible__ansible-40ade1f84b8bb10a63576b0ac320c13f57c87d34-v6382ea168a93d80a64aab1fbd8c4f02dc5ada5bf": {
+      "resolved": false,
+      "completed_at": 1790516874.0810618
+    },
+    "instance_internetarchive__openlibrary-322d7a46cdc965bfabbf9500e98fde098c9d95b2-v13642507b4fc1f8d234172bf8129942da2c2ca26": {
+      "resolved": false,
+      "completed_at": 1790517134.503407
+    },
+    "bun-sourcemap-leak": {
+      "resolved": false,
+      "completed_at": 1790517399.480255
+    },
+    "production-planning": {
+      "resolved": false,
+      "completed_at": 1790517693.058208
+    },
+    "interleaved-vigenere": {
+      "resolved": false,
+      "completed_at": 1790518240.2357278
+    },
+    "session-window-debug": {
+      "resolved": false,
+      "completed_at": 1790518560.289561
+    }
+  },
+  "started_at": 1790510958.4982872,
+  "updated_at": 1790518560.289942
+}

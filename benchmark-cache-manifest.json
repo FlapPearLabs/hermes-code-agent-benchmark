@@ -1,0 +1,50 @@
+{
+  "cache_version": "1.0",
+  "generated_at": "2026-09-27T05:45:00Z",
+  "cached_artifacts": [
+    {
+      "artifact": "swe-bench",
+      "source": "https://github.com/princeton-nlp/SWE-bench.git",
+      "exact_sha": "02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+      "disk_path": "/Users/songshiyao/.hermes/profiles/code/cache/scratch/upstream-check/swe-bench",
+      "status": "CACHED"
+    },
+    {
+      "artifact": "swe-bench-pro-v2",
+      "source": "https://github.com/scaleapi/SWE-bench_Pro-os.git",
+      "exact_sha": "66f92766bba642462d4bbe5479e83f91f9211862",
+      "disk_path": "/Users/songshiyao/.hermes/profiles/code/cache/scratch/upstream-check/swe-bench-pro",
+      "status": "CACHED"
+    },
+    {
+      "artifact": "terminal-bench",
+      "source": "https://github.com/harbor-framework/terminal-bench.git",
+      "exact_sha": "4def1f367467b34b18e0dbdc086400ba71c3e037",
+      "disk_path": "/Users/songshiyao/.hermes/profiles/code/cache/scratch/upstream-check/terminal-bench",
+      "status": "CACHED"
+    },
+    {
+      "artifact": "harbor",
+      "source": "https://github.com/harbor-framework/harbor.git",
+      "exact_sha": "3c82380859d187957cfd5cd64802b076d9779550",
+      "binary_path": "/Users/songshiyao/.local/bin/harbor",
+      "version": "0.23.0",
+      "status": "INSTALLED"
+    },
+    {
+      "artifact": "princeton-nlp/SWE-bench_Verified",
+      "source": "https://huggingface.co/datasets/princeton-nlp/SWE-bench_Verified",
+      "split": "test",
+      "task_count": 500,
+      "status": "CACHED"
+    },
+    {
+      "artifact": "ScaleAI/SWE-bench_Pro",
+      "source": "https://huggingface.co/datasets/ScaleAI/SWE-bench_Pro",
+      "split": "test",
+      "v2_task_count": 642,
+      "hard51_task_count": 51,
+      "status": "CACHED"
+    }
+  ]
+}

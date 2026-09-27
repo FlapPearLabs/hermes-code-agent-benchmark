@@ -1,0 +1,10 @@
+{
+  "name": "Harbor Framework",
+  "canonical_repository": "https://github.com/harbor-framework/harbor.git",
+  "pinned_sha": "3c82380859d187957cfd5cd64802b076d9779550",
+  "version": "0.23.0",
+  "license": "Apache-2.0",
+  "role": "OFFICIAL_EVALUATION_INFRA",
+  "agent_execution_component_used": false,
+  "official_agent_runner_used": false
+}

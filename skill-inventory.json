@@ -1,0 +1,474 @@
+{
+  "total_skills": 67,
+  "skills": [
+    {
+      "name": "apple-notes",
+      "category": "apple",
+      "sha256": "1ba042cb17e3aca06a68415526e926ada464bf873c8592c3326125cd72cb397f",
+      "description": "\"Manage Apple Notes via memo CLI: create, search, edit.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/apple/apple-notes"
+    },
+    {
+      "name": "apple-reminders",
+      "category": "apple",
+      "sha256": "ee5084f2d7ec196488bef2c74248fb3d8328d1b2e3277ddda3f0de9da6fc7131",
+      "description": "\"Apple Reminders via remindctl: add, list, complete.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/apple/apple-reminders"
+    },
+    {
+      "name": "findmy",
+      "category": "apple",
+      "sha256": "e35d4d165daadfd066661df59a202a4159c5df41b77642884d3656830054d6bc",
+      "description": "\"Track Apple devices/AirTags via FindMy.app on macOS.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/apple/findmy"
+    },
+    {
+      "name": "imessage",
+      "category": "apple",
+      "sha256": "bc68b1648e301409bc25b1084ec26766213ca9f3c1b2fd3d3d6ebe3dbde9e967",
+      "description": "Send and receive iMessages/SMS via the imsg CLI on macOS.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/apple/imessage"
+    },
+    {
+      "name": "claude-code",
+      "category": "autonomous-ai-agents",
+      "sha256": "ec92e627db1f449ea038e2b756ebbaa067880dd673a35497ea64b7e6391cf519",
+      "description": "\"Delegate coding to Claude Code CLI (features, PRs).\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/autonomous-ai-agents/claude-code"
+    },
+    {
+      "name": "codex",
+      "category": "autonomous-ai-agents",
+      "sha256": "1b15b57bcaba128b83ebe9f050b6873958198a1570bc801d4ca0406fb7e3271d",
+      "description": "\"Delegate coding to OpenAI Codex CLI (features, PRs).\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/autonomous-ai-agents/codex"
+    },
+    {
+      "name": "computer-use",
+      "category": "autonomous-ai-agents",
+      "sha256": "778833ecfea4385cab79ec4dda0ffe956e3f4bf9231eb80e52c5d113ee4e6cdf",
+      "description": "\"Drive the desktop background-first; escalate on signal.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/autonomous-ai-agents/computer-use"
+    },
+    {
+      "name": "hermes-agent",
+      "category": "autonomous-ai-agents",
+      "sha256": "dcdc4b2d232ad415c76e09cc229a2c861f3e1225fd1f1262b33a965ea4732b24",
+      "description": "\"Use, configure, theme, extend, and orchestrate Hermes Agent.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/autonomous-ai-agents/hermes-agent"
+    },
+    {
+      "name": "opencode",
+      "category": "autonomous-ai-agents",
+      "sha256": "885582e6f2d5b88f431c5a0bc3b69b88f5aab701774f91572487a6f4e4679a0b",
+      "description": "\"Delegate coding to OpenCode CLI (features, PR review).\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/autonomous-ai-agents/opencode"
+    },
+    {
+      "name": "architecture-diagram",
+      "category": "creative",
+      "sha256": "0e7e2736aafe052e409c2ad27863d51ef3007c116711e584033787ccb5d99d3f",
+      "description": "\"Dark-themed SVG architecture/cloud/infra diagrams as HTML.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/architecture-diagram"
+    },
+    {
+      "name": "ascii-video",
+      "category": "creative",
+      "sha256": "3bd3f39985a52954e2693866608bd8105f4dc0efbca5b6baa3045c2b641bda26",
+      "description": "\"ASCII video: convert video/audio to colored ASCII MP4/GIF.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/ascii-video"
+    },
+    {
+      "name": "baoyu-infographic",
+      "category": "creative",
+      "sha256": "89e25da6d8ea1cac79b18d9e6c4c3b8d7a522df2eef559f151f19c6ce5b2a002",
+      "description": "\"Infographics: 21 layouts x 21 styles (\u4fe1\u606f\u56fe, \u53ef\u89c6\u5316).\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/baoyu-infographic"
+    },
+    {
+      "name": "claude-design",
+      "category": "creative",
+      "sha256": "1582b0d49e48bdf937b2f555098484e0979cdfa285c6cc9fa329ba8e416d347a",
+      "description": "Design one-off HTML artifacts (landing, deck, prototype).",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/claude-design"
+    },
+    {
+      "name": "design-md",
+      "category": "creative",
+      "sha256": "7ed56bba40ffc9573fa51b33b2424f37fb5f774e9ecb7e76e737797afd0b62ae",
+      "description": "Author/validate/export Google's DESIGN.md token spec files.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/design-md"
+    },
+    {
+      "name": "humanizer",
+      "category": "creative",
+      "sha256": "887d5e3467a682da9b166e5293007f8bbbc299f8a6718ae00f26161b7d062b04",
+      "description": "\"Humanize text: strip AI-isms and add real voice.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/humanizer"
+    },
+    {
+      "name": "manim-video",
+      "category": "creative",
+      "sha256": "467376469fc2043e2674a843509f8eea52660791e76fb2e142074ecd4abc7e69",
+      "description": "\"Manim CE animations: 3Blue1Brown math/algo videos.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/manim-video"
+    },
+    {
+      "name": "p5js",
+      "category": "creative",
+      "sha256": "3b39b75303e082af69b3f4e2deab7a55b27d60293eff6a561fb627188194a33e",
+      "description": "\"p5.js sketches: gen art, shaders, interactive, 3D.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/p5js"
+    },
+    {
+      "name": "popular-web-designs",
+      "category": "creative",
+      "sha256": "cd89bdb86008bb30b35d9bdd30e06587f75ee54055c54e1a79afb20418264b3d",
+      "description": "54 real design systems (Stripe, Linear, Vercel) as HTML/CSS.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/popular-web-designs"
+    },
+    {
+      "name": "songwriting-and-ai-music",
+      "category": "creative",
+      "sha256": "5dbf92dc336e9b17be45c35c92a5bb307e4655e39a86617f07b7654678f92583",
+      "description": "\"Songwriting craft and Suno AI music prompts.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/creative/songwriting-and-ai-music"
+    },
+    {
+      "name": "kanban-orchestration",
+      "category": "devops",
+      "sha256": "06afd85d96b38bb9425380465a08d4a55877326e27d1a1b4a4e745b797acdf13",
+      "description": "Use when orchestrating Kanban boards, DAGs, or tasks.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/devops/kanban-orchestration"
+    },
+    {
+      "name": "sdlc-review",
+      "category": "devops",
+      "sha256": "ce90e8a3e145cce69c62880dc85921700110879f9290952d6cec28218503155f",
+      "description": "Review Kanban handoffs and route verified outcomes.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/devops/sdlc-review"
+    },
+    {
+      "name": "email-inbox-triage",
+      "category": "email",
+      "sha256": "deeade1bb70f8835b2f3158980030b8aa41bb1ea6f798631451c89cfd632bcc8",
+      "description": "\"Triage an inbox: prioritize threads, draft replies safely.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/email/email-inbox-triage"
+    },
+    {
+      "name": "himalaya",
+      "category": "email",
+      "sha256": "0f6c9bb4c0a5c4f4627e139b6beb2b1ba0addd7145895196528b8125929e3837",
+      "description": "\"Himalaya CLI: IMAP/SMTP email from terminal.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/email/himalaya"
+    },
+    {
+      "name": "gif-search",
+      "category": "media",
+      "sha256": "a8349043740a8805d4ebfeb3a21f67ec0e9a9733a84f96403ca142c88a312b5d",
+      "description": "\"Search/download GIFs from Tenor via curl + jq.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/media/gif-search"
+    },
+    {
+      "name": "songsee",
+      "category": "media",
+      "sha256": "d9d8d1394c630bd83329cd54cd8f18e0e3cd140debe31c3ccf5d9667f054de07",
+      "description": "\"Audio spectrograms/features (mel, chroma, MFCC) via CLI.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/media/songsee"
+    },
+    {
+      "name": "youtube-content",
+      "category": "media",
+      "sha256": "b556a0d2a220b46b80eb011619f0c951404f4d6e2edcc8b4847faec512b55132",
+      "description": "\"YouTube transcripts to summaries, threads, blogs.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/media/youtube-content"
+    },
+    {
+      "name": "obsidian",
+      "category": "note-taking",
+      "sha256": "7aea4e8f89f94ab2876d79898d10a5d4cdab31390c53f72ad6934b071179f826",
+      "description": "Read, search, create, and edit notes in the Obsidian vault.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/note-taking/obsidian"
+    },
+    {
+      "name": "airtable",
+      "category": "productivity",
+      "sha256": "28253f1e20c4d250725eb7f475c886952a4c6a1ef43ef6900c2dc0e75ebb40e6",
+      "description": "Airtable REST API via curl. Records CRUD, filters, upserts.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/airtable"
+    },
+    {
+      "name": "box",
+      "category": "productivity",
+      "sha256": "e9672412333de4feff348e6dc387d9022d32005247360347a10a7131fb87eb13",
+      "description": "Box manages cloud files, sharing, search, and metadata.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/box"
+    },
+    {
+      "name": "cavecrew",
+      "category": "productivity",
+      "sha256": "b74f374f6aae6e9a31e78e7d876860406fe5833378e9298536edf176c12f379b",
+      "description": ">",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/cavecrew"
+    },
+    {
+      "name": "caveman",
+      "category": "productivity",
+      "sha256": "5e30bb56afbd0b01bd736f2da84180e76f18db4a64de8e124525d5c8dc2e8605",
+      "description": ">",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/caveman"
+    },
+    {
+      "name": "caveman-commit",
+      "category": "productivity",
+      "sha256": "58db7b8efab911a629c26e7132517d9076e4e3645009eb604cb8c25663477841",
+      "description": ">",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/caveman-commit"
+    },
+    {
+      "name": "caveman-compress",
+      "category": "productivity",
+      "sha256": "8b0d64c622d8a70411bbd86e736ac23cc0465fca1943a37f081e58e9d3afd210",
+      "description": ">",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/caveman-compress"
+    },
+    {
+      "name": "caveman-help",
+      "category": "productivity",
+      "sha256": "590d6c6c17254bda56d18da7cc9d0bf252aeec5d1c78b77dd7ae4cabb8404f89",
+      "description": ">",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/caveman-help"
+    },
+    {
+      "name": "caveman-review",
+      "category": "productivity",
+      "sha256": "9ef09065f26b9781275b5a4775e14870e331fab833efb2a2aa33f3205a2b83c3",
+      "description": ">",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/caveman-review"
+    },
+    {
+      "name": "caveman-stats",
+      "category": "productivity",
+      "sha256": "b9e49e46ede956e0c1633eae82a695c996f728bc48f3903f001d301068a2b0ea",
+      "description": ">",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/caveman-stats"
+    },
+    {
+      "name": "document-to-action-items",
+      "category": "productivity",
+      "sha256": "8a7556754aca2a7d04d38847131fb4db8d6705fa2106fcb154279e26117b41ee",
+      "description": "\"Extract cited obligations, deadlines, tasks from documents.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/document-to-action-items"
+    },
+    {
+      "name": "docx",
+      "category": "productivity",
+      "sha256": "9678b14d5e7841d588b969f6a4696cd46bcc46c3e4ac1479edc7656a051aa5ff",
+      "description": "Create, read, edit, template, and review Word .docx files.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/docx"
+    },
+    {
+      "name": "google-workspace",
+      "category": "productivity",
+      "sha256": "4ab062fe5131d123a6c4f1297e58c7f75b8d517fd282b68547da7ebfabb2a0b9",
+      "description": "\"Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/google-workspace"
+    },
+    {
+      "name": "maps",
+      "category": "productivity",
+      "sha256": "775ef9f79be9cd147bc81e0c4a4ef952230a04736a6082f44dbac78554ef89ab",
+      "description": "\"Geocode, POIs, routes, timezones via OpenStreetMap/OSRM.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/maps"
+    },
+    {
+      "name": "meeting-action-items",
+      "category": "productivity",
+      "sha256": "1902f782551da96ee1f9b34d6f13af627f06150a498d874b0cc2a75d06d35aa8",
+      "description": "\"Turn meeting notes into cited decisions, owners, tickets.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/meeting-action-items"
+    },
+    {
+      "name": "neat-freak",
+      "category": "productivity",
+      "sha256": "6c0ca2236d3518ccaad710f6db8e9c4aa7af67b685dc699ad347ae42186951e1",
+      "description": ">-",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/neat-freak"
+    },
+    {
+      "name": "notion",
+      "category": "productivity",
+      "sha256": "e5aaf194f2688223890cb2eb6cf5ce866e6390082f1dff845c9e37a25fe0bfee",
+      "description": "\"Notion API + ntn CLI: pages, databases, markdown, Workers.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/notion"
+    },
+    {
+      "name": "pdf",
+      "category": "productivity",
+      "sha256": "c16b9c159a3a0b49353bfcd10c498b02aef3d319207b1019aa7dc8db129d06ab",
+      "description": "\"PDF files: create, read, merge, fill, OCR, edit text.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/pdf"
+    },
+    {
+      "name": "powerpoint",
+      "category": "productivity",
+      "sha256": "b71d29d9809c4464d7f8d10afabf4f22f6a26c647cf7aacb6f9faf196ebe82f2",
+      "description": "Create, read, edit .pptx decks with python-pptx.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/powerpoint"
+    },
+    {
+      "name": "product-price-monitor",
+      "category": "productivity",
+      "sha256": "b87bf2102fed13d2c7c64759fa153f24f5e43a0afcf6f8ec5e13def92a6642ef",
+      "description": "\"Watch product, flight, or listing prices; alert on target.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/product-price-monitor"
+    },
+    {
+      "name": "teams-meeting-pipeline",
+      "category": "productivity",
+      "sha256": "ae1b08f044d7dfd9abb01c643cac3b69e4a3a1cbe7fd5782dd17785964cdc441",
+      "description": "Teams meeting summaries, job replay, Graph subscriptions.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/teams-meeting-pipeline"
+    },
+    {
+      "name": "weekly-review-planning",
+      "category": "productivity",
+      "sha256": "a689257facb937cfca9bc5507dd9e729f287f0cd3f6abbf73448eb25f73fbaab",
+      "description": "\"Weekly reset: commitments, stalled work, next-week plan.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/weekly-review-planning"
+    },
+    {
+      "name": "xlsx",
+      "category": "productivity",
+      "sha256": "b302d7ac997843a757ab3c11513ea012889ebdae32f842edb44faa9a4485f19b",
+      "description": "Create, read, edit Excel .xlsx workbooks and CSVs.",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/productivity/xlsx"
+    },
+    {
+      "name": "arxiv",
+      "category": "research",
+      "sha256": "9b41877bcb64166dc2355a43aedd3198c3e5214af67f09e1d1b717a989d92f72",
+      "description": "\"Search arXiv papers by keyword, author, category, or ID.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/research/arxiv"
+    },
+    {
+      "name": "competitor-news-monitor",
+      "category": "research",
+      "sha256": "d8fd2a3a26ff45455709595132a092825a48f6c9dd3bcc98b06c1a43eaa7fcca",
+      "description": "\"Watch named companies for material news; cited digests.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/research/competitor-news-monitor"
+    },
+    {
+      "name": "grounded-citations",
+      "category": "research",
+      "sha256": "19fba3a4ceedf768af6851e094b268a66b62af750d4d0689c5d62d5d50c032b6",
+      "description": "\"Ground answers and documents in cited, verifiable sources.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/research/grounded-citations"
+    },
+    {
+      "name": "llm-wiki",
+      "category": "research",
+      "sha256": "0229e37c1783fcac5b77cfb3242703666cf4aa472d2ae85b6bd5279756b515b6",
+      "description": "\"Karpathy's LLM Wiki: build/query interlinked markdown KB.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/research/llm-wiki"
+    },
+    {
+      "name": "xurl",
+      "category": "social-media",
+      "sha256": "5457319ee337284b1152dc9f60146c72685ade489299afed08e0b46ca5a97080",
+      "description": "\"X/Twitter via xurl CLI: raw post search, posting, DM, media.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/social-media/xurl"
+    },
+    {
+      "name": "codebase-inspection",
+      "category": "software-development",
+      "sha256": "d62554263461919dff7d77c3c0c284c2190c894f312a84d7a770a030dab642dc",
+      "description": "\"Inspect codebases w/ pygount: LOC, languages, ratios.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/codebase-inspection"
+    },
+    {
+      "name": "dogfood",
+      "category": "software-development",
+      "sha256": "1b2793734493dbc624a1d1f1c0667cb510e191fa79b1c740d866706550190560",
+      "description": "\"Exploratory QA of web apps: find bugs, evidence, reports.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/dogfood"
+    },
+    {
+      "name": "github",
+      "category": "software-development",
+      "sha256": "9d70e7c842fe7db75b5a50526552a69862f5bcfc1e59aa93785241649a09d5a3",
+      "description": "\"GitHub via gh CLI: PRs, issues, reviews, repos, auth.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/github"
+    },
+    {
+      "name": "hermes-agent-skill-authoring",
+      "category": "software-development",
+      "sha256": "be5bce268e7fa2b186e309156fc4a62eeedb151f8cc490ce9232847e2868e717",
+      "description": "\"Author in-repo SKILL.md files: frontmatter and structure.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/hermes-agent-skill-authoring"
+    },
+    {
+      "name": "inspecting-hermes-desktop-dom",
+      "category": "software-development",
+      "sha256": "8dfdcf2fe3797beec4297ce629e62395d7a69ec2691fc00ef25bc6273139cbc4",
+      "description": "\"Read the live Hermes desktop DOM/CSS over CDP.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/inspecting-hermes-desktop-dom"
+    },
+    {
+      "name": "node-inspect-debugger",
+      "category": "software-development",
+      "sha256": "422eed9a0997182c5b197a8879ab194647799d69e573000e53b65b8708cf3a77",
+      "description": "\"Debug Node.js via --inspect + Chrome DevTools Protocol CLI.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/node-inspect-debugger"
+    },
+    {
+      "name": "python-debugpy",
+      "category": "software-development",
+      "sha256": "cb1b8b0795a56fa0fd79f80f3363f1ad79d404a6757d6cf547971cf89f21155e",
+      "description": "\"Debug Python: pdb REPL + debugpy remote (DAP).\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/python-debugpy"
+    },
+    {
+      "name": "requesting-code-review",
+      "category": "software-development",
+      "sha256": "1e26ced9f05e357950e035b93ad1a937dd8a9e578a44d3c8d4fa734a09b7f814",
+      "description": "\"Pre-commit review: security scan, quality gates, auto-fix.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/requesting-code-review"
+    },
+    {
+      "name": "simplify-code",
+      "category": "software-development",
+      "sha256": "9ee977c3362a1c07f2e327198e066ddb3c0ed67709706fc410165ee820b2ca01",
+      "description": "\"Parallel 4-agent cleanup of recent code changes.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/simplify-code"
+    },
+    {
+      "name": "spike",
+      "category": "software-development",
+      "sha256": "573d8fc0d6699eaf5308e742402bc02c883152ffeebe14607f164c6c538495c2",
+      "description": "\"Throwaway experiments to validate an idea before build.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/spike"
+    },
+    {
+      "name": "systematic-debugging",
+      "category": "software-development",
+      "sha256": "bd480f51a2e9969c88544003c30b7539b7df0b7358703f99b0495514c2dd878a",
+      "description": "\"4-phase root cause debugging: understand bugs before fixing.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/systematic-debugging"
+    },
+    {
+      "name": "test-driven-development",
+      "category": "software-development",
+      "sha256": "649e6ab89bd8aaad2f9b162c60321f227cff8a8cda56393f07a81d1c6825a692",
+      "description": "\"TDD: enforce RED-GREEN-REFACTOR, tests before code.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/software-development/test-driven-development"
+    },
+    {
+      "name": "blocked-page-recovery",
+      "category": "web",
+      "sha256": "b71179e82ff27c002e6593e792d9a64dad9a444901b8938f30204fa115592061",
+      "description": "\"Use when a fetch fails: 403/429, paywall, WAF, bot wall.\"",
+      "path": "/Users/songshiyao/.hermes/profiles/code/skills/web/blocked-page-recovery"
+    }
+  ]
+}

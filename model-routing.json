@@ -1,0 +1,38 @@
+{
+  "default_model": "gemini-3.8-flash-tiered",
+  "provider": "custom:antigravity",
+  "base_url": "http://127.0.0.1:8045/v1",
+  "auxiliary": {
+    "compression": {
+      "provider": "custom:antigravity",
+      "model": "gemini-3.7-flash-high"
+    }
+  },
+  "model_aliases": {
+    "sonnet": {
+      "model": "claude-sonnet-4-6",
+      "provider": "custom:antigravity",
+      "base_url": "http://127.0.0.1:8045/v1",
+      "key_env": "ANTIGRAVITY_API_KEY"
+    },
+    "pro-high": {
+      "model": "gemini-3.1-pro-high",
+      "provider": "custom:antigravity",
+      "base_url": "http://127.0.0.1:8045/v1",
+      "key_env": "ANTIGRAVITY_API_KEY"
+    },
+    "opus": {
+      "model": "claude-opus-4-6-thinking",
+      "provider": "custom:antigravity",
+      "base_url": "http://127.0.0.1:8045/v1",
+      "key_env": "ANTIGRAVITY_API_KEY"
+    },
+    "flash": {
+      "model": "gemini-3.8-flash-tiered",
+      "provider": "custom:antigravity",
+      "base_url": "http://127.0.0.1:8045/v1",
+      "key_env": "ANTIGRAVITY_API_KEY"
+    }
+  },
+  "routing_freeze": true
+}

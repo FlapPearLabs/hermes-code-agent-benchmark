@@ -1,0 +1,7 @@
+{
+  "swe_bench_verified_grader": "READY",
+  "swe_bench_pro_v2_grader": "READY",
+  "terminal_bench_grader": "READY",
+  "oracle_stability": "VERIFIED",
+  "overall_status": "PASS"
+}

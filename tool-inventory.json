@@ -1,0 +1,58 @@
+{
+  "built_in_tools": [
+    "terminal",
+    "read_file",
+    "write_file",
+    "patch",
+    "search_files",
+    "execute_code",
+    "delegate_task",
+    "clarify",
+    "memory",
+    "kanban_show",
+    "kanban_list",
+    "kanban_create",
+    "kanban_complete",
+    "kanban_block",
+    "kanban_unblock",
+    "kanban_comment",
+    "kanban_attach",
+    "kanban_attach_url",
+    "kanban_attachments",
+    "kanban_request_review",
+    "kanban_request_changes",
+    "kanban_link",
+    "kanban_heartbeat",
+    "skills_list",
+    "skill_view",
+    "skill_manage",
+    "web_search",
+    "web_extract",
+    "browser_navigate",
+    "browser_click",
+    "browser_type",
+    "browser_snapshot",
+    "browser_console",
+    "browser_vision"
+  ],
+  "mcp_tools": [
+    "mcp__agentmemory__*",
+    "mcp__chrome_devtools__*",
+    "mcp__codegraph__*"
+  ],
+  "terminal_executables": [
+    "git",
+    "python3",
+    "uv",
+    "docker",
+    "colima",
+    "gh",
+    "harbor"
+  ],
+  "policy": {
+    "execution_mode": "supervised_or_autonomous_per_phase",
+    "oracle_access_allowed": false,
+    "official_agent_runner_used": false,
+    "tampering_prohibited": true
+  }
+}
