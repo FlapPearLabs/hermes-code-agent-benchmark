@@ -15,7 +15,7 @@
 - **Model Provider**: `custom:antigravity` (`http://127.0.0.1:8045/v1`)
 - **Reasoning Effort**: `high`
 - **Code Profile SOUL SHA256**: `2bd60a6faa55d7eefcc04d3a00a7fbdf9da19658fd81501144a03bb020ddc136`
-- **Code Profile Config SHA256**: `78ff40bcccdeee803a338ab14213e8389241201eb232495c2a7e9a3827ee91ca`
+- **Code Profile Config SHA256**: `837adc7ae1bdf394dc5864536700841dc2f549cbde2084bdc74624c480928ed1` (observed before protocol-v2 freeze)
 - **Agent Engineering Governance Git SHA**: `6ebde952681486d7caaaf826bd2a77c96c3e13a8`
 
 ## Harness Components
@@ -26,6 +26,8 @@
 - **Skills**: Curated engineering skill suite (see `skill-inventory.json`).
 - **MCP Servers**: Sandboxed local services (`agentmemory`, `chrome-devtools`, `codegraph`; see `mcp-inventory.json`).
 - **Network Policy**: Isolated per benchmark protocol. No search for gold PRs, fixing commits, or external solutions during task solving.
+
+Availability of Goal, Kanban, Skills, MCP, and Fresh Reviewer is not evidence that a task invoked them. The protocol-v2 runner records observed runtime events; when the runtime exposes no authoritative event, usage remains `TELEMETRY_UNAVAILABLE` rather than being inferred from this specification.
 
 ## Boundary Enforcement
 The official benchmark infrastructure is strictly restricted to:

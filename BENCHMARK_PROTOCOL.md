@@ -99,3 +99,11 @@ A benchmark run is immediately halted if:
 - Gold reference cannot be physically isolated.
 - Upstream grader has been tampered with or modified.
 - Environment requires unofficial agent solvers.
+
+## 10. Measurement integrity addendum (protocol v2)
+
+`PROTOCOL_V2.json` freezes the SUT identity, approval and 60-turn policy, source pins, harness files, and hashes of external configuration. `scripts/verify_protocol_freeze.py` requires a clean local checkout, an annotated tag at the exact current commit, a matching remote tag and branch, unchanged external configuration, and an unused run ID before calibration can start. The tag establishes a Git-history boundary; it does not certify grader execution by itself.
+
+Each task must retain a clean base workspace manifest, a mechanically exported candidate diff, a Hermes raw stream, and two independent official grader invocations with raw process and result evidence. Missing evidence yields `INVALID` or `INFRA_FAIL`, never an inferred failure or success score. Feature availability in the Code profile is not feature invocation; unavailable runtime signals remain `TELEMETRY_UNAVAILABLE`.
+
+Terminal-Bench calibration remains blocked while its official non-Git sidecar artifact cannot be transferred from a real agent trial into a fresh official verifier environment. The calibration runner stops before starting any task when that blocker is present. No scored run may start under this repair branch before three independently valid calibration tasks and fresh exact-SHA review.

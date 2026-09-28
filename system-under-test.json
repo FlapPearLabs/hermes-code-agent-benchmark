@@ -4,7 +4,7 @@
     "hermes_agent_version": "v0.21.5+3172.g79dbb14",
     "hermes_agent_sha": "79dbb1450ec404a2240529f5554526da4cfec498",
     "code_profile_soul_sha256": "2bd60a6faa55d7eefcc04d3a00a7fbdf9da19658fd81501144a03bb020ddc136",
-    "code_profile_config_sha256": "78ff40bcccdeee803a338ab14213e8389241201eb232495c2a7e9a3827ee91ca",
+    "code_profile_config_sha256": "837adc7ae1bdf394dc5864536700841dc2f549cbde2084bdc74624c480928ed1",
     "governance_repo_sha": "6ebde952681486d7caaaf826bd2a77c96c3e13a8",
     "model": "gemini-3.8-flash-tiered",
     "provider": "custom:antigravity",
