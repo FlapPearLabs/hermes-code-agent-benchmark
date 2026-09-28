@@ -1,48 +1,66 @@
 #!/usr/bin/env python3
-"""
-fresh_sandbox_regrade.py - Pristine environment regrade to eliminate verifier tampering.
-Adheres to Section 29 of Benchmark Protocol.
-"""
+"""Re-evaluate a candidate in a newly created official sandbox/job."""
 
-import os
-import sys
-import json
 import argparse
-from pathlib import Path
+import json
+import sys
+from datetime import datetime, timezone
 
-REPO_DIR = Path(__file__).resolve().parent.parent
-MANIFEST_PATH = REPO_DIR / "benchmark-manifest.json"
-RUNS_ROOT = REPO_DIR / "runs"
+from grade_with_official_verifier import REPO_DIR, _task, grade_task
 
-def fresh_regrade(task_id, run_id="run_001"):
-    task_run_dir = RUNS_ROOT / run_id / "tasks" / task_id
-    patch_file = task_run_dir / "patch.diff"
-    
-    if not patch_file.exists():
-        raise FileNotFoundError(f"Patch file {patch_file} does not exist!")
 
-    print(f"Executing fresh pristine sandbox regrade for {task_id}...")
-    
-    regrade_result = {
+def build_fresh_result(task_id, task, patch_sha256, grader):
+    applied = grader.get("patch_apply_status") == "APPLIED"
+    status = grader.get("status", "INFRA_FAIL")
+    return {
         "task_id": task_id,
-        "run_id": run_id,
-        "fresh_sandbox_environment": "PRISTINE_CONTAINER",
-        "patch_applied": True,
-        "tampering_detected": False,
-        "fresh_sandbox_resolved": False,
-        "regrade_timestamp": "2026-09-27T06:00:00Z"
+        "status": status,
+        "base_identity": grader.get("base_identity") or task.get("base_commit")
+                         or task.get("container_image") or task.get("upstream_sha"),
+        "candidate_patch_sha256": patch_sha256,
+        "sandbox_identity": grader.get("sandbox_identity"),
+        "sandbox_identity_kind": grader.get("sandbox_identity_kind"),
+        "patch_apply_status": grader.get("patch_apply_status", "UNKNOWN"),
+        "patch_applied": applied,
+        "official_grader_executed": grader.get("official_grader_executed") is True,
+        "grader_exit_code": grader.get("grader_exit_code"),
+        "grader_duration_ms": grader.get("grader_duration_ms"),
+        "resolved": grader.get("resolved") if applied and status in ("PASS", "FAIL") else None,
+        "raw_result_path": grader.get("raw_result_path"),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
-    out_file = task_run_dir / "fresh-regrade-result.json"
-    with open(out_file, "w") as f:
-        json.dump(regrade_result, f, indent=2)
 
-    print(f"Fresh sandbox regrade recorded to {out_file}")
-    return regrade_result
+def fresh_regrade(task_id, run_id):
+    # grade_task uses a unique official run/job ID for every call. The pinned
+    # evaluators create a fresh instance container and record its identity.
+    task_dir = REPO_DIR / "runs" / run_id / "tasks" / task_id
+    path = task_dir / "fresh-regrade-result.json"
+    if path.exists():
+        raise ValueError("existing fresh regrade evidence is immutable")
+    first = json.loads((task_dir / "grader-result.json").read_text())
+    if (first.get("status") not in ("PASS", "FAIL") or
+            first.get("official_grader_executed") is not True or
+            not first.get("sandbox_identity") or
+            not first.get("candidate_patch_sha256")):
+        raise ValueError("first official grader evidence is incomplete")
+    grader = grade_task(task_id, run_id, phase="fresh-sandbox")
+    task = _task(task_id)
+    result = build_fresh_result(task_id, task, grader.get("candidate_patch_sha256"), grader)
+    if (result["candidate_patch_sha256"] != first["candidate_patch_sha256"] or
+            result["sandbox_identity"] == first["sandbox_identity"] or
+            result["sandbox_identity"] is None):
+        result.update(status="INVALID", resolved=None,
+                      error="candidate patch or sandbox identity was not independent")
+    path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+    return result
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", required=True)
-    parser.add_argument("--run-id", default="run_001")
+    parser.add_argument("--run-id", required=True)
     args = parser.parse_args()
-    fresh_regrade(args.task, args.run_id)
+    result = fresh_regrade(args.task, args.run_id)
+    print(json.dumps(result, indent=2))
+    sys.exit(0 if result["status"] in ("PASS", "FAIL") else 1)

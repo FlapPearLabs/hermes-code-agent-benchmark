@@ -34,6 +34,7 @@
     {
       "artifact": "princeton-nlp/SWE-bench_Verified",
       "source": "https://huggingface.co/datasets/princeton-nlp/SWE-bench_Verified",
+      "revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
       "split": "test",
       "task_count": 500,
       "status": "CACHED"
@@ -41,6 +42,7 @@
     {
       "artifact": "ScaleAI/SWE-bench_Pro",
       "source": "https://huggingface.co/datasets/ScaleAI/SWE-bench_Pro",
+      "revision": "2d52cb3df914a3fcf80c7f66738b3a88ae37fc50",
       "split": "test",
       "v2_task_count": 642,
       "hard51_task_count": 51,

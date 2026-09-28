@@ -1,69 +1,119 @@
 #!/usr/bin/env python3
-"""
-export_candidate_patch.py - Export unified git diff from agent worktree.
-Saves patch to runs/<run_id>/tasks/<task_id>/patch.diff
-"""
+"""Export the exact base-to-candidate tree diff, including untracked files."""
 
-import os
-import sys
-import json
 import argparse
+import hashlib
+import json
+import os
 import subprocess
+import tempfile
 from pathlib import Path
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 WORKSPACES_ROOT = REPO_DIR / "agent-workspaces"
 RUNS_ROOT = REPO_DIR / "runs"
 
-def export_patch(task_id, run_id="run_001"):
-    workspace_dir = WORKSPACES_ROOT / run_id / task_id
-    if not workspace_dir.exists():
-        raise FileNotFoundError(f"Workspace {workspace_dir} does not exist!")
 
-    dest_dir = RUNS_ROOT / run_id / "tasks" / task_id
-    dest_dir.mkdir(parents=True, exist_ok=True)
+class PatchExportError(RuntimeError):
+    def __init__(self, status, reason):
+        super().__init__(reason)
+        self.status = status
 
-    # Get git diff against base commit if available, else root commit / HEAD
-    task_spec_path = workspace_dir / "task_spec.json"
-    base_commit = None
-    if task_spec_path.exists():
-        try:
-            with open(task_spec_path) as f:
-                task_spec = json.load(f)
-                base_commit = task_spec.get("base_commit")
-        except Exception:
-            pass
 
-    if base_commit and subprocess.run(f"git -C {workspace_dir} rev-parse --verify {base_commit}", shell=True, capture_output=True).returncode == 0:
-        cmd = f"git -C {workspace_dir} diff {base_commit}"
-    else:
-        res = subprocess.run(f"git -C {workspace_dir} rev-list --count HEAD", shell=True, capture_output=True, text=True)
-        count = int(res.stdout.strip() or 1)
+def git(repo, *args, env=None, check=True):
+    result = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, env=env)
+    if check and result.returncode:
+        raise PatchExportError("BASE_DIVERGENCE", result.stderr.decode(errors="replace").strip())
+    return result
 
-        if count > 1:
-            # Diff against root commit
-            root_commit = subprocess.run(f"git -C {workspace_dir} rev-list --max-parents=0 HEAD", shell=True, capture_output=True, text=True).stdout.strip()
-            cmd = f"git -C {workspace_dir} diff {root_commit} HEAD"
-        else:
-            cmd = f"git -C {workspace_dir} diff HEAD"
 
-    diff_res = subprocess.run(cmd, shell=True, capture_output=True)
-    diff_bytes = diff_res.stdout
+def output(repo, *args, env=None):
+    return git(repo, *args, env=env).stdout.strip().decode()
 
-    patch_file = dest_dir / "patch.diff"
-    patch_file.write_bytes(diff_bytes)
 
-    # Also capture candidate commit SHA
-    head_res = subprocess.run(f"git -C {workspace_dir} rev-parse HEAD", shell=True, capture_output=True)
-    head_sha = head_res.stdout.decode('utf-8', errors='replace').strip()
-    (dest_dir / "candidate_sha.txt").write_text(head_sha)
+def _paths(raw):
+    return [p.decode("utf-8", errors="surrogateescape") for p in raw.split(b"\0") if p]
 
-    print(f"Exported patch ({len(diff_bytes)} bytes) and SHA ({head_sha}) to {dest_dir}")
-    return patch_file
+
+def export_patch(task_id, run_id):
+    if run_id == "run_001":
+        raise PatchExportError("INVALID", "historical run_001 is immutable")
+    dest = RUNS_ROOT / run_id / "tasks" / task_id
+    manifest_path = dest / "workspace-manifest.json"
+    if not manifest_path.is_file():
+        raise PatchExportError("BASE_DIVERGENCE", "workspace manifest missing")
+    manifest = json.loads(manifest_path.read_text())
+    result_path = dest / "patch-export-result.json"
+    patch_path = dest / "patch.diff"
+    try:
+        expected = (WORKSPACES_ROOT / run_id / task_id / "repo").resolve(strict=True)
+        repo = Path(manifest["repo_root"]).resolve(strict=True)
+        if repo != expected or manifest["task_id"] != task_id or manifest["run_id"] != run_id:
+            raise PatchExportError("BASE_DIVERGENCE", "workspace identity mismatch")
+        if Path(output(repo, "rev-parse", "--show-toplevel")).resolve() != repo:
+            raise PatchExportError("BASE_DIVERGENCE", "worktree points to wrong repository")
+        base = manifest["base_sha"]
+        if not base or manifest["initial_head"] != base or manifest["initial_status"]:
+            raise PatchExportError("BASE_DIVERGENCE", "invalid recorded pristine base")
+        if output(repo, "rev-parse", f"{base}^{{tree}}") != manifest["base_tree"]:
+            raise PatchExportError("BASE_DIVERGENCE", "recorded base ref/tree lost")
+        head = output(repo, "rev-parse", "HEAD")
+        if git(repo, "merge-base", "--is-ancestor", base, head, check=False).returncode != 0:
+            raise PatchExportError("BASE_DIVERGENCE", "HEAD left allowed base lineage")
+        if manifest["expected_repo"]["kind"] == "git":
+            expected_url = f"https://github.com/{manifest['expected_repo']['repo']}.git"
+            if output(repo, "remote", "get-url", "origin") != expected_url:
+                raise PatchExportError("BASE_DIVERGENCE", "source repository remote changed")
+        status = git(repo, "status", "--porcelain=v1", "--untracked-files=all").stdout.decode(errors="replace")
+        unstaged = git(repo, "diff", "--binary").stdout
+        staged = git(repo, "diff", "--cached", "--binary").stdout
+        untracked = _paths(git(repo, "ls-files", "--others", "--exclude-standard", "-z").stdout)
+        for name in untracked:
+            candidate = repo / name
+            if candidate.is_dir() and (candidate / ".git").exists():
+                raise PatchExportError("PATCH_EXPORT_INVALID", f"nested repository: {name}")
+        with tempfile.TemporaryDirectory(prefix="benchmark-index-") as temporary:
+            index_path = str(Path(temporary) / "index")
+            env = {**os.environ, "GIT_INDEX_FILE": index_path}
+            git(repo, "read-tree", head, env=env)
+            git(repo, "add", "-A", "--", ".", env=env)
+            tree = output(repo, "write-tree", env=env)
+        changed = _paths(git(repo, "diff", "--name-only", "-z", base, tree).stdout)
+        tracked = _paths(git(repo, "ls-tree", "-r", "--name-only", "-z", base).stdout)
+        if any(p.startswith(("benchmark-control/", ".git/", ".codegraph/")) or p == ".gitmodules" for p in changed):
+            raise PatchExportError("PATCH_EXPORT_INVALID", "control plane or repository metadata touched")
+        if len(changed) >= 20 and len(changed) >= int(0.8 * max(len(tracked), 1)):
+            raise PatchExportError("PATCH_EXPORT_INVALID", "whole-repository change detected")
+        raw = git(repo, "diff", "--raw", "-z", base, tree).stdout
+        if b"160000" in raw:
+            raise PatchExportError("PATCH_EXPORT_INVALID", "submodule/gitlink change detected")
+        patch = git(repo, "diff", "--binary", "--full-index", "--no-ext-diff", base, tree).stdout
+        if len(patch) > 30 * 1024 * 1024 and len(changed) >= 20:
+            raise PatchExportError("PATCH_EXPORT_INVALID", "oversized multi-file patch requires review")
+        patch_path.write_bytes(patch)
+        result = {
+            "status": "VALID", "task_id": task_id, "run_id": run_id,
+            "base_sha": base, "base_tree": manifest["base_tree"],
+            "head": head, "candidate_tree": tree, "repo_root": str(repo),
+            "patch_path": str(patch_path), "patch_sha256": hashlib.sha256(patch).hexdigest(),
+            "patch_bytes": len(patch), "touched_paths": changed,
+            "git_status": status, "unstaged_diff_bytes": len(unstaged),
+            "staged_diff_bytes": len(staged), "untracked_paths": untracked,
+        }
+        result_path.write_text(json.dumps(result, indent=2) + "\n")
+        return patch_path
+    except PatchExportError as error:
+        patch_path.unlink(missing_ok=True)
+        result_path.write_text(json.dumps({
+            "status": error.status, "task_id": task_id,
+            "run_id": run_id, "reason": str(error),
+        }, indent=2) + "\n")
+        raise
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", required=True, help="Task ID")
-    parser.add_argument("--run-id", default="run_001", help="Run identifier")
+    parser.add_argument("--task", required=True)
+    parser.add_argument("--run-id", required=True)
     args = parser.parse_args()
-    export_patch(args.task, args.run_id)
+    print(export_patch(args.task, args.run_id))

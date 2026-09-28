@@ -10,6 +10,7 @@ This repository uses strictly official, canonical upstream benchmark sources. No
 - **CANONICAL_REPOSITORY**: `https://github.com/princeton-nlp/SWE-bench`
 - **UPSTREAM_EXACT_SHA**: `02e7a74ffd0b707aab73d203fe87bdc7c76afc8e`
 - **DATASET_SOURCE**: Hugging Face `princeton-nlp/SWE-bench_Verified`
+- **DATASET_REVISION**: `c104f840cc67f8b6eec6f759ebc8b2693d585d4a` (local cache ref must match before grading)
 - **DATASET_VERSION**: `split: test` (500 canonical verified instances)
 - **LICENSE**: MIT License
 - **TASK_ACQUISITION_METHOD**: Official Hugging Face dataset stream via pinned `datasets` library; base repos cloned at exact `base_commit`.
@@ -19,8 +20,8 @@ This repository uses strictly official, canonical upstream benchmark sources. No
 - **REFERENCE_SOLUTION_STORAGE**: `benchmark-control/private-oracle/swe-bench/`
 - **AGENT_EXECUTION_COMPONENT_USED**: `NO`
 - **OFFICIAL_AGENT_RUNNER_USED**: `NO`
-- **GRADING_COMMAND**: `python -m swebench.harness.run_evaluation --dataset_name princeton-nlp/SWE-bench_Verified --predictions_path <predictions_file> --run_id <run_id>`
-- **REPRODUCTION_COMMAND**: `python scripts/grade_with_official_verifier.py --track swe-bench --task <task_id> --patch <patch_path>`
+- **GRADING_COMMAND**: `python -m swebench.harness.run_evaluation --dataset_name <pinned-c104f840-test.parquet> --split test --predictions_path <predictions_file> --instance_ids <task_id> --run_id <run_id>` with Hugging Face offline mode (exact command and dataset file hash are recorded per task)
+- **REPRODUCTION_COMMAND**: `python scripts/grade_with_official_verifier.py --run-id <run_id> --task <task_id>` (requires a valid exported patch and workspace manifest)
 
 ---
 
@@ -30,6 +31,7 @@ This repository uses strictly official, canonical upstream benchmark sources. No
 - **CANONICAL_REPOSITORY**: `https://github.com/scaleapi/SWE-bench_Pro-os`
 - **UPSTREAM_EXACT_SHA**: `66f92766bba642462d4bbe5479e83f91f9211862` (Tag: `v2.0.0`)
 - **DATASET_SOURCE**: Hugging Face `ScaleAI/SWE-bench_Pro` & upstream repo `v2/tasks/`
+- **DATASET_REVISION**: `2d52cb3df914a3fcf80c7f66738b3a88ae37fc50` (selection cache; grading uses pinned upstream task package)
 - **DATASET_VERSION**: `v2.0.0` (642 total tasks, 51 hard tasks in `v2/hard51_ids.txt`)
 - **LICENSE**: Apache-2.0 License
 - **TASK_ACQUISITION_METHOD**: Direct clone of `SWE-bench_Pro-os` at tag `v2.0.0`; task definitions from `v2/tasks/`.
@@ -39,8 +41,8 @@ This repository uses strictly official, canonical upstream benchmark sources. No
 - **REFERENCE_SOLUTION_STORAGE**: `benchmark-control/private-oracle/swe-bench-pro/`
 - **AGENT_EXECUTION_COMPONENT_USED**: `NO`
 - **OFFICIAL_AGENT_RUNNER_USED**: `NO`
-- **GRADING_COMMAND**: `PYTHONPATH=benchmarks/swe-bench-pro/v2/tooling harbor run -p benchmarks/swe-bench-pro/v2/tasks/<task_id> -e docker -a patch_replay:PatchReplayAgent --model replay --ak source_patch=<patch_file>`
-- **REPRODUCTION_COMMAND**: `python scripts/fresh_sandbox_regrade.py --track swe-bench-pro --task <task_id> --patch <patch_file>`
+- **GRADING_COMMAND**: `PYTHONPATH=<pinned-v2/tooling> harbor run -p <pinned-v2/tasks/task_id> -e docker -a patch_replay:PatchReplayAgent --model replay --ak source_job=<source-job-dir>` (source job must contain `instance_*/result.json` and `agent/model.patch`; see recorded grader command)
+- **REPRODUCTION_COMMAND**: `python scripts/fresh_sandbox_regrade.py --run-id <run_id> --task <task_id>`
 
 ---
 
@@ -53,14 +55,13 @@ This repository uses strictly official, canonical upstream benchmark sources. No
 - **DATASET_VERSION**: Pinned git commit `4def1f367467b34b18e0dbdc086400ba71c3e037`
 - **LICENSE**: MIT License
 - **TASK_ACQUISITION_METHOD**: Pinned git repository clone.
-- **ENVIRONMENT_SETUP_METHOD**: Docker containers specified in `tasks/<task_id>/environment/Dockerfile` managed by Harbor CLI.
+- **ENVIRONMENT_SETUP_METHOD**: Official Harbor task environment, including Docker Compose services where the pinned task requires them.
 - **OFFICIAL_GRADER_PATH**: `tasks/<task_id>/tests/test.sh` executed inside sandbox via Harbor verifier.
 - **ORACLE_PATH**: `tasks/<task_id>/solution/solve.sh` (retained strictly in `benchmark-control/private-oracle`).
 - **REFERENCE_SOLUTION_STORAGE**: `benchmark-control/private-oracle/terminal-bench/`
 - **AGENT_EXECUTION_COMPONENT_USED**: `NO`
 - **OFFICIAL_AGENT_RUNNER_USED**: `NO`
-- **GRADING_COMMAND**: `harbor run -p benchmarks/terminal-bench/tasks/<task_id> -e docker --agent nop` (with candidate patch pre-applied to workspace)
-- **REPRODUCTION_COMMAND**: `python scripts/grade_with_official_verifier.py --track terminal-bench --task <task_id> --patch <patch_file>`
+- **GRADING_STATUS**: `UNSUPPORTED_STATE` until candidate state can be captured and replayed in the official environment. Calibration task `payments-pipeline-fix` declares both `/app/src/` and `kafka:/tmp/kafka-snapshot.tgz` as artifacts; a Git patch from the main image omits the Kafka sidecar state. `--agent nop` alone does not apply a host patch and cannot serve as evidence.
 
 ---
 
