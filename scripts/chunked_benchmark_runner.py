@@ -18,7 +18,9 @@ if __package__:
     from scripts.verify_agent_sandbox import prove_sandbox
     from scripts.verify_protocol_freeze import FreezeError, verify_local_patch_set
     from scripts.grade_with_official_verifier import HARBOR_BIN, HARBOR_ROOT, UPSTREAM
-    from scripts.terminal_replay import (REPLAY_AGENT_STREAM, REPLAY_PROCESS_RECORD,
+    from scripts.terminal_replay import (SANDBOX_STATE_ARTIFACT,
+                                         SANDBOX_STATE_INSTALL_STATUS,
+                                         REPLAY_AGENT_STREAM, REPLAY_PROCESS_RECORD,
                                          build_terminal_prompt,
                                          candidate_state_sha256,
                                          candidate_trial_command, locate_trial,
@@ -29,7 +31,8 @@ else:
     from verify_agent_sandbox import prove_sandbox
     from verify_protocol_freeze import FreezeError, verify_local_patch_set
     from grade_with_official_verifier import HARBOR_BIN, HARBOR_ROOT, UPSTREAM
-    from terminal_replay import (REPLAY_AGENT_STREAM, REPLAY_PROCESS_RECORD,
+    from terminal_replay import (SANDBOX_STATE_ARTIFACT, SANDBOX_STATE_INSTALL_STATUS,
+                                 REPLAY_AGENT_STREAM, REPLAY_PROCESS_RECORD,
                                  build_terminal_prompt, candidate_state_sha256,
                                  candidate_trial_command, locate_trial,
                                  read_candidate_evidence, verify_harbor_pin)
@@ -209,11 +212,15 @@ def _run_terminal_task(task_obj, run_id):
     if (grade.get("status") not in ("PASS", "FAIL") or
             regrade.get("status") != grade["status"] or
             grade.get("official_grader_executed") is not True or
-            grade.get("patch_apply_status") != "APPLIED" or
-            regrade.get("patch_applied") is not True or
-            regrade.get("patch_apply_status") != "APPLIED" or
+            grade.get("candidate_artifact_type") != SANDBOX_STATE_ARTIFACT or
+            regrade.get("candidate_artifact_type") != SANDBOX_STATE_ARTIFACT or
+            grade.get("patch_apply_status") != SANDBOX_STATE_INSTALL_STATUS or
+            regrade.get("patch_apply_status") != SANDBOX_STATE_INSTALL_STATUS or
+            regrade.get("candidate_installed") is not True or
+            grade.get("replay_agent_phase_executed") is not False or
             regrade.get("resolved") is not grade.get("resolved") or
             regrade.get("candidate_patch_sha256") != grade.get("candidate_patch_sha256") or
+            grade.get("candidate_patch_sha256") != state_sha or
             not grade.get("sandbox_identity") or
             not regrade.get("sandbox_identity") or
             grade["sandbox_identity"] == regrade["sandbox_identity"]):

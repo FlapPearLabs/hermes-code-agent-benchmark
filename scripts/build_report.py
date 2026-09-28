@@ -9,9 +9,14 @@ from collections import Counter
 from pathlib import Path
 
 if __package__:
+    from scripts.candidate_artifact import (CANDIDATE_ARTIFACT_TYPE,
+                                            expected_install_status)
     from scripts.log_intervention import TAXONOMY
+    from scripts import terminal_replay
 else:
+    from candidate_artifact import CANDIDATE_ARTIFACT_TYPE, expected_install_status
     from log_intervention import TAXONOMY
+    import terminal_replay
 
 
 REPO_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +33,7 @@ def _read_json(path):
         return None
 
 
-def _valid_process(task_dir, grader, prefix):
+def _valid_process(task_dir, grader, prefix, artifact):
     if not isinstance(grader, dict):
         return False
     status = grader.get("status")
@@ -36,7 +41,8 @@ def _valid_process(task_dir, grader, prefix):
         return False
     if grader.get("official_grader_process_started") is not True or grader.get("official_grader_executed") is not True:
         return False
-    if grader.get("grader_exit_code") != 0 or grader.get("patch_apply_status") != "APPLIED":
+    if (grader.get("grader_exit_code") != 0 or artifact is None
+            or grader.get("patch_apply_status") != expected_install_status(artifact)):
         return False
     if not grader.get("sandbox_identity"):
         return False
@@ -60,11 +66,52 @@ def _valid_process(task_dir, grader, prefix):
     return True
 
 
-def _valid_regrade(task_dir, grader):
+def _valid_sandbox_state_regrade(task_dir, grader, fresh, regrade):
+    """A sandbox-state candidate has no patch; its identity is the recorded artifact tree.
+
+    The digest is recomputed from the recorded trial directory instead of being
+    read back from the record that claims it, so a record that no longer
+    describes the state it points at cannot count as executed.
+    """
+    export = _read_json(task_dir / "trial-export-result.json")
+    if (not isinstance(export, dict)
+            or export.get("candidate_artifact_type") != "SANDBOX_STATE"):
+        return False
+    trial, identity = export.get("candidate_trial_dir"), export.get("candidate_state_sha256")
+    if not trial or not identity:
+        return False
+    try:
+        if terminal_replay.candidate_state_sha256(trial) != identity:
+            return False
+    except OSError:
+        return False
+    if not all(result.get("candidate_patch_sha256") == identity
+               for result in (grader, fresh, regrade)):
+        return False
+    if regrade.get("candidate_artifact_type") != "SANDBOX_STATE":
+        return False
+    if (fresh["sandbox_identity"] == grader["sandbox_identity"] or
+            fresh["raw_result_path"] == grader["raw_result_path"]):
+        return False
+    return (regrade.get("status") == fresh["status"] == grader["status"] and
+            regrade.get("resolved") is fresh["resolved"] is grader["resolved"] and
+            regrade.get("candidate_installed") is True and
+            regrade.get("patch_apply_status") == expected_install_status("SANDBOX_STATE") and
+            regrade.get("grader_exit_code") == 0 and
+            regrade.get("official_grader_executed") is True and
+            regrade.get("sandbox_identity") == fresh["sandbox_identity"] and
+            regrade.get("raw_result_path") == fresh["raw_result_path"] and
+            grader.get("replay_agent_phase_executed") is False and
+            fresh.get("replay_agent_phase_executed") is False)
+
+
+def _valid_regrade(task_dir, grader, artifact):
     fresh = _read_json(task_dir / "fresh-sandbox-result.json")
     regrade = _read_json(task_dir / "fresh-regrade-result.json")
-    if not _valid_process(task_dir, fresh, "fresh-sandbox") or not isinstance(regrade, dict):
+    if not _valid_process(task_dir, fresh, "fresh-sandbox", artifact) or not isinstance(regrade, dict):
         return False
+    if artifact == "SANDBOX_STATE":
+        return _valid_sandbox_state_regrade(task_dir, grader, fresh, regrade)
     try:
         patch_hash = hashlib.sha256((task_dir / "patch.diff").read_bytes()).hexdigest()
     except OSError:
@@ -84,7 +131,7 @@ def _valid_regrade(task_dir, grader):
             regrade.get("raw_result_path") == fresh["raw_result_path"])
 
 
-def _task_state(task_dir, run_contaminated):
+def _task_state(task_dir, run_contaminated, artifact):
     grader_path = task_dir / "grader-result.json"
     grader = _read_json(grader_path)
     summary = _read_json(task_dir / "task-summary.json")
@@ -94,14 +141,14 @@ def _task_state(task_dir, run_contaminated):
     if grader_path.exists():
         if isinstance(grader, dict) and grader.get("status") == "INFRA_FAIL":
             return "INFRA_FAIL", contaminated
-        if not _valid_process(task_dir, grader, "grader"):
+        if not _valid_process(task_dir, grader, "grader", artifact):
             return "INVALID", contaminated
         fresh = _read_json(task_dir / "fresh-sandbox-result.json")
         regrade = _read_json(task_dir / "fresh-regrade-result.json")
         if (isinstance(fresh, dict) and fresh.get("status") == "INFRA_FAIL" and
                 isinstance(regrade, dict) and regrade.get("status") == "INFRA_FAIL"):
             return "INFRA_FAIL", contaminated
-        if _valid_regrade(task_dir, grader):
+        if _valid_regrade(task_dir, grader, artifact):
             return ("RESOLVED" if grader["status"] == "PASS" else "EXECUTED"), contaminated
         return "INVALID", contaminated
     if task_dir.is_dir() and any(p.name != "human-interventions.jsonl" for p in task_dir.iterdir()):
@@ -167,7 +214,9 @@ def generate_report(run_id, interim_count=None):
     counts = {}
     states = {}
     for label, tasks in (("SCORED", scored), ("CALIBRATION", calibration)):
-        states[label] = [(task, *_task_state(run_dir / "tasks" / task["task_id"], run_contaminated))
+        states[label] = [(task, *_task_state(run_dir / "tasks" / task["task_id"],
+                                             run_contaminated,
+                                             CANDIDATE_ARTIFACT_TYPE.get(task["track"])))
                          for task in tasks]
         counts[label] = Counter(state for _, state, _ in states[label])
 

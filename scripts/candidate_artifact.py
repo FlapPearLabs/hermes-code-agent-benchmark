@@ -12,12 +12,29 @@ CANDIDATE_ARTIFACT_TYPE = {
     "terminal-bench": "SANDBOX_STATE",
 }
 
+# How the candidate's change reaches the graded environment. Both statuses mean
+# "the candidate state was successfully installed for grading", but the artifact
+# that carries it differs, so the record must name the mechanism that actually
+# ran instead of writing one track's label onto the other track's evidence.
+INSTALL_STATUS_BY_ARTIFACT_TYPE = {
+    "GIT_PATCH": "APPLIED",      # candidate patch applied inside the graded container
+    "SANDBOX_STATE": "SEEDED",   # recorded artifact bytes seeded into a fresh verifier environment
+}
+
 
 def artifact_type(track, declared=None):
     expected = CANDIDATE_ARTIFACT_TYPE[track]
     if declared is not None and declared != expected:
         raise ValueError(f"CANDIDATE_ARTIFACT_TYPE_MISMATCH: {track}: {declared}")
     return expected
+
+
+def expected_install_status(artifact):
+    """The install status a valid record must carry for this candidate artifact."""
+    try:
+        return INSTALL_STATUS_BY_ARTIFACT_TYPE[artifact]
+    except KeyError:
+        raise ValueError(f"UNKNOWN_CANDIDATE_ARTIFACT_TYPE: {artifact}")
 
 
 def check_terminal_artifact_preflight(task_dir, trial_dir, task_id):

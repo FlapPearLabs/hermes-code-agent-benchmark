@@ -100,10 +100,10 @@ def _check_inputs(task, task_dir):
     if task.get("upstream_sha") != sha:
         raise ValueError("task manifest upstream SHA differs from pinned evaluator")
     if track == "swe-bench-pro-v2":
-        _verify_pin(HARBOR_ROOT, "3c82380859d187957cfd5cd64802b076d9779550")
-        version = subprocess.run([str(HARBOR_BIN), "--version"], capture_output=True, text=True)
-        if version.returncode != 0 or version.stdout.strip() != "0.23.0":
-            raise ValueError("Harbor 0.23.0 is unavailable")
+        # The Pro path runs Harbor with ``<harbor_root>/src`` on PYTHONPATH, so
+        # the pinned tree must be what actually executes — not merely a checkout
+        # whose HEAD matches a SHA while another build is imported.
+        terminal_replay.verify_harbor_pin(HARBOR_ROOT, HARBOR_BIN)
     elif not VERIFIED_PARQUET.is_file():
         raise ValueError("pinned SWE-bench Verified dataset snapshot is unavailable")
     return patch
@@ -359,7 +359,7 @@ def _grade_patch(task_id, run_id, phase, task):
             outcome["grader_exit_code"] = code
             outcome["grader_duration_ms"] = duration_ms
             outcome.update(parse_harbor_result(task_id, jobs_dir / job_name, code, source_patch))
-    except (OSError, ValueError, KeyError) as exc:
+    except (OSError, ValueError, KeyError, RuntimeError) as exc:
         outcome["error"] = f"{type(exc).__name__}: {exc}"
     outcome["official_grader_executed"] = outcome["status"] in ("PASS", "FAIL")
     _json(outcome_path, outcome)

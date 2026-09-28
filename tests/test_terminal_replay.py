@@ -341,7 +341,8 @@ def test_grade_terminal_grades_recorded_state_in_a_new_environment(
     assert outcome["status"] == "PASS" and outcome["resolved"] is True
     assert outcome["official_grader_executed"] is True
     assert outcome["official_grader_process_proven"] is True
-    assert outcome["official_grader_agent"] == "nop"
+    assert outcome["official_grader_agent_phase"] == "NOT_EXECUTED"
+    assert outcome["patch_apply_status"] == "SEEDED"
     assert outcome["sandbox_identity"] == "replay-id"
     assert outcome["replay_agent_phase_executed"] is False
     assert outcome["candidate_patch_sha256"] == tr.candidate_state_sha256(source)

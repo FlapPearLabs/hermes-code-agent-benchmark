@@ -168,3 +168,53 @@ def test_fresh_regrade_requires_distinct_sandbox(tmp_path, monkeypatch):
     result = fresh.fresh_regrade("task", "calibration")
     assert result["status"] == "INVALID"
     assert result["resolved"] is None
+
+
+def _pro_task_evidence(tmp_path, monkeypatch, task_id="pro-1"):
+    """A pro-track task whose only remaining gate is the Harbor provenance."""
+    task = {"task_id": task_id, "track": "swe-bench-pro-v2",
+            "upstream_sha": "pro-sha", "task_dir": str(tmp_path / "official")}
+    (tmp_path / "benchmark-manifest.json").write_text(json.dumps({
+        "calibration_tasks": [task], "scored_tasks": []}))
+    task_dir = tmp_path / "runs" / "calibration" / "tasks" / task_id
+    task_dir.mkdir(parents=True)
+    write_patch_evidence(task_dir, task_id)
+    monkeypatch.setattr(grader, "REPO_DIR", tmp_path)
+    monkeypatch.setattr(grader, "PINS", {"swe-bench-pro-v2": (tmp_path / "pro", "pro-sha")})
+    monkeypatch.setattr(grader, "_verify_pin", lambda *_: None)
+    return task_dir
+
+
+def test_pro_track_binds_the_harbor_that_actually_executes(tmp_path, monkeypatch):
+    """A matching checkout is not enough: the imported build must be the pinned one."""
+    _pro_task_evidence(tmp_path, monkeypatch)
+    calls = []
+
+    def boom(root, binary):
+        calls.append((root, binary))
+        raise RuntimeError("HARBOR_RUNTIME_RESOLUTION_MISMATCH: a != b")
+
+    monkeypatch.setattr(grader.terminal_replay, "verify_harbor_pin", boom)
+    monkeypatch.setattr(grader, "_invoke", lambda *_: pytest.fail("grader must not start"))
+    result = grader.grade_task("pro-1", "calibration")
+    assert calls == [(grader.HARBOR_ROOT, grader.HARBOR_BIN)]
+    assert result["status"] == "INVALID"
+    assert "HARBOR_RUNTIME_RESOLUTION_MISMATCH" in result["error"]
+    assert result["official_grader_process_started"] is False
+    assert result["official_grader_executed"] is False
+
+
+def test_pro_track_provenance_is_checked_before_the_grader_runs(tmp_path, monkeypatch):
+    """The pinned provenance must be established, and its result carried into the record."""
+    _pro_task_evidence(tmp_path, monkeypatch)
+    seen = {}
+    monkeypatch.setattr(grader.terminal_replay, "verify_harbor_pin",
+                        lambda root, binary: seen.update(root=str(root),
+                                                         runtime_path="/pinned/harbor")
+                        or {"pin_sha": "3c82380859d187957cfd5cd64802b076d9779550",
+                            "version": "0.23.0", "runtime_path": "/pinned/harbor"})
+    monkeypatch.setattr(grader, "_invoke", lambda *_: pytest.fail("grader must not start"))
+    result = grader.grade_task("pro-1", "calibration")
+    assert seen["root"] == str(grader.HARBOR_ROOT)
+    assert result["status"] == "INVALID"
+    assert "Pro V2 task directory is not the pinned upstream task" in result["error"]

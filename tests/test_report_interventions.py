@@ -165,6 +165,22 @@ def test_intervention_logger_rejects_nonmanifest_task_and_invalid_taxonomy(tmp_p
                                           "Retry", "ticket", task_id="scored-00")
 
 
+def test_report_requires_the_patch_install_label_for_patch_candidates(tmp_path, monkeypatch):
+    """The per-artifact-type install vocabulary must not loosen the git-patch track."""
+    run = _fixture(tmp_path, monkeypatch)
+    task_dir = run / "tasks" / "scored-00"
+    _grader(task_dir)
+    for name in ("grader-result.json", "fresh-sandbox-result.json"):
+        data = json.loads((task_dir / name).read_text())
+        data["patch_apply_status"] = "SEEDED"
+        _write_json(task_dir / name, data)
+    build_report.generate_report("run_test")
+    report = (tmp_path / "reports" / "BENCHMARK_REPORT_run_test.md").read_text()
+    assert "SCORED_EXECUTED: 0/20" in report
+    assert "SCORED_RESOLVED: N/A" in report
+    assert "SCORED_INVALID: 1" in report
+
+
 def test_report_never_overwrites_historical_final_report(tmp_path, monkeypatch):
     _fixture(tmp_path, monkeypatch)
     run = tmp_path / "runs" / "run_001"

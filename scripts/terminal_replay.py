@@ -37,9 +37,11 @@ import time
 from pathlib import Path
 
 if __package__:
-    from scripts.candidate_artifact import parse_terminal_reward_preflight
+    from scripts.candidate_artifact import (artifact_type, expected_install_status,
+                                           parse_terminal_reward_preflight)
 else:
-    from candidate_artifact import parse_terminal_reward_preflight
+    from candidate_artifact import (artifact_type, expected_install_status,
+                                   parse_terminal_reward_preflight)
 
 try:  # pragma: no cover - exercised only inside the Harbor plugin context
     from harbor.agents.base import BaseAgent as _HarborBaseAgent
@@ -54,11 +56,13 @@ except Exception:  # pragma: no cover - plain host-side import (runner/grader/te
 
 HARBOR_PIN_SHA = "3c82380859d187957cfd5cd64802b076d9779550"
 HARBOR_PIN_VERSION = "0.23.0"
+TERMINAL_TRACK = "terminal-bench"
+SANDBOX_STATE_ARTIFACT = artifact_type(TERMINAL_TRACK)
+SANDBOX_STATE_INSTALL_STATUS = expected_install_status(SANDBOX_STATE_ARTIFACT)
 SUT_AGENT_IMPORT_PATH = "terminal_replay:HermesCodeHostAgent"
 SUT_AGENT_NAME = "hermes-code-host-agent"
 SUT_AGENT_VERSION = "1.0.0"
 SUT_MODEL_LABEL = "hermes-code-bot"
-NOP_AGENT_NAME = "nop"
 SUT_EXTRA_ENV = {"HERMES_YOLO_MODE": "1"}
 REGRADE_ACTION = "regrade"
 REGRADE_SOURCE_TYPE = "local"
@@ -288,6 +292,12 @@ def read_replay_evidence(*, task_id, trial_dir, exit_code, source_trial_dir,
     identity carried through unchanged, the SUT stream copied verbatim rather
     than regenerated, a new trial environment, and consistent reward evidence.
     Anything else raises, so partial replays can never yield a verdict.
+
+    An installed sandbox-state candidate is recorded as ``SEEDED``: the recorded
+    artifact bytes were seeded into a fresh verifier environment. There is no
+    patch, so the patch track's ``APPLIED`` label must not appear here, and the
+    absence of an agent phase is reported as the recorded absence it is rather
+    than as the name of the agent Harbor happens to instantiate internally.
     """
     trial_dir = Path(trial_dir)
     # Reward/task/exit/exception/id shape comes from the frozen preflight; this
@@ -329,13 +339,15 @@ def read_replay_evidence(*, task_id, trial_dir, exit_code, source_trial_dir,
     return {
         "status": reward["status"],
         "resolved": reward["resolved"],
-        "patch_apply_status": "APPLIED",
+        "candidate_artifact_type": SANDBOX_STATE_ARTIFACT,
+        "candidate_identity_kind": "SANDBOX_STATE_TREE",
+        "patch_apply_status": SANDBOX_STATE_INSTALL_STATUS,
         "sandbox_identity": raw.get("id"),
         "sandbox_identity_kind": "harbor_trial_id",
         "candidate_patch_sha256": candidate_state_sha256_value,
         "official_grader_executed": True,
         "official_grader_process_proven": True,
-        "official_grader_agent": NOP_AGENT_NAME,
+        "official_grader_agent_phase": "NOT_EXECUTED",
         "replay_agent_phase_executed": raw.get("agent_execution") is not None,
         "replay_source_trial_id": source_trial_id,
         "replay_source_trial_path": str(Path(source_trial_dir).resolve()),
