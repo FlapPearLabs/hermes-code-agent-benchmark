@@ -175,6 +175,7 @@ def _invoke(command, cwd, env, evidence_dir, prefix):
         "DOCKER_HOST": env.get("DOCKER_HOST"),
         "HF_DATASETS_OFFLINE": env.get("HF_DATASETS_OFFLINE"),
         "HF_HUB_OFFLINE": env.get("HF_HUB_OFFLINE"),
+        "HF_DATASETS_CACHE": env.get("HF_DATASETS_CACHE"),
     })
     started_at = time.monotonic()
     try:
@@ -230,6 +231,7 @@ def grade_task(task_id, run_id, phase="grader"):
             env["PYTHONPATH"] = str(SWE_ROOT)
             env["HF_DATASETS_OFFLINE"] = "1"
             env["HF_HUB_OFFLINE"] = "1"
+            env["HF_DATASETS_CACHE"] = str(task_dir / "hf-datasets-cache")
             outcome.update(dataset_revision=VERIFIED_REVISION,
                            dataset_file_sha256=_sha256(VERIFIED_PARQUET))
             log_dir = cwd / "logs/evaluation" / eval_id / model / task_id
