@@ -62,7 +62,7 @@
     "scripts/collect_telemetry.py": "4914891cb385562199982254662098f6b5fb35dea2439a60a9fe16291b1bf31a",
     "scripts/export_candidate_patch.py": "877a230f3b59037112d4848de78c951ae7a67c3bf9ac346c8c1cb3c30f80e73f",
     "scripts/fresh_sandbox_regrade.py": "609796526c262de8322a120508c6b047cbb152b5d4efa82767326ec5f263f8a8",
-    "scripts/grade_with_official_verifier.py": "fd1df277fbd95e1055fa6029c35187b5b4f67f9e2f19128c86de4cb322c52dfa",
+    "scripts/grade_with_official_verifier.py": "e9f7720cd6bf766d0b090ad25a2cc80ec655b5d6324682aedd852c197f8714a9",
     "scripts/log_intervention.py": "44a220a26745c1d87361ad8d71b33f1ee2b03748db2e8ee4e48c63dd276234b6",
     "scripts/prepare_agent_workspace.py": "410035e5354880ebb491f69f9074aad80359107a598734a9008b02ae1cbe0ba0",
     "scripts/run_codebot_task.py": "b0cec28afdda06dea922f89434141c161aa75b61b481df01aa89233b272e9f81",
@@ -72,7 +72,7 @@
     "skill-inventory.json": "d2b17dcb72b0cbd307986636253cfb7976cf8e8000721f2a0ff7e19f2c41e555",
     "system-under-test.json": "26a2f55d4e1eb74d9e045cecaba24e6a316f75834e3e897681c986b5d5577747",
     "tool-inventory.json": "25d5b8a14f97293b5598fd49e8ea61b47aeb5dd371108119a3d8559bad5ae1ae",
-    "scripts/terminal_replay.py": "217a7137780e60fdeada52c0e996fd5416cb52143d0d6cdfe51196b9172f7130"
+    "scripts/terminal_replay.py": "7fe67570708cf1ce179ef77394df46a9e8e670c66213ed4929feb5f986920b42"
   },
   "fresh_reviewer_observability": "TELEMETRY_UNAVAILABLE: no authoritative read-only exact-SHA per-task lifecycle record",
   "goal_config": {

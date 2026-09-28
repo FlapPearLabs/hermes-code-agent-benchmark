@@ -137,31 +137,35 @@ def _harbor_interpreter(harbor_bin):
     return sibling if sibling.is_file() else None
 
 
-def installed_harbor_identity(harbor_bin) -> dict:
-    """Identity of the harbor package the entry point will actually import.
+def harbor_runtime_identity(harbor_root, harbor_bin) -> dict:
+    """Identity of the harbor package the official machinery will execute.
 
-    The frozen manifest pins the harbor source SHA and the installed binary
-    version; this adds the content digest of the executed package so the code
-    that runs is recorded, not just the source label. Anything unresolvable is
-    reported as unknown rather than assumed.
+    Both call sites run harbor with ``<harbor_root>/src`` prepended to
+    ``PYTHONPATH``, so that source tree — not the copy installed in the
+    interpreter's site-packages — is what actually executes. The probe replays
+    that same resolution and requires it to land on the pinned tree, so a pin
+    that only matched a label while a different build ran could not pass.
     """
+    expected = (Path(harbor_root) / "src" / "harbor").resolve()
     interpreter = _harbor_interpreter(harbor_bin)
     if interpreter is None:
-        return {"installed_path": None, "installed_digest": None,
-                "installed_digest_reason": "harbor interpreter not resolvable"}
+        raise RuntimeError("HARBOR_RUNTIME_UNRESOLVED: interpreter not discoverable")
+    env = {**os.environ,
+           "PYTHONPATH": os.pathsep.join(
+               (str(Path(harbor_root) / "src"),
+                *(p for p in (os.environ.get("PYTHONPATH"),) if p)))}
     probe = subprocess.run(
         [str(interpreter), "-c",
          "import pathlib, harbor; print(pathlib.Path(harbor.__file__).resolve().parent)"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, env=env)
     if probe.returncode != 0:
-        return {"installed_path": None, "installed_digest": None,
-                "installed_digest_reason": "harbor package not importable"}
-    package_dir = Path(probe.stdout.strip())
-    if not package_dir.is_dir():
-        return {"installed_path": None, "installed_digest": None,
-                "installed_digest_reason": "harbor package path is not a directory"}
-    return {"installed_path": str(package_dir),
-            "installed_digest": tree_sha256(package_dir)}
+        raise RuntimeError(
+            f"HARBOR_RUNTIME_UNRESOLVED: {probe.stderr.strip()[-200:]}")
+    resolved = Path(probe.stdout.strip()).resolve()
+    if resolved != expected:
+        raise RuntimeError(
+            f"HARBOR_RUNTIME_RESOLUTION_MISMATCH: {resolved} != {expected}")
+    return {"runtime_path": str(resolved), "runtime_digest": tree_sha256(resolved)}
 
 
 def verify_harbor_pin(harbor_root, harbor_bin) -> dict:
@@ -178,7 +182,7 @@ def verify_harbor_pin(harbor_root, harbor_bin) -> dict:
     if version.returncode != 0 or version.stdout.strip() != HARBOR_PIN_VERSION:
         raise RuntimeError("HARBOR_VERSION_MISMATCH")
     return {"pin_sha": HARBOR_PIN_SHA, "version": HARBOR_PIN_VERSION,
-            **installed_harbor_identity(harbor_bin)}
+            **harbor_runtime_identity(harbor_root, harbor_bin)}
 
 
 # ---------------------------------------------------------------------------

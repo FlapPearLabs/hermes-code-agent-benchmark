@@ -270,8 +270,15 @@ def grade_task(task_id, run_id, phase="grader"):
         raise ValueError(f"unknown grading phase: {phase}")
     if run_id == "run_001" or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", run_id):
         raise ValueError("historical or unsafe run ID")
-    task = _task(task_id)
-    if artifact_type(task["track"]) == "SANDBOX_STATE":
+    try:
+        task = _task(task_id)
+        sandbox_state = artifact_type(task["track"]) == "SANDBOX_STATE"
+    except (KeyError, ValueError):
+        # Keep the pre-existing behaviour for an unusable task id or track: the
+        # git-patch path records INVALID evidence instead of raising before any
+        # evidence exists.
+        return _grade_patch(task_id, run_id, phase, {})
+    if sandbox_state:
         return _grade_terminal(task_id, run_id, phase, task)
     return _grade_patch(task_id, run_id, phase, task)
 

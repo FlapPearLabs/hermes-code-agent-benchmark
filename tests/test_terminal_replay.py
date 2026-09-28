@@ -274,6 +274,21 @@ def test_grade_terminal_without_a_recorded_trial_never_starts_the_grader(
     assert started == []
 
 
+def test_grade_task_keeps_recording_invalid_evidence_for_an_unknown_task(
+        tmp_path, monkeypatch):
+    """An unusable task id must still land as INVALID evidence (the behaviour the
+    git-patch path had before the terminal branch existed), not raise."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "benchmark-manifest.json").write_text(json.dumps(
+        {"calibration_tasks": [], "scored_tasks": []}))
+    monkeypatch.setattr(grader, "REPO_DIR", repo)
+    outcome = grader.grade_task("no-such-task", "run-x", "grader")
+    assert outcome["status"] == "INVALID"
+    assert outcome["official_grader_executed"] is False
+    assert (repo / "runs" / "run-x" / "tasks" / "no-such-task" / "grader-result.json").is_file()
+
+
 # ---------------------------------------------------------------------------
 # B. recorded state can be replayed and graded
 # ---------------------------------------------------------------------------
@@ -480,35 +495,100 @@ def test_two_replays_of_one_record_land_in_two_environments(layout, tmp_path):
 # E. gold is never read
 # ---------------------------------------------------------------------------
 
-_AUDIT = {"record": None}
+_AUDIT = {"installed": False, "enabled": False, "record": None}
 
 
-def install_audit_hook():
-    if _AUDIT["record"] is not None:
+def _ensure_audit_hook():
+    """Install the ``open`` audit hook exactly once.
+
+    CPython audit hooks cannot be removed, so recording is gated by an explicit
+    ``enabled`` flag. Gating on the truthiness of the record list instead would
+    silently disable the hook the moment the list is cleared — an empty list is
+    falsy — and the gold assertion below would pass vacuously.
+    """
+    if _AUDIT["installed"]:
         return
-    seen = []
 
     def hook(event, args):
-        if event == "open" and _AUDIT["record"]:
-            seen.append(str(args[0]))
+        if event == "open" and _AUDIT["enabled"]:
+            _AUDIT["record"].append(str(args[0]))
 
     sys.addaudithook(hook)
-    _AUDIT["record"] = seen
+    _AUDIT["installed"] = True
+
+
+class audit_opens:
+    """Record every path opened inside the block."""
+
+    def __enter__(self):
+        _ensure_audit_hook()
+        _AUDIT["record"] = opened = []
+        _AUDIT["enabled"] = True
+        return opened
+
+    def __exit__(self, *exc_info):
+        _AUDIT["enabled"] = False
+        return False
+
+
+def _gold_reads(seen, task_dir):
+    return [p for p in seen
+            if str(task_dir / "solution") in p or str(task_dir / "tests") in p]
 
 
 def test_replay_evidence_reads_no_gold(layout, tmp_path):
     _, _, task_dir, source = layout
     trial = _replay(layout, tmp_path, trial_id="replay-id")
-    install_audit_hook()
-    seen = _AUDIT["record"]
-    seen.clear()
-    tr.read_replay_evidence(
-        task_id=TASK_ID, trial_dir=trial, exit_code=0, source_trial_dir=source,
-        source_trial_id="source-id", source_stream_sha256=stream_sha(),
-        candidate_state_sha256_value=tr.candidate_state_sha256(source))
-    _AUDIT["record"] = None
-    assert not [p for p in seen if str(task_dir / "solution") in p]
-    assert not [p for p in seen if str(task_dir / "tests") in p]
+    with audit_opens() as seen:
+        tr.read_replay_evidence(
+            task_id=TASK_ID, trial_dir=trial, exit_code=0, source_trial_dir=source,
+            source_trial_id="source-id", source_stream_sha256=stream_sha(),
+            candidate_state_sha256_value=tr.candidate_state_sha256(source))
+        assert seen, "audit hook captured nothing; the assertion would be vacuous"
+    assert _gold_reads(seen, task_dir) == []
+
+
+def test_grade_terminal_reads_no_gold(tmp_path, layout, monkeypatch):
+    """The whole grading path — not just the evidence parser — must leave the
+    task's gold untouched."""
+    upstream, repo, task_dir, _ = layout
+    _, source = prepare_run(repo, task_dir)
+    task = wire_grader(monkeypatch, tmp_path, upstream, repo)
+
+    def fake_invoke(command, cwd, env, evidence_dir, prefix):
+        write_regrade_trial(Path(command[command.index("-o") + 1]), source,
+                            trial_id="replay-id",
+                            name=command[command.index("--trial-name") + 1])
+        return 0, True, 1
+
+    monkeypatch.setattr(grader, "_invoke", fake_invoke)
+    with audit_opens() as seen:
+        grader._grade_terminal(TASK_ID, "run-x", "grader", task)
+        # Positive control: the hook must observe this path's real file traffic,
+        # otherwise the gold check below proves nothing.
+        assert any("trial-export-result.json" in p for p in seen), seen
+    assert _gold_reads(seen, task_dir) == []
+
+
+def test_verify_sandbox_really_denies_the_benchmark_control_plane(tmp_path):
+    """End-to-end gold-isolation proof: a real sandboxed read of the benchmark
+    control plane must fail while the task instruction stays readable."""
+    import platform
+    if platform.system() != "Darwin":
+        pytest.skip("sandbox-exec is macOS only")
+    from verify_agent_sandbox import prove_sandbox
+    repo = tmp_path / "repo"
+    workspace = repo / "agent-workspaces" / "run-x" / TASK_ID
+    (workspace / "repo").mkdir(parents=True)
+    (workspace / "PROBLEM.md").write_text("task instruction\n")
+    (repo / "benchmark-manifest.json").write_text('{"calibration_tasks": []}')
+    task_dir = tmp_path / "sandbox-proof"
+    prefix = prove_sandbox(workspace, task_dir, repo)
+    proof = json.loads((task_dir / "agent-sandbox-proof.json").read_text())
+    assert proof["status"] == "PASS"
+    assert proof["probes"]["task_instruction"]["exit_code"] == 0
+    assert proof["probes"]["benchmark_control"]["exit_code"] != 0
+    assert prefix[:2] == ["sandbox-exec", "-f"]
 
 
 def test_sandbox_profile_denies_the_task_cache_and_benchmark_repo(tmp_path):
@@ -546,7 +626,7 @@ def test_verify_harbor_pin_checks_sha_tree_and_version(tmp_path, monkeypatch):
         return _Proc(0, tr.HARBOR_PIN_VERSION + "\n")
 
     monkeypatch.setattr(tr.subprocess, "run", fake_run)
-    monkeypatch.setattr(tr, "installed_harbor_identity", lambda b: {})
+    monkeypatch.setattr(tr, "harbor_runtime_identity", lambda root, b: {"runtime_path": "x"})
     assert tr.verify_harbor_pin(root, binary)["pin_sha"] == tr.HARBOR_PIN_SHA
     assert len(calls) == 3
 
@@ -576,12 +656,38 @@ def test_verify_harbor_pin_checks_sha_tree_and_version(tmp_path, monkeypatch):
         tr.verify_harbor_pin(root, binary)
 
 
-def test_installed_harbor_identity_reports_unknown_instead_of_guessing(tmp_path):
-    binary = tmp_path / "harbor"
-    binary.write_text("not a script\n")
-    assert tr.installed_harbor_identity(binary) == {
-        "installed_path": None, "installed_digest": None,
-        "installed_digest_reason": "harbor interpreter not resolvable"}
+def test_harbor_runtime_identity_requires_the_pinned_source_tree(tmp_path, monkeypatch):
+    """The digest must describe the package that actually executes: both call
+    sites prepend ``<harbor_root>/src`` to PYTHONPATH, so a resolution landing
+    anywhere else is a hard error rather than a recorded curiosity."""
+    root, binary = tmp_path / "harbor", tmp_path / "bin" / "harbor"
+    (root / "src" / "harbor").mkdir(parents=True)
+    (root / "src" / "harbor" / "__init__.py").write_text("")
+    binary.parent.mkdir(parents=True)
+    binary.write_text("#!/bin/sh\n")
+    seen = {}
+
+    monkeypatch.setattr(tr, "_harbor_interpreter", lambda b: "/usr/bin/python3")
+
+    def fake_run(argv, **kwargs):
+        seen["env"] = kwargs.get("env") or {}
+        return _Proc(0, str(root / "src" / "harbor") + "\n")
+
+    monkeypatch.setattr(tr.subprocess, "run", fake_run)
+    identity = tr.harbor_runtime_identity(root, binary)
+    assert identity["runtime_path"] == str((root / "src" / "harbor").resolve())
+    assert identity["runtime_digest"] == tr.tree_sha256(root / "src" / "harbor")
+    # The probe must resolve harbor the same way the real callers do.
+    assert (root / "src") .as_posix() in seen["env"]["PYTHONPATH"]
+
+    monkeypatch.setattr(tr.subprocess, "run",
+                        lambda argv, **k: _Proc(0, str(tmp_path / "site-packages" / "harbor")))
+    with pytest.raises(RuntimeError, match="RESOLUTION_MISMATCH"):
+        tr.harbor_runtime_identity(root, binary)
+
+    monkeypatch.setattr(tr, "_harbor_interpreter", lambda b: None)
+    with pytest.raises(RuntimeError, match="UNRESOLVED"):
+        tr.harbor_runtime_identity(root, binary)
 
 
 def test_tree_sha256_is_stable_and_ignores_caches(tmp_path):
