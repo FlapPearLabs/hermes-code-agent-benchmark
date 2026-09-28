@@ -14,6 +14,7 @@ F. every replay builds an independent environment.
 import asyncio
 import hashlib
 import json
+import os
 import sys
 import tomllib
 from pathlib import Path
@@ -627,7 +628,8 @@ def test_verify_harbor_pin_checks_sha_tree_and_version(tmp_path, monkeypatch):
         return _Proc(0, tr.HARBOR_PIN_VERSION + "\n")
 
     monkeypatch.setattr(tr.subprocess, "run", fake_run)
-    monkeypatch.setattr(tr, "harbor_runtime_identity", lambda root, b: {"runtime_path": "x"})
+    monkeypatch.setattr(tr, "harbor_runtime_identity",
+                        lambda root, b, path_prefixes=(): {"runtime_path": "x"})
     assert tr.verify_harbor_pin(root, binary)["pin_sha"] == tr.HARBOR_PIN_SHA
     assert len(calls) == 3
 
@@ -680,6 +682,14 @@ def test_harbor_runtime_identity_requires_the_pinned_source_tree(tmp_path, monke
     assert identity["runtime_digest"] == tr.tree_sha256(root / "src" / "harbor")
     # The probe must resolve harbor the same way the real callers do.
     assert (root / "src") .as_posix() in seen["env"]["PYTHONPATH"]
+
+    # ...including the entries a caller puts ahead of the pinned tree: the Pro
+    # path runs harbor with its own tooling directory first, so a vendored
+    # harbor there must not shadow the pin unnoticed.
+    tooling = tmp_path / "tooling"
+    tr.harbor_runtime_identity(root, binary, path_prefixes=(tooling,))
+    entries = seen["env"]["PYTHONPATH"].split(os.pathsep)
+    assert entries[:2] == [str(tooling), str(root / "src")]
 
     monkeypatch.setattr(tr.subprocess, "run",
                         lambda argv, **k: _Proc(0, str(tmp_path / "site-packages" / "harbor")))

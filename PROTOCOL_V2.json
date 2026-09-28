@@ -43,8 +43,8 @@
     }
   },
   "file_sha256": {
-    "BENCHMARK_PROTOCOL.md": "dfda78a512ddead209ac48dfeb914b1ddb82b62ab718f66f0fb5976f7ccb5209",
-    "BENCHMARK_SOURCES.md": "5f1de81057f2b313c2eb822c49a72e1271a229623b2c75a14b1e4f6c000c8b83",
+    "BENCHMARK_PROTOCOL.md": "28ffd673ead87d3b97b3227c8805ddbbbe88cd258383b7e4c43dcf0867da0b23",
+    "BENCHMARK_SOURCES.md": "d7da525f154a17c2b4d666da072e1e7592f899bdc62d7cfa196e74531281f0ab",
     "HERMES_RUNTIME_PATCH_MANIFEST.json": "34eb137a602e89d6a6a6083ab88ea6902e15d55fd3a561e11308575173439882",
     "SKILL_COPY_OWNERSHIP_MANIFEST.json": "6c4721ca75b4c4dde8b1f8c2097db6e43867040fa0306f54f7051238e2fb50af",
     "SUT_SMOKE_EVIDENCE.json": "5b416067b13bc0228c6d64c8e78b995d4585e440d75a1bd91588d09fb0a470b0",
@@ -56,13 +56,13 @@
     "governance-manifest.json": "dc18a6bb7606ada13b4e938cf4de0d3357d182b34a7e25f7e377d9f9e5875f93",
     "mcp-inventory.json": "b5039d79ac0fc56f96f85cd6c5d825a84895198fda7a55107dc574d18b329dd2",
     "model-routing.json": "a56814b66df739033eb65eb34a2bc5cf67accf797f0611e77773d97da3f833ce",
-    "scripts/build_report.py": "841ab154def3710c3fde3aed7e94277a4d6341870fd2e2ab1c2313f2b21463f7",
+    "scripts/build_report.py": "fa53f6606a2f3b109815751f4f6cd01486c6caae6611b4d6a62498d93771232c",
     "scripts/candidate_artifact.py": "34634a581e50e1e93acac6638e1af59cacbad85362dd5a65c980fcb7c4c9dd6f",
-    "scripts/chunked_benchmark_runner.py": "22dac42aedef48953bc0af2f39fe5496c74026945b4d107b319ce19671b169c0",
+    "scripts/chunked_benchmark_runner.py": "ed4703cd769fd76204b641a0fe59555c894fec32442c4c0d5154c61c4937dd7b",
     "scripts/collect_telemetry.py": "4914891cb385562199982254662098f6b5fb35dea2439a60a9fe16291b1bf31a",
     "scripts/export_candidate_patch.py": "877a230f3b59037112d4848de78c951ae7a67c3bf9ac346c8c1cb3c30f80e73f",
     "scripts/fresh_sandbox_regrade.py": "ff836c174e7932b99c02db94f39d2c1f61c9212ba493d77a8c9853b27b406edf",
-    "scripts/grade_with_official_verifier.py": "adf662ceaee0869b797dcf76863ae8d5e1ec4ff93c0e2375fb8b4e99bf7495f2",
+    "scripts/grade_with_official_verifier.py": "2035fa1aabfe91e6ad033ea236f496022c75bdb3a9bbc0c6ff9bbfffbeaed7c0",
     "scripts/log_intervention.py": "44a220a26745c1d87361ad8d71b33f1ee2b03748db2e8ee4e48c63dd276234b6",
     "scripts/prepare_agent_workspace.py": "410035e5354880ebb491f69f9074aad80359107a598734a9008b02ae1cbe0ba0",
     "scripts/run_codebot_task.py": "b0cec28afdda06dea922f89434141c161aa75b61b481df01aa89233b272e9f81",
@@ -72,7 +72,7 @@
     "skill-inventory.json": "d2b17dcb72b0cbd307986636253cfb7976cf8e8000721f2a0ff7e19f2c41e555",
     "system-under-test.json": "26a2f55d4e1eb74d9e045cecaba24e6a316f75834e3e897681c986b5d5577747",
     "tool-inventory.json": "25d5b8a14f97293b5598fd49e8ea61b47aeb5dd371108119a3d8559bad5ae1ae",
-    "scripts/terminal_replay.py": "ccc2772d3186e40f8f31443aaaad0beb9ae1d1b5d2f2a07ee4883f1a4df04218"
+    "scripts/terminal_replay.py": "96566991dd4f935ed48b1ea27266172ec361daf4759741d4214bc21571c6c611"
   },
   "fresh_reviewer_observability": "TELEMETRY_UNAVAILABLE: no authoritative read-only exact-SHA per-task lifecycle record",
   "goal_config": {
@@ -92,7 +92,7 @@
   "mcp_inventory_sha256": "b5039d79ac0fc56f96f85cd6c5d825a84895198fda7a55107dc574d18b329dd2",
   "model": "gemini-3.8-flash-tiered",
   "model_routing_sha256": "a56814b66df739033eb65eb34a2bc5cf67accf797f0611e77773d97da3f833ce",
-  "protocol_tag": "benchmark/protocol-v2-calibration-repair-r2",
+  "protocol_tag": "benchmark/protocol-v2-calibration-repair-r3",
   "protocol_version": "v2-measurement-integrity",
   "provider": "custom:antigravity",
   "reasoning_effort": "high",

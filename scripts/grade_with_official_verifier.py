@@ -102,8 +102,11 @@ def _check_inputs(task, task_dir):
     if track == "swe-bench-pro-v2":
         # The Pro path runs Harbor with ``<harbor_root>/src`` on PYTHONPATH, so
         # the pinned tree must be what actually executes — not merely a checkout
-        # whose HEAD matches a SHA while another build is imported.
-        terminal_replay.verify_harbor_pin(HARBOR_ROOT, HARBOR_BIN)
+        # whose HEAD matches a SHA while another build is imported. The probe is
+        # given the same leading entry the run below uses, so a vendored harbor
+        # under the Pro tooling cannot shadow the pinned one unnoticed.
+        terminal_replay.verify_harbor_pin(HARBOR_ROOT, HARBOR_BIN,
+                                          path_prefixes=(PRO_ROOT / "v2/tooling",))
     elif not VERIFIED_PARQUET.is_file():
         raise ValueError("pinned SWE-bench Verified dataset snapshot is unavailable")
     return patch
@@ -231,7 +234,8 @@ def _grade_terminal(task_id, run_id, phase, task):
         if (not candidate_trial.is_dir()
                 or not candidate_trial.resolve().is_relative_to(task_dir.resolve())):
             raise ValueError("Candidate source trial is missing or outside the run")
-        outcome["harbor_pin"] = terminal_replay.verify_harbor_pin(HARBOR_ROOT, HARBOR_BIN)
+        outcome["harbor_pin"] = terminal_replay.verify_harbor_pin(
+            HARBOR_ROOT, HARBOR_BIN, path_prefixes=(REPO_DIR / "scripts",))
         preflight = check_terminal_artifact_preflight(official_task, candidate_trial, task_id)
         sut = terminal_replay.read_candidate_evidence(candidate_trial, task_id)
         candidate_state_sha = terminal_replay.candidate_state_sha256(candidate_trial)

@@ -166,7 +166,7 @@ def test_intervention_logger_rejects_nonmanifest_task_and_invalid_taxonomy(tmp_p
 
 
 def test_report_requires_the_patch_install_label_for_patch_candidates(tmp_path, monkeypatch):
-    """The per-artifact-type install vocabulary must not loosen the git-patch track."""
+    """Strictness guard: the per-artifact-type vocabulary must not loosen the git-patch track."""
     run = _fixture(tmp_path, monkeypatch)
     task_dir = run / "tasks" / "scored-00"
     _grader(task_dir)

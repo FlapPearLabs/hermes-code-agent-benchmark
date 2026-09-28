@@ -190,14 +190,16 @@ def test_pro_track_binds_the_harbor_that_actually_executes(tmp_path, monkeypatch
     _pro_task_evidence(tmp_path, monkeypatch)
     calls = []
 
-    def boom(root, binary):
-        calls.append((root, binary))
+    def boom(root, binary, path_prefixes=()):
+        calls.append((root, binary, tuple(path_prefixes)))
         raise RuntimeError("HARBOR_RUNTIME_RESOLUTION_MISMATCH: a != b")
 
     monkeypatch.setattr(grader.terminal_replay, "verify_harbor_pin", boom)
     monkeypatch.setattr(grader, "_invoke", lambda *_: pytest.fail("grader must not start"))
     result = grader.grade_task("pro-1", "calibration")
-    assert calls == [(grader.HARBOR_ROOT, grader.HARBOR_BIN)]
+    # The probe must replay the leading PYTHONPATH entry the run itself uses.
+    assert calls == [(grader.HARBOR_ROOT, grader.HARBOR_BIN,
+                      (grader.PRO_ROOT / "v2/tooling",))]
     assert result["status"] == "INVALID"
     assert "HARBOR_RUNTIME_RESOLUTION_MISMATCH" in result["error"]
     assert result["official_grader_process_started"] is False
@@ -209,8 +211,8 @@ def test_pro_track_provenance_is_checked_before_the_grader_runs(tmp_path, monkey
     _pro_task_evidence(tmp_path, monkeypatch)
     seen = {}
     monkeypatch.setattr(grader.terminal_replay, "verify_harbor_pin",
-                        lambda root, binary: seen.update(root=str(root),
-                                                         runtime_path="/pinned/harbor")
+                        lambda root, binary, path_prefixes=(): seen.update(
+                            root=str(root), runtime_path="/pinned/harbor")
                         or {"pin_sha": "3c82380859d187957cfd5cd64802b076d9779550",
                             "version": "0.23.0", "runtime_path": "/pinned/harbor"})
     monkeypatch.setattr(grader, "_invoke", lambda *_: pytest.fail("grader must not start"))

@@ -117,7 +117,8 @@ def _run_terminal_task(task_obj, run_id):
     expected = UPSTREAM / "terminal-bench" / "tasks" / task_id
     if pinned_task_dir.resolve() != expected.resolve() or not pinned_task_dir.is_dir():
         raise RuntimeError(f"Pinned Terminal task is missing for {task_id}")
-    harbor_pin = verify_harbor_pin(HARBOR_ROOT, HARBOR_BIN)
+    harbor_pin = verify_harbor_pin(HARBOR_ROOT, HARBOR_BIN,
+                                   path_prefixes=(SCRIPTS_DIR,))
 
     task_dir.mkdir(parents=True, exist_ok=True)
     workspace_dir.mkdir(parents=True, exist_ok=True)

@@ -163,6 +163,11 @@ def test_report_counts_a_passing_terminal_calibration_task(tmp_path, monkeypatch
     assert "CALIBRATION_INVALID: 0" in report
 
 
+# The four tests below are strictness guards, not defect reproducers: the
+# pre-repair gate also answered INVALID here, because it demanded a patch.diff
+# that a sandbox-state candidate never has. Each mutates exactly one field of
+# the passing fixture above, so the pair still isolates that field.
+
 def test_report_rejects_a_terminal_candidate_whose_recorded_state_drifted(tmp_path, monkeypatch):
     """The identity digest must be recomputed from the recorded trial, not trusted."""
     run = _fixture(tmp_path, monkeypatch)
@@ -206,6 +211,34 @@ def test_report_rejects_a_terminal_record_that_ran_an_agent_phase(tmp_path, monk
         data = json.loads(path.read_text())
         data["replay_agent_phase_executed"] = True
         _write_json(path, data)
+    build_report.generate_report("run_test")
+    report = (tmp_path / "reports" / "BENCHMARK_REPORT_run_test.md").read_text()
+    assert f"CALIBRATION | terminal-bench | {TASK_ID} | INVALID" in report
+
+
+def test_report_rejects_a_terminal_export_pointing_outside_the_run(tmp_path, monkeypatch):
+    """The report must not hash-read a directory an export merely names."""
+    run = _fixture(tmp_path, monkeypatch)
+    task_dir, _, state_sha = _terminal_task(run / "tasks" / TASK_ID)
+    _fresh_regrade(task_dir, {"task_id": TASK_ID, "track": "terminal-bench"}, state_sha)
+    outside = tmp_path / "elsewhere"
+    (outside / "artifacts").mkdir(parents=True)
+    export_path = task_dir / "trial-export-result.json"
+    _write_json(export_path, json.loads(export_path.read_text()) | {
+        "candidate_trial_dir": str(outside)})
+    build_report.generate_report("run_test")
+    report = (tmp_path / "reports" / "BENCHMARK_REPORT_run_test.md").read_text()
+    assert f"CALIBRATION | terminal-bench | {TASK_ID} | INVALID" in report
+
+
+def test_report_survives_a_malformed_terminal_export(tmp_path, monkeypatch):
+    """A malformed field marks its own task INVALID instead of aborting the report."""
+    run = _fixture(tmp_path, monkeypatch)
+    task_dir, _, state_sha = _terminal_task(run / "tasks" / TASK_ID)
+    _fresh_regrade(task_dir, {"task_id": TASK_ID, "track": "terminal-bench"}, state_sha)
+    export_path = task_dir / "trial-export-result.json"
+    _write_json(export_path, json.loads(export_path.read_text()) | {
+        "candidate_trial_dir": ["not", "a", "path"]})
     build_report.generate_report("run_test")
     report = (tmp_path / "reports" / "BENCHMARK_REPORT_run_test.md").read_text()
     assert f"CALIBRATION | terminal-bench | {TASK_ID} | INVALID" in report

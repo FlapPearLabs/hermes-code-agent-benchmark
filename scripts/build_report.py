@@ -71,7 +71,9 @@ def _valid_sandbox_state_regrade(task_dir, grader, fresh, regrade):
 
     The digest is recomputed from the recorded trial directory instead of being
     read back from the record that claims it, so a record that no longer
-    describes the state it points at cannot count as executed.
+    describes the state it points at cannot count as executed. The trial has to
+    be inside this task's run directory: the report must not hash-read a
+    directory an export merely names.
     """
     export = _read_json(task_dir / "trial-export-result.json")
     if (not isinstance(export, dict)
@@ -81,9 +83,12 @@ def _valid_sandbox_state_regrade(task_dir, grader, fresh, regrade):
     if not trial or not identity:
         return False
     try:
+        trial = Path(trial).resolve()
+        if not trial.is_relative_to(task_dir.resolve()):
+            return False
         if terminal_replay.candidate_state_sha256(trial) != identity:
             return False
-    except OSError:
+    except (OSError, TypeError, ValueError):
         return False
     if not all(result.get("candidate_patch_sha256") == identity
                for result in (grader, fresh, regrade)):

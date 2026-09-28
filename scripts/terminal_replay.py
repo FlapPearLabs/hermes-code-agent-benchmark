@@ -141,7 +141,7 @@ def _harbor_interpreter(harbor_bin):
     return sibling if sibling.is_file() else None
 
 
-def harbor_runtime_identity(harbor_root, harbor_bin) -> dict:
+def harbor_runtime_identity(harbor_root, harbor_bin, path_prefixes=()) -> dict:
     """Identity of the harbor package the official machinery will execute.
 
     Both call sites run harbor with ``<harbor_root>/src`` prepended to
@@ -149,6 +149,10 @@ def harbor_runtime_identity(harbor_root, harbor_bin) -> dict:
     interpreter's site-packages — is what actually executes. The probe replays
     that same resolution and requires it to land on the pinned tree, so a pin
     that only matched a label while a different build ran could not pass.
+
+    ``path_prefixes`` are the entries a caller places *ahead* of the pinned
+    source tree; passing them makes the probe reproduce the resolution that
+    caller will really get rather than only beating the ambient environment.
     """
     expected = (Path(harbor_root) / "src" / "harbor").resolve()
     interpreter = _harbor_interpreter(harbor_bin)
@@ -156,7 +160,8 @@ def harbor_runtime_identity(harbor_root, harbor_bin) -> dict:
         raise RuntimeError("HARBOR_RUNTIME_UNRESOLVED: interpreter not discoverable")
     env = {**os.environ,
            "PYTHONPATH": os.pathsep.join(
-               (str(Path(harbor_root) / "src"),
+               (*(str(prefix) for prefix in path_prefixes),
+                str(Path(harbor_root) / "src"),
                 *(p for p in (os.environ.get("PYTHONPATH"),) if p)))}
     probe = subprocess.run(
         [str(interpreter), "-c",
@@ -172,7 +177,7 @@ def harbor_runtime_identity(harbor_root, harbor_bin) -> dict:
     return {"runtime_path": str(resolved), "runtime_digest": tree_sha256(resolved)}
 
 
-def verify_harbor_pin(harbor_root, harbor_bin) -> dict:
+def verify_harbor_pin(harbor_root, harbor_bin, path_prefixes=()) -> dict:
     """The official replay machinery must be the pinned Harbor release."""
     head = subprocess.run(["git", "-C", str(harbor_root), "rev-parse", "HEAD"],
                           capture_output=True, text=True)
@@ -186,7 +191,7 @@ def verify_harbor_pin(harbor_root, harbor_bin) -> dict:
     if version.returncode != 0 or version.stdout.strip() != HARBOR_PIN_VERSION:
         raise RuntimeError("HARBOR_VERSION_MISMATCH")
     return {"pin_sha": HARBOR_PIN_SHA, "version": HARBOR_PIN_VERSION,
-            **harbor_runtime_identity(harbor_root, harbor_bin)}
+            **harbor_runtime_identity(harbor_root, harbor_bin, path_prefixes)}
 
 
 # ---------------------------------------------------------------------------
