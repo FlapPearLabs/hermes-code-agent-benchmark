@@ -1,0 +1,21 @@
+{
+  "RUN_ID": "run_001",
+  "RUN_TYPE": "INFRASTRUCTURE_SHAKEDOWN",
+  "PERFORMANCE_RESULT_VALID": "NO",
+  "STATUS": "PROTOCOL_INVALIDATED_FOR_PERFORMANCE",
+  "RECORDED_LEGACY_RESULT": "0/23",
+  "REASONS": [
+    "SUT changed mid-run: approval settings and --yolo were changed, as recorded in the original report.",
+    "Official grader was not actually invoked by the historical grading script.",
+    "Fresh sandbox regrade was synthetic in the historical regrade script.",
+    "Telemetry was incomplete and included placeholder files.",
+    "Patch export was unreliable and could fall back to the wrong base."
+  ],
+  "EVIDENCE": [
+    "9674a4c:reports/FINAL_BENCHMARK_REPORT.md section 4.1 (mid-run approval change)",
+    "9674a4c:scripts/grade_with_official_verifier.py",
+    "9674a4c:scripts/fresh_sandbox_regrade.py",
+    "9674a4c:scripts/collect_telemetry.py",
+    "9674a4c:scripts/export_candidate_patch.py"
+  ]
+}
