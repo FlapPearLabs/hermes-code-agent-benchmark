@@ -8,7 +8,8 @@ from unittest.mock import patch
 
 from scripts import verify_protocol_freeze as freeze
 from scripts.verify_protocol_freeze import (PINNED_FILES, HARNESS_FILES, FreezeError,
-                                            verify_freeze, verify_local_patch_set)
+                                            _skill_tree_sha256, verify_freeze,
+                                            verify_local_patch_set)
 
 
 def git(repo, *args):
@@ -95,7 +96,12 @@ class ProtocolFreezeTests(unittest.TestCase):
         manifest = {
             "schema_version": 1, "upstream_sha": head, "head_sha": head,
             "acceptance": "ACCEPTED_FOR_CALIBRATION",
-            "accepted_provenance": "owner approved test fixture",
+            "accepted_provenance": {
+                "PURPOSE": "test patch", "BASE_SHA": head,
+                "DIFF_SHA256": diff_hash("diff", "--binary", "HEAD"),
+                "AFFECTED_FILE": "source.py", "WHY_REQUIRED": "test fixture",
+                "RUNTIME_EFFECT": "changed source", "VERIFICATION_EVIDENCE": ["fixture diff"],
+            },
             "tracked_diff_sha256": diff_hash("diff", "--binary", "HEAD"),
             "staged_diff_sha256": diff_hash("diff", "--cached", "--binary", "HEAD"),
             "tracked_files": [{"path": "source.py", "sha256": digest(runtime / "source.py"),
@@ -115,6 +121,64 @@ class ProtocolFreezeTests(unittest.TestCase):
         manifest["tracked_files"][0]["classification"] = "UNKNOWN"
         path.write_text(json.dumps(manifest))
         with self.assertRaisesRegex(FreezeError, "SUT_PATCH_UNACCEPTED"):
+            verify_local_patch_set(runtime, path)
+
+    def test_bundled_skill_source_requires_matching_active_copy(self):
+        runtime = self.repo / "runtime"
+        runtime.mkdir()
+        for args in (("init", "-q"), ("config", "user.name", "Test"),
+                     ("config", "user.email", "test@localhost")):
+            git(runtime, *args)
+        source = runtime / "source.py"
+        source.write_text("base\n")
+        git(runtime, "add", "source.py")
+        git(runtime, "commit", "-q", "-m", "base")
+        head = git(runtime, "rev-parse", "HEAD")
+        source.write_text("patched\n")
+        skill = runtime / "skills/productivity/example/SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text("example skill\n")
+        profile = self.repo / "profile-skills"
+        active = profile / "productivity/example/SKILL.md"
+        active.parent.mkdir(parents=True)
+        active.write_bytes(skill.read_bytes())
+        skill_sha = hashlib.sha256(skill.read_bytes()).hexdigest()
+        diff_sha = hashlib.sha256(subprocess.run(
+            ["git", "-C", str(runtime), "diff", "--binary", "HEAD"],
+            check=True, capture_output=True).stdout).hexdigest()
+        owner = {"runtime_repo": str(runtime.resolve()), "canonical_profile_root": str(profile.resolve()),
+                 "profile_skill_tree_sha256": _skill_tree_sha256(profile),
+                 "redundant_copies_removed": 0, "files_remaining_unknown": 0,
+                 "files": [{"RUNTIME_PATH": "skills/productivity/example/SKILL.md",
+                            "CANONICAL_PROFILE_PATH": str(active.resolve()),
+                            "SHA256_RUNTIME": skill_sha, "SHA256_CANONICAL": skill_sha,
+                            "BYTE_IDENTICAL": True, "REFERENCED_BY_RUNTIME_CODE": True,
+                            "SAFE_TO_REMOVE_FROM_RUNTIME_REPO": False,
+                            "CLASSIFICATION": "CANONICAL_RUNTIME_DEPENDENCY"}]}
+        (self.repo / "ownership.json").write_text(json.dumps(owner))
+        manifest = {
+            "schema_version": 1, "upstream_sha": head, "head_sha": head,
+            "tracked_diff_sha256": diff_sha,
+            "staged_diff_sha256": hashlib.sha256(b"").hexdigest(),
+            "skill_ownership_manifest": "ownership.json",
+            "acceptance": "ACCEPTED_FOR_CALIBRATION",
+            "accepted_provenance": {"PURPOSE": "test", "BASE_SHA": head,
+                                    "DIFF_SHA256": diff_sha, "AFFECTED_FILE": "source.py",
+                                    "WHY_REQUIRED": "test", "RUNTIME_EFFECT": "test",
+                                    "VERIFICATION_EVIDENCE": ["test"]},
+            "tracked_files": [{"path": "source.py", "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                               "mode": "0644", "classification": "EXPECTED_LOCAL_PATCH",
+                               "provenance": "test"}],
+            "untracked_files": [{"path": "skills/productivity/example/SKILL.md",
+                                 "sha256": skill_sha, "mode": "0644",
+                                 "classification": "CANONICAL_RUNTIME_DEPENDENCY",
+                                 "provenance": "bundled source"}],
+        }
+        path = self.repo / "runtime-manifest.json"
+        path.write_text(json.dumps(manifest))
+        self.assertEqual(verify_local_patch_set(runtime, path)["status"], "PASS")
+        active.write_text("drift\n")
+        with self.assertRaisesRegex(FreezeError, "SUT_SKILL_OWNERSHIP_DRIFT"):
             verify_local_patch_set(runtime, path)
 
 

@@ -3,6 +3,13 @@
   "harness_components": {
     "hermes_agent_version": "v0.21.5+3172.g79dbb14",
     "hermes_agent_sha": "79dbb1450ec404a2240529f5554526da4cfec498",
+    "hermes_runtime_identity": {
+      "upstream_head": "79dbb1450ec404a2240529f5554526da4cfec498",
+      "accepted_local_patch_set_manifest": "HERMES_RUNTIME_PATCH_MANIFEST.json",
+      "tracked_diff_sha256": "2460ba146aeb99fb533d8bbc1817b170fda9f6e26947201a6b42623538408704",
+      "skill_copy_ownership_manifest": "SKILL_COPY_OWNERSHIP_MANIFEST.json",
+      "production_smoke_evidence": "SUT_SMOKE_EVIDENCE.json"
+    },
     "code_profile_soul_sha256": "2bd60a6faa55d7eefcc04d3a00a7fbdf9da19658fd81501144a03bb020ddc136",
     "code_profile_config_sha256": "837adc7ae1bdf394dc5864536700841dc2f549cbde2084bdc74624c480928ed1",
     "governance_repo_sha": "6ebde952681486d7caaaf826bd2a77c96c3e13a8",

@@ -16,6 +16,8 @@ PINNED_FILES = (
     "system-under-test.json", "governance-manifest.json", "model-routing.json",
     "skill-inventory.json", "mcp-inventory.json", "tool-inventory.json",
     "HERMES_RUNTIME_PATCH_MANIFEST.json",
+    "SKILL_COPY_OWNERSHIP_MANIFEST.json",
+    "SUT_SMOKE_EVIDENCE.json",
 )
 HARNESS_FILES = (
     "scripts/candidate_artifact.py",
@@ -56,6 +58,22 @@ def _git_bytes(runtime, *args):
     return result.stdout
 
 
+def _skill_tree_sha256(root):
+    """Hash non-hidden profile Skill content, excluding mutable usage/cache records."""
+    digest = hashlib.sha256()
+    for path in sorted(Path(root).rglob("*")):
+        relative = path.relative_to(root)
+        if any(part.startswith(".") for part in relative.parts):
+            continue
+        if path.is_symlink():
+            raise FreezeError(f"SUT_PROFILE_SKILL_SYMLINK: {relative}")
+        if path.is_file():
+            digest.update(relative.as_posix().encode() + b"\0")
+            digest.update(format(path.stat().st_mode & 0o777, "04o").encode() + b"\0")
+            digest.update(sha256(path).encode() + b"\n")
+    return digest.hexdigest()
+
+
 def verify_local_patch_set(runtime, manifest_path):
     """Accept only the exact declared tracked diff and untracked file set."""
     runtime = Path(runtime).resolve()
@@ -88,21 +106,59 @@ def verify_local_patch_set(runtime, manifest_path):
             len(declared_untracked) != len(untracked_entries) or
             declared_tracked & declared_untracked):
         raise FreezeError("SUT_PATCH_MANIFEST_DUPLICATE_PATH")
+    owner_path = Path(manifest_path).parent / manifest.get("skill_ownership_manifest", "")
+    owners = json.loads(owner_path.read_text()) if manifest.get("skill_ownership_manifest") else None
+    owner_files = {item["RUNTIME_PATH"]: item for item in owners["files"]} if owners else {}
+    skill_paths = {item["path"] for item in untracked_entries
+                   if item.get("classification") == "CANONICAL_RUNTIME_DEPENDENCY"}
+    if skill_paths:
+        if not owners:
+            raise FreezeError("SUT_SKILL_OWNERSHIP_MISSING")
+        profile_root = Path(owners["canonical_profile_root"]).resolve()
+        if (owners.get("runtime_repo") != str(runtime) or
+                len(owner_files) != len(owners["files"]) or
+                set(owner_files) != skill_paths or
+                owners.get("redundant_copies_removed") != 0 or
+                owners.get("files_remaining_unknown") != 0 or
+                _skill_tree_sha256(profile_root) != owners.get("profile_skill_tree_sha256")):
+            raise FreezeError("SUT_SKILL_OWNERSHIP_DRIFT")
     unaccepted = []
     for entry in tracked_entries + untracked_entries:
         path = runtime / entry["path"]
         if (entry.get("classification") not in {"EXPECTED_LOCAL_PATCH", "RUNTIME_GENERATED_ARTIFACT",
-                                                "ACCIDENTAL_DIRTY_STATE", "UNKNOWN"} or
+                                                "CANONICAL_RUNTIME_DEPENDENCY", "ACCIDENTAL_DIRTY_STATE", "UNKNOWN"} or
                 not entry.get("provenance") or not path.is_file() or path.is_symlink() or
                 not path.resolve().is_relative_to(runtime) or sha256(path) != entry.get("sha256") or
                 format(path.stat().st_mode & 0o777, "04o") != entry.get("mode")):
             raise FreezeError(f"SUT_DECLARED_PATCH_INVALID: {entry.get('path')}")
+        if entry["classification"] == "CANONICAL_RUNTIME_DEPENDENCY":
+            owner = owner_files[entry["path"]]
+            if not entry["path"].startswith("skills/"):
+                raise FreezeError(f"SUT_SKILL_OWNERSHIP_DRIFT: {entry['path']}")
+            profile_path = profile_root / Path(entry["path"]).relative_to("skills")
+            if (owner.get("CLASSIFICATION") != "CANONICAL_RUNTIME_DEPENDENCY" or
+                    owner.get("CANONICAL_PROFILE_PATH") != str(profile_path) or
+                    owner.get("SHA256_RUNTIME") != entry["sha256"] or
+                    owner.get("SHA256_CANONICAL") != entry["sha256"] or
+                    owner.get("BYTE_IDENTICAL") is not True or
+                    owner.get("REFERENCED_BY_RUNTIME_CODE") is not True or
+                    owner.get("SAFE_TO_REMOVE_FROM_RUNTIME_REPO") is not False or
+                    not profile_path.resolve().is_relative_to(profile_root) or
+                    not profile_path.is_file() or sha256(profile_path) != entry["sha256"]):
+                raise FreezeError(f"SUT_SKILL_OWNERSHIP_DRIFT: {entry['path']}")
         if entry["classification"] in {"ACCIDENTAL_DIRTY_STATE", "UNKNOWN"}:
             unaccepted.append(entry["path"])
     if unaccepted:
         raise FreezeError(f"SUT_PATCH_UNACCEPTED: {len(unaccepted)} files, first={unaccepted[0]}")
+    provenance = manifest.get("accepted_provenance")
+    required = ("PURPOSE", "BASE_SHA", "DIFF_SHA256", "AFFECTED_FILE",
+                "WHY_REQUIRED", "RUNTIME_EFFECT", "VERIFICATION_EVIDENCE")
     if (manifest.get("acceptance") != "ACCEPTED_FOR_CALIBRATION" or
-            not manifest.get("accepted_provenance")):
+            not isinstance(provenance, dict) or
+            any(not provenance.get(key) for key in required) or
+            provenance["BASE_SHA"] != upstream or
+            provenance["DIFF_SHA256"] != manifest["tracked_diff_sha256"] or
+            provenance["AFFECTED_FILE"] not in declared_tracked):
         raise FreezeError("SUT_PATCH_NOT_ACCEPTED")
     return {"status": "PASS", "head_sha": manifest["head_sha"],
             "tracked_files": len(tracked_paths), "untracked_files": len(untracked_paths)}

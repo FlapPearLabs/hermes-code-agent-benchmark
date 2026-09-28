@@ -1,5 +1,4 @@
 import json
-import hashlib
 import subprocess
 import sys
 import tempfile
@@ -151,17 +150,9 @@ class RunnerTests(unittest.TestCase):
         subprocess.run(["git", "-C", str(runtime), "add", "source.py"], check=True)
         subprocess.run(["git", "-C", str(runtime), "commit", "-q", "-m", "base"], check=True)
         head = subprocess.check_output(["git", "-C", str(runtime), "rev-parse", "HEAD"], text=True).strip()
-        empty_sha = hashlib.sha256(b"").hexdigest()
-        (self.root / "runtime-manifest.json").write_text(json.dumps({
-            "schema_version": 1, "upstream_sha": head, "head_sha": head,
-            "tracked_diff_sha256": empty_sha, "staged_diff_sha256": empty_sha,
-            "tracked_files": [], "untracked_files": [],
-            "acceptance": "ACCEPTED_FOR_CALIBRATION",
-            "accepted_provenance": "test fixture",
-        }))
         (self.root / "PROTOCOL_V2.json").write_text(json.dumps({
             "external_sha256": {}, "external_git": {"hermes_runtime": {
-                "path": str(runtime), "sha": head, "local_patch_manifest": "runtime-manifest.json"}},
+                "path": str(runtime), "sha": head}},
         }))
         evidence = self.root / "post-agent"
         evidence.mkdir()

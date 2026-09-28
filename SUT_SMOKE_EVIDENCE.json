@@ -1,0 +1,76 @@
+{
+  "code_profile_config_sha256": "837adc7ae1bdf394dc5864536700841dc2f549cbde2084bdc74624c480928ed1",
+  "code_profile_soul_sha256": "2bd60a6faa55d7eefcc04d3a00a7fbdf9da19658fd81501144a03bb020ddc136",
+  "enabled_skill_count": 68,
+  "hermes_version_smoke": {
+    "exit_code": 0,
+    "version_first_line": "Hermes Agent v0.21.5+3172.g79dbb14 (2026.9.24) · upstream 79dbb145"
+  },
+  "mcp_inventory_smoke": {
+    "command": [
+      "hermes",
+      "-p",
+      "code",
+      "mcp",
+      "list"
+    ],
+    "exit_code": 0,
+    "server_names": [
+      "agentmemory",
+      "codegraph",
+      "chrome-devtools"
+    ]
+  },
+  "no_skill_content_changed": true,
+  "no_skill_files_removed": true,
+  "profile_startup_smoke": {
+    "command": [
+      "hermes",
+      "-p",
+      "code",
+      "chat",
+      "-q",
+      "<fixed smoke prompt>",
+      "--yolo",
+      "--max-turns",
+      "60",
+      "--format",
+      "stream-json"
+    ],
+    "duration_ms": 14317,
+    "exit_code": 0,
+    "raw_stream_bytes": 460,
+    "raw_stream_sha256": "c0ba7bf4d872850a8cff3f0c9e2c94b7ace7891d3f8f53a3c5ad8162a89c9ab9",
+    "stream_event_types": [
+      "system",
+      "text",
+      "result"
+    ]
+  },
+  "prompt_size_smoke": {
+    "command": [
+      "hermes",
+      "-p",
+      "code",
+      "prompt-size",
+      "--json"
+    ],
+    "exit_code": 0,
+    "kanban_tool_count": 14,
+    "model": "gemini-3.8-flash-tiered",
+    "skills_index_bytes": 6563,
+    "tool_count": 48
+  },
+  "schema_version": 1,
+  "skill_tree_sha256": "5cec9187747ef4cf7907d4568246995c17c8ae2480b87645f2842d0f652c3fa8",
+  "skill_view_smoke": {
+    "caveman": {
+      "source": "profiles/code/skills/productivity/caveman/SKILL.md",
+      "success": true
+    },
+    "neat-freak": {
+      "source": "profiles/code/skills/productivity/neat-freak/SKILL.md",
+      "success": true
+    }
+  }
+}
