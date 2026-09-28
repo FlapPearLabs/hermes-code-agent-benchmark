@@ -56,8 +56,9 @@ Each task follows a strictly auditable 4-stage lifecycle:
 2. **Harness Problem Solving**:
    - Autonomous problem understanding, RED test reproduction, minimal fix implementation, and local regression testing.
    - Optional sub-mechanisms: Kanban DAG decomposition (max parallel workers = 2), Goal Mode continuation, and Fresh Reviewer audit.
-3. **Patch Export**:
-   - Generate pristine unified git diff: `patch.diff` and commit SHA.
+3. **Candidate Export**:
+   - SWE-bench Verified and Pro V2: generate a pristine unified Git diff (`GIT_PATCH`).
+   - Terminal-Bench: retain the official Harbor source trial and all declared main/sidecar artifacts (`SANDBOX_STATE`). A `/app` Git diff is not a Terminal candidate.
 4. **Official Grading**:
    - Execute official verifier (in pristine container or fresh sandbox).
    - Record raw outputs, pass/fail status, execution time, and full machine-readable telemetry.
@@ -80,7 +81,7 @@ For every task run, the following files are mechanically captured under `runs/<r
 - `git-events.jsonl`: Worktree creations, commits, diffs.
 - `test-events.jsonl`: Local test command executions, exit codes, and outputs.
 - `review-events.jsonl`: Fresh Reviewer findings, severity, and repair loops.
-- `patch.diff`: The exact candidate patch.
+- `patch.diff`: The exact candidate patch for SWE-bench tasks; Terminal-Bench requires an official Harbor source trial instead.
 - `grader-result.json`: Official evaluation output from upstream verifier.
 - `task-summary.json`: Final outcome metrics.
 
@@ -104,6 +105,6 @@ A benchmark run is immediately halted if:
 
 `PROTOCOL_V2.json` freezes the SUT identity, approval and 60-turn policy, source pins, harness files, and hashes of external configuration. `scripts/verify_protocol_freeze.py` requires a clean local checkout, an annotated tag at the exact current commit, a matching remote tag and branch, unchanged external configuration, and an unused run ID before calibration can start. The tag establishes a Git-history boundary; it does not certify grader execution by itself.
 
-Each task must retain a clean base workspace manifest, a mechanically exported candidate diff, a Hermes raw stream, and two independent official grader invocations with raw process and result evidence. Missing evidence yields `INVALID` or `INFRA_FAIL`, never an inferred failure or success score. Feature availability in the Code profile is not feature invocation; unavailable runtime signals remain `TELEMETRY_UNAVAILABLE`.
+Each task must retain a clean base identity, a benchmark-native candidate, a Hermes raw stream, and official grader process/result evidence. SWE-bench tasks require the same patch in two independent official grading environments. Terminal-Bench requires the complete official Harbor trial (including sidecar artifacts and `artifacts/manifest.json`); the pinned Harbor source supports a separate-verifier regrade from that trial. A regrade may be called fresh replay only after it actually runs in a distinct trial. Missing evidence yields `INVALID` or `INFRA_FAIL`, never an inferred failure or success score. A grader `FAIL` can still be calibration infrastructure valid.
 
-Terminal-Bench calibration remains blocked while its official non-Git sidecar artifact cannot be transferred from a real agent trial into a fresh official verifier environment. The calibration runner stops before starting any task when that blocker is present. No scored run may start under this repair branch before three independently valid calibration tasks and fresh exact-SHA review.
+The exact production Hermes Code profile has not been proven runnable inside the official Harbor agent trial, so Terminal-Bench calibration remains blocked before any task starts. The Code profile's Goal loop is not entered by the current quiet CLI command; its DB stores a final snapshot, not an authoritative lifecycle. Fresh Reviewer read-only/exact-SHA execution has no authoritative per-task signal. These telemetry gaps do not substitute for grader evidence and do not by themselves invalidate calibration. No scored run may start under this repair branch before three infrastructure-valid calibration tasks and fresh exact-SHA review.

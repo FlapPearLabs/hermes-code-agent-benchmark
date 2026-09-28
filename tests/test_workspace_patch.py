@@ -35,7 +35,7 @@ class WorkspacePatchTests(unittest.TestCase):
         self.evidence = self.root / "runs" / self.run_id / "tasks" / self.task_id
         self.evidence.mkdir(parents=True)
         self.manifest = {
-            "task_id": self.task_id, "run_id": self.run_id,
+            "task_id": self.task_id, "run_id": self.run_id, "track": "swe-bench-verified",
             "repo_root": str(self.repo), "base_sha": self.base,
             "base_tree": git(self.repo, "rev-parse", "HEAD^{tree}"),
             "initial_head": self.base, "initial_status": "",
@@ -53,7 +53,16 @@ class WorkspacePatchTests(unittest.TestCase):
         self.assertIn(b"candidate", path.read_bytes())
         result = json.loads((self.evidence / "patch-export-result.json").read_text())
         self.assertEqual(result["status"], "VALID")
+        self.assertEqual(result["candidate_artifact_type"], "GIT_PATCH")
         self.assertEqual(result["touched_paths"], ["new.txt"])
+
+    def test_terminal_state_is_not_exported_as_git_patch(self):
+        self.manifest["track"] = "terminal-bench"
+        (self.evidence / "workspace-manifest.json").write_text(json.dumps(self.manifest))
+        with self.assertRaises(exporter.PatchExportError) as raised:
+            exporter.export_patch(self.task_id, self.run_id)
+        self.assertEqual(raised.exception.status, "CANDIDATE_ARTIFACT_TYPE_MISMATCH")
+        self.assertFalse((self.evidence / "patch.diff").exists())
 
     def test_unrelated_head_is_base_divergence(self):
         git(self.repo, "checkout", "-q", "--orphan", "rogue")

@@ -23,6 +23,7 @@ def write_patch_evidence(task_dir, task_id):
         "task_id": task_id, "run_id": "calibration", "base_sha": "base", "base_tree": "tree"}))
     (task_dir / "patch-export-result.json").write_text(json.dumps({
         "status": "VALID", "task_id": task_id, "run_id": "calibration",
+        "candidate_artifact_type": "GIT_PATCH",
         "base_sha": "base", "base_tree": "tree",
         "patch_sha256": hashlib.sha256(patch.read_bytes()).hexdigest()}))
 

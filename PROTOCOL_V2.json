@@ -2,6 +2,11 @@
   "approval_mode": "off",
   "baseline_sha": "9674a4c0b5c4e42f983d0c0852eb94452560ba4e",
   "calibration_total": 3,
+  "candidate_artifact_type_by_track": {
+    "swe-bench-pro-v2": "GIT_PATCH",
+    "swe-bench-verified": "GIT_PATCH",
+    "terminal-bench": "SANDBOX_STATE"
+  },
   "code_profile_config_sha256": "837adc7ae1bdf394dc5864536700841dc2f549cbde2084bdc74624c480928ed1",
   "code_profile_soul_sha256": "2bd60a6faa55d7eefcc04d3a00a7fbdf9da19658fd81501144a03bb020ddc136",
   "dataset_revisions": {
@@ -14,6 +19,7 @@
       "sha": "6ebde952681486d7caaaf826bd2a77c96c3e13a8"
     },
     "hermes_runtime": {
+      "local_patch_manifest": "HERMES_RUNTIME_PATCH_MANIFEST.json",
       "path": "/Users/songshiyao/.hermes/hermes-agent",
       "sha": "79dbb1450ec404a2240529f5554526da4cfec498"
     }
@@ -37,9 +43,10 @@
     }
   },
   "file_sha256": {
-    "BENCHMARK_PROTOCOL.md": "46227a2c97e639e4a033417b4d92beec2ff34d1a1ccfdd4a441c1de3f1afd032",
-    "BENCHMARK_SOURCES.md": "c4fc35192528a1c86b8859e4d25781ddeea652ba26ad6e1e0566421b60f0c779",
-    "SYSTEM_UNDER_TEST.md": "2e52b52552a1780594de1b77eeb57bfa2b6f8ea609bcbf2da8cc7a3679f2754b",
+    "BENCHMARK_PROTOCOL.md": "dfda78a512ddead209ac48dfeb914b1ddb82b62ab718f66f0fb5976f7ccb5209",
+    "BENCHMARK_SOURCES.md": "5f1de81057f2b313c2eb822c49a72e1271a229623b2c75a14b1e4f6c000c8b83",
+    "HERMES_RUNTIME_PATCH_MANIFEST.json": "67f9c8232e4c33d2ff538da32521f3e40611112718b900e9467c9fe9b0092eb5",
+    "SYSTEM_UNDER_TEST.md": "54fcbba7763a5f9a23cd13852bbb91800fb46e2e50513a39a0b5791420506d93",
     "benchmark-cache-manifest.json": "d3486e53578eeac8414f9e0119dae23d96c96a1f802b535e6cfe3ef6e3613022",
     "benchmark-control/official_grader_status.json": "a5ef78c2f87d9b78b5e69e91bc6a6a813e571d8c184d3a3ff0248269b072cde2",
     "benchmark-manifest.json": "9a21e1f1bdf791911555735dace437893f1397be51e2965fd22da2f3f002d20c",
@@ -48,24 +55,26 @@
     "mcp-inventory.json": "b5039d79ac0fc56f96f85cd6c5d825a84895198fda7a55107dc574d18b329dd2",
     "model-routing.json": "a56814b66df739033eb65eb34a2bc5cf67accf797f0611e77773d97da3f833ce",
     "scripts/build_report.py": "2ed7b33c11622bbc584cf84bf9b0cabb8830d0f70b46a6ffeca456f5f886027a",
-    "scripts/chunked_benchmark_runner.py": "07dcfad414cae827fd9f6616fd0b176e4b312a1ba66979542007ff7c9050f1d9",
+    "scripts/candidate_artifact.py": "461567c466b3a719a9523e54cd8ad4ac4da9f5b9c4a306a187e57f991e50c7b1",
+    "scripts/chunked_benchmark_runner.py": "e447bb8a75bfb43cca4a3210cc99387a3578c626cb2cf08eb02a67ac0fadbcea",
     "scripts/collect_telemetry.py": "4914891cb385562199982254662098f6b5fb35dea2439a60a9fe16291b1bf31a",
-    "scripts/export_candidate_patch.py": "7ac02f914894df59fd0348eb0047d7b4419dee4b212fb44003309a84f0dcac65",
+    "scripts/export_candidate_patch.py": "877a230f3b59037112d4848de78c951ae7a67c3bf9ac346c8c1cb3c30f80e73f",
     "scripts/fresh_sandbox_regrade.py": "609796526c262de8322a120508c6b047cbb152b5d4efa82767326ec5f263f8a8",
-    "scripts/grade_with_official_verifier.py": "1d72c320ad930802d7cd102fc07b8ff3aa3e4069b271c6dd763ec06f786ae4be",
+    "scripts/grade_with_official_verifier.py": "8b39079cebb0b7ba3d27abe30c4a48096d4b49917b8facb2830594367cb8499e",
     "scripts/log_intervention.py": "44a220a26745c1d87361ad8d71b33f1ee2b03748db2e8ee4e48c63dd276234b6",
     "scripts/prepare_agent_workspace.py": "410035e5354880ebb491f69f9074aad80359107a598734a9008b02ae1cbe0ba0",
     "scripts/run_codebot_task.py": "b0cec28afdda06dea922f89434141c161aa75b61b481df01aa89233b272e9f81",
     "scripts/verify_agent_sandbox.py": "1f7db558048a3f7a7754e5464b4b2de0036623113c75773e1b4110a2a7f1c546",
     "scripts/verify_official_graders.py": "15a1ed6cc0973feae4b32ee38b5ce2739fba0af0c575c3ee55e3db9435e23808",
-    "scripts/verify_protocol_freeze.py": "f12007ba05f778655ed73ed5ae45751c318456c0a8b3a219d2ad1fae2dad1042",
+    "scripts/verify_protocol_freeze.py": "896c644d867d9dd5ffc76cf24452e4daafe29cbd5c287f90a19ea3d24b1206c0",
     "skill-inventory.json": "d2b17dcb72b0cbd307986636253cfb7976cf8e8000721f2a0ff7e19f2c41e555",
     "system-under-test.json": "c87659cad4c45a666f8964f7c32fc28a5c4d6e4a8812a994e3f6fa771b4559dc",
     "tool-inventory.json": "25d5b8a14f97293b5598fd49e8ea61b47aeb5dd371108119a3d8559bad5ae1ae"
   },
+  "fresh_reviewer_observability": "TELEMETRY_UNAVAILABLE: no authoritative read-only exact-SHA per-task lifecycle record",
   "goal_config": {
     "declared_enabled": true,
-    "observability": "runtime lifecycle not exposed by stream-json; usage remains TELEMETRY_UNAVAILABLE"
+    "observability": "Final session DB snapshot can provide positive evidence, but current quiet runner does not enter Goal continuation and no complete per-task lifecycle is exposed"
   },
   "governance_sha": "6ebde952681486d7caaaf826bd2a77c96c3e13a8",
   "hermes_git_sha": "79dbb1450ec404a2240529f5554526da4cfec498",
@@ -75,12 +84,12 @@
     "max_parallel_workers": 2,
     "usage_measured_from": "Hermes tool_use events"
   },
-  "known_calibration_blocker": "Terminal-Bench payments-pipeline-fix needs Kafka sidecar snapshot, not representable by /app Git patch",
+  "known_calibration_blocker": "Runtime patch classification unaccepted; exact Hermes Code profile not yet proven in official Harbor trial",
   "max_turns": 60,
   "mcp_inventory_sha256": "b5039d79ac0fc56f96f85cd6c5d825a84895198fda7a55107dc574d18b329dd2",
   "model": "gemini-3.8-flash-tiered",
   "model_routing_sha256": "a56814b66df739033eb65eb34a2bc5cf67accf797f0611e77773d97da3f833ce",
-  "protocol_tag": "benchmark/protocol-v2-repair-2",
+  "protocol_tag": "benchmark/protocol-v2-repair-r2",
   "protocol_version": "v2-measurement-integrity",
   "provider": "custom:antigravity",
   "reasoning_effort": "high",
@@ -89,6 +98,7 @@
   "scored_total": 20,
   "skill_inventory_sha256": "d2b17dcb72b0cbd307986636253cfb7976cf8e8000721f2a0ff7e19f2c41e555",
   "system_under_test": "HERMES_CODE_BOT_HARNESS",
+  "terminal_fresh_replay_supported": "YES_IF_AUTHENTIC_COMPLETE_SOURCE_TRIAL",
   "upstream_sources": {
     "swe-bench": {
       "dataset": "princeton-nlp/SWE-bench_Verified",

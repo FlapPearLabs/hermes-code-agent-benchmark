@@ -14,9 +14,11 @@ from pathlib import Path
 if __package__:
     from scripts.collect_telemetry import TaskTelemetryCollector
     from scripts.verify_agent_sandbox import prove_sandbox
+    from scripts.verify_protocol_freeze import FreezeError, verify_local_patch_set
 else:
     from collect_telemetry import TaskTelemetryCollector
     from verify_agent_sandbox import prove_sandbox
+    from verify_protocol_freeze import FreezeError, verify_local_patch_set
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = REPO_DIR / "benchmark-manifest.json"
@@ -32,11 +34,29 @@ def verify_sut_unchanged(task_dir):
         actual = hashlib.sha256(Path(spec["path"]).read_bytes()).hexdigest()
         observed[name] = {"expected": spec["sha256"], "actual": actual,
                           "matched": actual == spec["sha256"]}
-    status = "PASS" if all(item["matched"] for item in observed.values()) else "SUT_CONFIG_DRIFT"
+    git_observed = {}
+    for name, spec in protocol["external_git"].items():
+        runtime = Path(spec["path"])
+        head = subprocess.run(["git", "-C", str(runtime), "rev-parse", "HEAD"],
+                              capture_output=True, text=True)
+        matched = head.returncode == 0 and head.stdout.strip() == spec["sha"]
+        if matched and spec.get("local_patch_manifest"):
+            try:
+                verify_local_patch_set(runtime, REPO_DIR / spec["local_patch_manifest"])
+            except (FreezeError, OSError, ValueError):
+                matched = False
+        elif matched:
+            dirty = subprocess.run(["git", "-C", str(runtime), "status", "--porcelain=v1",
+                                    "--untracked-files=all"], capture_output=True, text=True)
+            matched = dirty.returncode == 0 and not dirty.stdout.strip()
+        git_observed[name] = {"expected": spec["sha"], "actual": head.stdout.strip(),
+                              "matched": matched}
+    status = ("PASS" if all(item["matched"] for item in (*observed.values(), *git_observed.values()))
+              else "SUT_IDENTITY_DRIFT")
     (task_dir / "sut-post-agent-check.json").write_text(json.dumps({
-        "status": status, "external_sha256": observed}, indent=2) + "\n")
+        "status": status, "external_sha256": observed, "external_git": git_observed}, indent=2) + "\n")
     if status != "PASS":
-        raise RuntimeError("SUT config changed during agent execution")
+        raise RuntimeError("SUT identity changed during agent execution")
 
 def load_manifest():
     with open(MANIFEST_PATH, "r", encoding="utf-8") as f:

@@ -15,6 +15,11 @@ from pathlib import Path
 from uuid import uuid4
 from datetime import datetime, timezone
 
+if __package__:
+    from scripts.candidate_artifact import artifact_type
+else:
+    from candidate_artifact import artifact_type
+
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 UPSTREAM = Path("/Users/songshiyao/.hermes/profiles/code/cache/scratch/upstream-check")
@@ -66,6 +71,10 @@ def _verify_pin(root, sha):
 def _check_inputs(task, task_dir):
     export = json.loads((task_dir / "patch-export-result.json").read_text())
     workspace = json.loads((task_dir / "workspace-manifest.json").read_text())
+    if export.get("candidate_artifact_type") != artifact_type(task["track"]):
+        raise ValueError("CANDIDATE_ARTIFACT_TYPE_MISMATCH")
+    if artifact_type(task["track"]) != "GIT_PATCH":
+        raise ValueError("SANDBOX_STATE requires an official Harbor source trial")
     if export.get("status") != "VALID":
         raise ValueError("patch export is not VALID")
     if (workspace.get("task_id") != task["task_id"] or

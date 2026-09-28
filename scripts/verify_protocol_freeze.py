@@ -15,8 +15,10 @@ PINNED_FILES = (
     "benchmark-manifest.json", "benchmark-cache-manifest.json",
     "system-under-test.json", "governance-manifest.json", "model-routing.json",
     "skill-inventory.json", "mcp-inventory.json", "tool-inventory.json",
+    "HERMES_RUNTIME_PATCH_MANIFEST.json",
 )
 HARNESS_FILES = (
+    "scripts/candidate_artifact.py",
     "scripts/chunked_benchmark_runner.py",
     "scripts/run_codebot_task.py",
     "scripts/collect_telemetry.py",
@@ -45,6 +47,65 @@ def command(args, *, cwd):
 
 def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _git_bytes(runtime, *args):
+    result = subprocess.run(["git", "-C", str(runtime), *args], capture_output=True)
+    if result.returncode:
+        raise FreezeError(f"SUT_GIT_COMMAND_FAILED: {' '.join(args)}")
+    return result.stdout
+
+
+def verify_local_patch_set(runtime, manifest_path):
+    """Accept only the exact declared tracked diff and untracked file set."""
+    runtime = Path(runtime).resolve()
+    manifest = json.loads(Path(manifest_path).read_text())
+    head = _git_bytes(runtime, "rev-parse", "HEAD").decode().strip()
+    upstream = manifest.get("upstream_sha")
+    if (manifest.get("schema_version") != 1 or
+            manifest.get("head_sha") != head or
+            not upstream or
+            _git_bytes(runtime, "merge-base", upstream, head).decode().strip() != upstream):
+        raise FreezeError("SUT_PATCH_MANIFEST_IDENTITY_MISMATCH")
+    if (hashlib.sha256(_git_bytes(runtime, "diff", "--binary", "HEAD")).hexdigest()
+            != manifest.get("tracked_diff_sha256") or
+            hashlib.sha256(_git_bytes(runtime, "diff", "--cached", "--binary", "HEAD")).hexdigest()
+            != manifest.get("staged_diff_sha256")):
+        raise FreezeError("SUT_TRACKED_PATCH_DRIFT")
+    tracked_paths = {p.decode("utf-8", "surrogateescape") for p in
+                     _git_bytes(runtime, "diff", "--name-only", "-z", "HEAD").split(b"\0") if p}
+    tracked_entries = manifest.get("tracked_files", [])
+    untracked_entries = manifest.get("untracked_files", [])
+    declared_tracked = {entry["path"] for entry in tracked_entries}
+    if tracked_paths != declared_tracked:
+        raise FreezeError("SUT_TRACKED_PATH_DRIFT")
+    untracked_paths = {p.decode("utf-8", "surrogateescape") for p in
+                       _git_bytes(runtime, "ls-files", "--others", "--exclude-standard", "-z").split(b"\0") if p}
+    declared_untracked = {entry["path"] for entry in untracked_entries}
+    if untracked_paths != declared_untracked:
+        raise FreezeError("SUT_UNDECLARED_DIRT")
+    if (len(declared_tracked) != len(tracked_entries) or
+            len(declared_untracked) != len(untracked_entries) or
+            declared_tracked & declared_untracked):
+        raise FreezeError("SUT_PATCH_MANIFEST_DUPLICATE_PATH")
+    unaccepted = []
+    for entry in tracked_entries + untracked_entries:
+        path = runtime / entry["path"]
+        if (entry.get("classification") not in {"EXPECTED_LOCAL_PATCH", "RUNTIME_GENERATED_ARTIFACT",
+                                                "ACCIDENTAL_DIRTY_STATE", "UNKNOWN"} or
+                not entry.get("provenance") or not path.is_file() or path.is_symlink() or
+                not path.resolve().is_relative_to(runtime) or sha256(path) != entry.get("sha256") or
+                format(path.stat().st_mode & 0o777, "04o") != entry.get("mode")):
+            raise FreezeError(f"SUT_DECLARED_PATCH_INVALID: {entry.get('path')}")
+        if entry["classification"] in {"ACCIDENTAL_DIRTY_STATE", "UNKNOWN"}:
+            unaccepted.append(entry["path"])
+    if unaccepted:
+        raise FreezeError(f"SUT_PATCH_UNACCEPTED: {len(unaccepted)} files, first={unaccepted[0]}")
+    if (manifest.get("acceptance") != "ACCEPTED_FOR_CALIBRATION" or
+            not manifest.get("accepted_provenance")):
+        raise FreezeError("SUT_PATCH_NOT_ACCEPTED")
+    return {"status": "PASS", "head_sha": manifest["head_sha"],
+            "tracked_files": len(tracked_paths), "untracked_files": len(untracked_paths)}
 
 
 def verify_freeze(run_id, repo=REPO_DIR, check_remote=True):
@@ -87,7 +148,9 @@ def verify_freeze(run_id, repo=REPO_DIR, check_remote=True):
         actual = command(["git", "-C", spec["path"], "rev-parse", "HEAD"], cwd=repo)
         if actual != spec["sha"]:
             raise FreezeError(f"SUT_GIT_DRIFT: {name}")
-        if command(["git", "-C", spec["path"], "status", "--porcelain=v1", "--untracked-files=all"], cwd=repo):
+        if spec.get("local_patch_manifest"):
+            verify_local_patch_set(spec["path"], repo / spec["local_patch_manifest"])
+        elif command(["git", "-C", spec["path"], "status", "--porcelain=v1", "--untracked-files=all"], cwd=repo):
             raise FreezeError(f"SUT_GIT_DIRTY: {name}")
     if check_remote:
         remote_tag = git("ls-remote", "--tags", "origin", f"refs/tags/{tag}^{{}}")

@@ -19,9 +19,9 @@
 - **Agent Engineering Governance Git SHA**: `6ebde952681486d7caaaf826bd2a77c96c3e13a8`
 
 ## Harness Components
-- **Goal Mode**: Enabled (dynamic progress judge, budget tracking; does NOT substitute for official benchmark pass).
+- **Goal Mode**: Configured capability; the current quiet CLI runner does not enter its continuation loop without `HERMES_KANBAN_GOAL_MODE=1`. A session DB final snapshot can prove some positive observations but cannot reconstruct the lifecycle.
 - **Kanban Orchestration**: Enabled (durable task DAG, worktree isolation; max parallel workers = 2).
-- **Fresh Reviewer Runtime**: Enabled (isolated read-only subagent with exact-commit SHA binding).
+- **Fresh Reviewer Runtime**: Declared policy; per-task independent read-only execution and exact-commit SHA binding are not mechanically observable from current stream/DB records (`TELEMETRY_UNAVAILABLE`).
 - **Repair Policy**: Append-only repair commits for accepted reviewer findings, invalidating prior approval and re-triggering fresh review.
 - **Skills**: Curated engineering skill suite (see `skill-inventory.json`).
 - **MCP Servers**: Sandboxed local services (`agentmemory`, `chrome-devtools`, `codegraph`; see `mcp-inventory.json`).

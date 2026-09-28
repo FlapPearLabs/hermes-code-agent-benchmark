@@ -1,0 +1,962 @@
+{
+  "acceptance": "BLOCKED_PENDING_OWNER_CLASSIFICATION",
+  "accepted_provenance": null,
+  "branch": "main",
+  "head_sha": "79dbb1450ec404a2240529f5554526da4cfec498",
+  "notes": "Exact local snapshot; no dirty item was reset, deleted, committed, or accepted for calibration.",
+  "origin_main_sha": "79dbb1450ec404a2240529f5554526da4cfec498",
+  "patch_purpose": "Observed launchd HERMES_BIN override; whether it is intentional for the production Code Bot is unresolved.",
+  "schema_version": 1,
+  "staged_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "tracked_diff_sha256": "2460ba146aeb99fb533d8bbc1817b170fda9f6e26947201a6b42623538408704",
+  "tracked_files": [
+    {
+      "classification": "UNKNOWN",
+      "mode": "0644",
+      "patch_purpose": "Set HERMES_BIN in launchd environment for the local Hermes executable; owner intent pending",
+      "path": "hermes_cli/gateway_launchd.py",
+      "provenance": "Local tracked diff and matching generated LaunchAgent setting; no authorizing commit or owner confirmation found",
+      "sha256": "ef612c79af8727d77af4aee07a2c4477ea2ed205048d553f3076ed4075b673b5",
+      "size_bytes": 48278
+    }
+  ],
+  "untracked_files": [
+    {
+      "classification": "RUNTIME_GENERATED_ARTIFACT",
+      "mode": "0644",
+      "path": "hermes_cli/gateway_launchd.py.bak.1790479012",
+      "provenance": "Backup content matches the preceding upstream commit; creating command not observed",
+      "sha256": "4a6289a7a05ab662bfa92680ddad51d3012f9f3c684936d23fee1f33ca354cb5",
+      "size_bytes": 47490
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/cavecrew/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "e13d08785f72d305de1ac1fa9a49c349332bb4e2f6a24a06efd20144c36c4dc9",
+      "size_bytes": 3043
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/cavecrew/SKILL.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "b74f374f6aae6e9a31e78e7d876860406fe5833378e9298536edf176c12f379b",
+      "size_bytes": 3936
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-commit/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "a2e82924b487fc1845114c247b47c2d3c2d1bd60f90bbfa60e9831319eb964fa",
+      "size_bytes": 1226
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-commit/SKILL.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "58db7b8efab911a629c26e7132517d9076e4e3645009eb604cb8c25663477841",
+      "size_bytes": 2588
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "dd772fc8791ea5bd6041e441f91ff355392d4f30c9f56310be7f4bc6cdaf5126",
+      "size_bytes": 5305
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/SECURITY.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "ac3432493cfe71368a141f437bf35562eb8f4ce07ae699e5399c0cb665e02da3",
+      "size_bytes": 1557
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/SKILL.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "8b0d64c622d8a70411bbd86e736ac23cc0465fca1943a37f081e58e9d3afd210",
+      "size_bytes": 4535
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/scripts/__init__.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "429c3e1c5cc5b9705f28d77f303c728304ae68693913ad3d5ce9b5a44c8ee40f",
+      "size_bytes": 224
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/scripts/__main__.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279",
+      "size_bytes": 30
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/scripts/benchmark.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "84a5a94bebcce03c9dc4a70333f120f03e11075bce9298e1e74b95594e142d43",
+      "size_bytes": 2425
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/scripts/cli.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "17edb6b425adc0ea04e35f1e90dfe318ba4232a1b815c5ff7d6cff7d574efea6",
+      "size_bytes": 2089
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/scripts/compress.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "9537671f5b8bf81bfe99078666948a93b5a5f1ae07d2f7bc3f085fe1a6b408c0",
+      "size_bytes": 13146
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/scripts/detect.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "46bb2b3092c2896eec023135495923701716c586b370976f244674342dd9a35e",
+      "size_bytes": 4761
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-compress/scripts/validate.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "8b9e752b70868f6e03b3d7e76de19dd6b4ac92dad50522992738340e9916dc0d",
+      "size_bytes": 5752
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-help/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "5fcfa700fbf6c07259db74bc6bb602f4590623c86b754b153061cf82b59c48ee",
+      "size_bytes": 976
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-help/SKILL.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "590d6c6c17254bda56d18da7cc9d0bf252aeec5d1c78b77dd7ae4cabb8404f89",
+      "size_bytes": 2300
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-review/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "a06403b2722a069a9a2b0011772ae73296e68b4e46ace2f4b42b4ea546052b64",
+      "size_bytes": 1210
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-review/SKILL.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "9ef09065f26b9781275b5a4775e14870e331fab833efb2a2aa33f3205a2b83c3",
+      "size_bytes": 2739
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-stats/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "64d206ee7524625a8541ec064e0c7ec27c3764bae63b685cb5eecbd20aa76bdc",
+      "size_bytes": 936
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman-stats/SKILL.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "b9e49e46ede956e0c1633eae82a695c996f728bc48f3903f001d301068a2b0ea",
+      "size_bytes": 607
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "9369b69197e5d07e0c56679f9fc346f3539f58537c17f4e804a44612f086dc73",
+      "size_bytes": 1898
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/caveman/SKILL.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "5e30bb56afbd0b01bd736f2da84180e76f18db4a64de8e124525d5c8dc2e8605",
+      "size_bytes": 5227
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/SKILL.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6c0ca2236d3518ccaad710f6db8e9c4aa7af67b685dc699ad347ae42186951e1",
+      "size_bytes": 15454
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/evals.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "05b3dee60f03ddac7c26e925700aa85f9a28872ecd8857e2c4b97ad48f5f3499",
+      "size_bytes": 10894
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/agent-memory/taskflow/memory/MEMORY.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "e7397522c0aebe28386c8e20945d167dc008f1bb58833cea2b5cdde8afa7d938",
+      "size_bytes": 183
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/agent-memory/taskflow/memory/project_api-design.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6d0b0618ee710ff32d01668baa62df81387d38edb32b59c3506dca04816817de",
+      "size_bytes": 243
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/agent-memory/taskflow/memory/project_deploy.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "f351e6d7698f571361817f8976a98889fea80a0b2acb91ab8386978b9a808e98",
+      "size_bytes": 274
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/workspace/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "4cb497ee29d3d91b0a4b83bb4ae6303937d7eb11b5f08871e36d83581f90664e",
+      "size_bytes": 355
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/workspace/taskflow/AGENTS.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "45eaf06973eb1bc8a1154aee15eddfa56f4eba86771d02bcd25ec6f63526cc03",
+      "size_bytes": 479
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/workspace/taskflow/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "45eaf06973eb1bc8a1154aee15eddfa56f4eba86771d02bcd25ec6f63526cc03",
+      "size_bytes": 479
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/workspace/taskflow/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "7c4a27389575b0a9e2069860fd2d7962dde2b36ce731096f374d2c621bb18e6f",
+      "size_bytes": 231
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/workspace/taskflow/docs/architecture.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "83c895e56b3a2564a9759c307dd5e65700fd2cca70f06ad5f6e221e073aa034f",
+      "size_bytes": 374
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/workspace/taskflow/package.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "d24dd550021c804c48df69ea0ad1b01e1106e41f430ea4b326ad51cd87a5a763",
+      "size_bytes": 311
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/workspace/taskflow/src/router.ts",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "19633ae67c58eb44e1e138a9a3ac59e18ca40c8dd1a5f7194f8583174f9b0f94",
+      "size_bytes": 888
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-1-routine-dev-sync/workspace/taskflow/src/server.ts",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "a93dcf7e17cfd132d9d5f324b7cd3998ea44e7751fceee829426e4650542f11b",
+      "size_bytes": 474
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/PLAN.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "9e8913713d940fe597a617d65f7ced7a4cffa9e451bd75eb3605fa7baf293018",
+      "size_bytes": 229
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "0e28f845508b50fe9fec97fc340fa20d8e30073482d75c9c6724b6c7853f3114",
+      "size_bytes": 314
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/TODO-fix-bug.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "baace56848966b9a64cccc5cffe12efb0ee8a11ca87dca618f28dd091f5eab52",
+      "size_bytes": 245
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/data.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "38d8fb975a6f51d516200e80680a31049af7c971c4e6eb3831d9dd6fa876652a",
+      "size_bytes": 105
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/index.html",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "963c47fce1408edd8d3e69dd14730d02bb1d0c66583ccbeea4c833ebba47fd6d",
+      "size_bytes": 873
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/notes/debug-notes.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "f3aa8e80288d76fe41b25cabcabcfe7a5665cf31f3438ea5db570dd2a65f443a",
+      "size_bytes": 176
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/package.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "09122d5ccb05eabd93dba41977f27c056d6fc0051f27bf13a90d10adc6f7be7e",
+      "size_bytes": 167
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/server.js",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "3555495ec60f88f8c11b152d1dee6a2650c7437f1239257cc3f7b10dd2cddc33",
+      "size_bytes": 1130
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-10-vibe-project/project/server_old.js",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "705748b1e1e0798127cab91b6491590a367d8eed8261366f618d632fbaabb209",
+      "size_bytes": 298
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-11-unknown-platform/project/.agentx/memory.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "9054a73f5a24209d918246950c910a79e69f467faf8b9466a59fa70d7e25c441",
+      "size_bytes": 394
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-11-unknown-platform/project/.agentx/session-log.jsonl",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "1dda377e7bf0a712f3353b7b67c183693744c0b194257b5887cedf8788fa7457",
+      "size_bytes": 177
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-11-unknown-platform/project/AGENTS.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "2796541b4449a758e374702af679d020376f6a384a1526be2e4aed7554f6cdf3",
+      "size_bytes": 352
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-11-unknown-platform/project/main.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "ac86db5c2547c0d6516e46bfc6f35692bf99801cacbb35280fa13ea8081a6c6d",
+      "size_bytes": 771
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-11-unknown-platform/project/requirements.txt",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad",
+      "size_bytes": 13
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/agent-memory/notesapp/memory/MEMORY.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "f36c20bc26a606abbd6c50d3ff15f47675e8e63882b5f53e6c3cb9d2f9303e72",
+      "size_bytes": 353
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/agent-memory/notesapp/memory/feedback_auth-clerk.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6a73c6bad289a1ee84336c09dea6eb5fba1fae3f75e451cd928b0dbde503e02e",
+      "size_bytes": 212
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/agent-memory/notesapp/memory/feedback_auth-nextauth.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "30322b8171e192cfc4e82b6e35586b82017130b2107ea4334ebb929d3f25f42d",
+      "size_bytes": 189
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/agent-memory/notesapp/memory/feedback_performance.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "28ac20dd9b4506a5f829903c166e38a91de874d0eac4d3d912f9581d6127e857",
+      "size_bytes": 178
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/agent-memory/notesapp/memory/project_db-migration.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "a3df93e24d51e1a9b348882cda0176cb48411a8f627083a62a5ae06a33b6506a",
+      "size_bytes": 256
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/workspace/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "a9709573627f5fed68004ced1a831136264905603f7b92a1264cbe2fc7b4cf3e",
+      "size_bytes": 289
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/workspace/notesapp/AGENTS.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "271681cbeaa4e17f67ffad3dbb684f0a7fd6bdc4aadc5b1e9f0e5594c6693489",
+      "size_bytes": 343
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/workspace/notesapp/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "271681cbeaa4e17f67ffad3dbb684f0a7fd6bdc4aadc5b1e9f0e5594c6693489",
+      "size_bytes": 343
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/workspace/notesapp/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "d43c0048297bd58fdbe8bd0199c6d608e7f75f8d18e10ada2fed583c1046c766",
+      "size_bytes": 74
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/workspace/notesapp/prisma/schema.prisma",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "c5f907f99968255300376329712ebd1cb7925542f56ffc137fc1e82668f3465e",
+      "size_bytes": 297
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-2-memory-conflict/workspace/notesapp/src/auth.ts",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "7e2fea9075b81850bbfdd23b50ec6c6fd8ecc1c7d4e70f78d23366b3e08507f9",
+      "size_bytes": 255
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-3-cold-start/workspace/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6350654c7243b0caed781a2978ecd548ff5f55cb6d7ec21606f6f22ce2a085be",
+      "size_bytes": 490
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-3-cold-start/workspace/analytics_dashboard/.gitignore",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "790e3169bc19b046fe55ba1da6d13b976c28363c8c00462a2195fe5faf260910",
+      "size_bytes": 20
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-3-cold-start/workspace/analytics_dashboard/package.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "c3568859cca48d3e0cc7dd890b21d600b93c85ad335af7b61c044f785d7b3f43",
+      "size_bytes": 333
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-3-cold-start/workspace/analytics_dashboard/src/App.jsx",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "eb898c855b7c34906b6aa8a28a56ea11278e53dc807d4800d97baa58cc024296",
+      "size_bytes": 618
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-3-cold-start/workspace/analytics_dashboard/src/lib/supabase.js",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "bf9b22fbf60e968374de0603a19ca52403d936d94974012b0ec196700400dd63",
+      "size_bytes": 174
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/agent-memory/auth-center/memory/MEMORY.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "c8954ab027e753bff007571e79b893df853365fd44fc6f384765ac2a2f71f0fb",
+      "size_bytes": 105
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/agent-memory/auth-center/memory/project_device-flow.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "066537e0c9267725ecbd0b984b9ca3ec1f1ac3f06892f4778da574d47f7d576c",
+      "size_bytes": 232
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/agent-memory/skills-hub/memory/MEMORY.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "e574434b63cf9429f4d3cfd0e8225f7530c05f7707fd1bbc602599ad356d78a6",
+      "size_bytes": 46
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "72a253f8f645cff6817ec7222ce188fcd71afc43f9a03549df3fd6c0ab30aadf",
+      "size_bytes": 380
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/auth-center/.env.example",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "ae35e3b0b16218962107b5db71d879ae06b44dadaf865a6ede793746e651eefb",
+      "size_bytes": 101
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/auth-center/AGENTS.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "0e3293b95b6f96c70e638cf45d6525b917fe590151e894269805a1a1891e79c2",
+      "size_bytes": 525
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/auth-center/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "0e3293b95b6f96c70e638cf45d6525b917fe590151e894269805a1a1891e79c2",
+      "size_bytes": 525
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/auth-center/docs/architecture.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "12461c8b8c7c65bc6f5f90af5d5726b7c26582fd5b7e9d8c03845bdeb469897c",
+      "size_bytes": 264
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/auth-center/docs/integration-guide.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "ffec76bbaee15ff293c7f3744d883d65821bc0caa057b3ec7092078682bfc5d2",
+      "size_bytes": 606
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/auth-center/docs/operator-runbook.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "a056932584eeb347b9ff7c050d5320a452a03071f16cfd0be45e0444d2505083",
+      "size_bytes": 221
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/auth-center/migrations/004_device_codes.sql",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "27d8228847337d1db8d84ae948ec7a55b6bef33e91fa1207bb17b9f1f0fd7edc",
+      "size_bytes": 430
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/auth-center/src/routes/device.ts",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "1ced1c50f834f04e75d979b47d8059afc1255c14c9dd80818cb0f510495a790f",
+      "size_bytes": 1324
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/skills-hub/AGENTS.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "66c1cea8fa388d074f75325e5ba82f01e6495d9d625d366a950d4eae6183f184",
+      "size_bytes": 376
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/skills-hub/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "66c1cea8fa388d074f75325e5ba82f01e6495d9d625d366a950d4eae6183f184",
+      "size_bytes": 376
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/skills-hub/docs/auth-integration.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "7a04d15d75ee6d4e3ed4dfe30ead32b419c96f393001b1aabb2f75a58ec64eac",
+      "size_bytes": 340
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0755",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/skills-hub/setup.sh",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "5be82fe6924eeb7f5166eced0ecaed94d651dc74410f41880c83f7a920dab035",
+      "size_bytes": 831
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-4-cross-project/workspace/skills-hub/web/src/DevicesPage.jsx",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "3f5eac36215e092554abfaf12fb4b58753a69024152a5d4be5869ac94f4363c0",
+      "size_bytes": 419
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/agent-memory/pdf-tools/memory/MEMORY.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "dfcfc45b2f88cbde9dc52f805e408ce79b15afcfee6b6f7e536f0fb3e39a6115",
+      "size_bytes": 173
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/agent-memory/pdf-tools/memory/feedback_streaming.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "be03b0bfa00ba9bc4d1134ddb1e8577f1d19754a1584e5fcc3cd5595b463914c",
+      "size_bytes": 197
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/workspace/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "4e18d43932756c880abd554a6e8db34a7b7ea83849ba8e6b694ae050be97d300",
+      "size_bytes": 957
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/workspace/Link_Shortener/package.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "efb3c4ff9fa783bb84cf503940837656e3829c704cabb45fbd1269a592c331e3",
+      "size_bytes": 185
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/workspace/Link_Shortener/src/server.js",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "f0f0b5703ddd448abe48dbfd2280b1023882570139003140bd01d625021f8b89",
+      "size_bytes": 415
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/workspace/deploy-notes.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "ad6558c52fdad19c627a0d2659ce5f53584935670bc7012eacf800667f95a076",
+      "size_bytes": 107
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/workspace/pdf-tools/.gitignore",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "20432be3c8b7a4adca6a439e4de38dc505dfd64c8e5c61f7e61f27c80619b0eb",
+      "size_bytes": 21
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/workspace/pdf-tools/AGENTS.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "3f119fd55ac7282c6701f9463633a4fa1c84ecd39ab2c5206a873e21749d2532",
+      "size_bytes": 229
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/workspace/pdf-tools/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "1c2c11484e96d91c395521b56e335dd067db6d9b68f2142534d2a55de404f334",
+      "size_bytes": 180
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-5-governance/workspace/pdf-tools/src/app.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "fca49aaece0203705c04f5a5a836ef8f41cd61dceee1c862123ddac7f7dc0e28",
+      "size_bytes": 479
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-6-scope-boundary/workspace/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "9a8c0eae2859e57ec04618f0308386a9858a25276c0aa108d97f8a3382ba9e7d",
+      "size_bytes": 217
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-6-scope-boundary/workspace/Legacy_App/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6ee0293ec8093704ceb23beb8c294ebfa4a0fe77faa81cf5d7af6e17ce163c75",
+      "size_bytes": 94
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-6-scope-boundary/workspace/current-app/AGENTS.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "b0437346332efb99343c1d4eb57446099bd0c0b38c047fc31d49deefa140cd56",
+      "size_bytes": 56
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-6-scope-boundary/workspace/current-app/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "b0437346332efb99343c1d4eb57446099bd0c0b38c047fc31d49deefa140cd56",
+      "size_bytes": 56
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-6-scope-boundary/workspace/current-app/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "8a0562eb9021d376b5950d8259b7be3f9bd3f5181076f79c8e09d15b93cefa32",
+      "size_bytes": 64
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-6-scope-boundary/workspace/current-app/package.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "2629d42fef1693873d86dad1079b4ecfa0357f89baa0584f2e99ec8c1d02f4b4",
+      "size_bytes": 79
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-6-scope-boundary/workspace/current-app/src/server.ts",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "46467524d95b5d46b60b73668ec3d8b96e35f1c90dad7b3a8e879e3bd2848383",
+      "size_bytes": 47
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-7-release-terminal/project/.cleanup-candidate/UNIQUE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "dfa8bd4cc315cf43ceed14f6114ca464cc530608c54212d2f8c46b1b3e0b0916",
+      "size_bytes": 89
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-7-release-terminal/project/CLAUDE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "15a7bdcb8d8857afacac78295d4e30a863f1973c4ed20df9bb2a8b27cd73034f",
+      "size_bytes": 180
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-7-release-terminal/project/release-state.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "d423d9c2dad2ca89b7804fa0b0fb0112f7a287b4dc3e30dfa5b19919e30731fa",
+      "size_bytes": 332
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-8-generated-memory/codex-memories/MEMORY.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "49892d139b52d83f064512ca61246629a5caeb69c2bd638fd85c50f9fd4cb5b5",
+      "size_bytes": 90
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-8-generated-memory/codex-memories/extensions/ad_hoc/notes/.gitkeep",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "size_bytes": 1
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-8-generated-memory/codex-memories/memory_summary.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "476bf396f1a5b84f6d314aaeff328486c8c9f957707a0cab2f6af5fa3c004836",
+      "size_bytes": 63
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-8-generated-memory/codex-memories/rollout_summaries/session.jsonl",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "94c8216cbe8befab8a6fb1f9aea89ae5b3dfe9dbaa457f87b601e9b659a17ddb",
+      "size_bytes": 53
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-8-generated-memory/project/README.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "5b0148f026e750b4acfc79ada710363c200fb8afe2310483a798fc834b54f83f",
+      "size_bytes": 92
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-8-generated-memory/project/docs/ARCHITECTURE.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "e9ce0451708ab79f42957dabc99c1cf3dab34bfdbe4a387af853ec4361a7e6ae",
+      "size_bytes": 76
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/fixtures/eval-8-generated-memory/project/runtime.txt",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "ddfec30b57b1c3422bb4fbff2454a948cb375a03e38316a6180f62338a3ff85c",
+      "size_bytes": 19
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/evals/trigger-eval.json",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6ab08e40158ab69f552485c4a3b4ef75d10de7dfed238ce29c12da3f9dea7324",
+      "size_bytes": 2414
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0755",
+      "path": "skills/productivity/neat-freak/evals/validate.py",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6ddd014bd7e30ecf11007174029a4a3de4d49eae192701791c55c1b9a152598b",
+      "size_bytes": 6930
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/references/agent-paths.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "8210a3cc1211283f71f068de99fd17e62fb9ce269ca6e693879ce6c30e31aff6",
+      "size_bytes": 5267
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/references/governance.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "6bf4bbf171864f2c82a5f8b8cf441df043362e8790c69ddca38f207c38bb5f72",
+      "size_bytes": 4296
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/references/sync-matrix.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "5c771ba2695a0d0dc54ef636531d61c916ed7f0f39db39827bbb330268f7648d",
+      "size_bytes": 4817
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0644",
+      "path": "skills/productivity/neat-freak/references/verification.md",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "cd3f4bf5cdc59c3aa51db868801f7461563a4b4a58b72799a6753c1f863c4126",
+      "size_bytes": 4042
+    },
+    {
+      "classification": "ACCIDENTAL_DIRTY_STATE",
+      "mode": "0755",
+      "path": "skills/productivity/neat-freak/scripts/audit-inventory.sh",
+      "provenance": "Byte-identical copy exists in the active Code profile skills directory; copy intent unknown",
+      "sha256": "260315d659f19e63a12065f9cadd9b57f9c1ddc867457f6c0f6fd87c003a7325",
+      "size_bytes": 3593
+    }
+  ],
+  "upstream_sha": "79dbb1450ec404a2240529f5554526da4cfec498"
+}

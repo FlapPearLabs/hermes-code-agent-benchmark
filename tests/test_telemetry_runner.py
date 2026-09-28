@@ -1,4 +1,5 @@
 import json
+import hashlib
 import subprocess
 import sys
 import tempfile
@@ -139,6 +140,37 @@ class RunnerTests(unittest.TestCase):
                 runner.main(["--run-id", "new-run", "--stage", "calibration"])
         self.assertEqual(len(run.call_args_list), 1)
         self.assertIn("verify_protocol_freeze.py", " ".join(map(str, run.call_args.args[0])))
+
+    def test_post_agent_check_rejects_undeclared_runtime_mutation(self):
+        runtime = self.root / "runtime"
+        runtime.mkdir()
+        for args in (("init", "-q"), ("config", "user.name", "Test"),
+                     ("config", "user.email", "test@localhost")):
+            subprocess.run(["git", "-C", str(runtime), *args], check=True)
+        (runtime / "source.py").write_text("base\n")
+        subprocess.run(["git", "-C", str(runtime), "add", "source.py"], check=True)
+        subprocess.run(["git", "-C", str(runtime), "commit", "-q", "-m", "base"], check=True)
+        head = subprocess.check_output(["git", "-C", str(runtime), "rev-parse", "HEAD"], text=True).strip()
+        empty_sha = hashlib.sha256(b"").hexdigest()
+        (self.root / "runtime-manifest.json").write_text(json.dumps({
+            "schema_version": 1, "upstream_sha": head, "head_sha": head,
+            "tracked_diff_sha256": empty_sha, "staged_diff_sha256": empty_sha,
+            "tracked_files": [], "untracked_files": [],
+            "acceptance": "ACCEPTED_FOR_CALIBRATION",
+            "accepted_provenance": "test fixture",
+        }))
+        (self.root / "PROTOCOL_V2.json").write_text(json.dumps({
+            "external_sha256": {}, "external_git": {"hermes_runtime": {
+                "path": str(runtime), "sha": head, "local_patch_manifest": "runtime-manifest.json"}},
+        }))
+        evidence = self.root / "post-agent"
+        evidence.mkdir()
+        runner.verify_sut_unchanged(evidence)
+        (runtime / "extra.txt").write_text("mutation\n")
+        with self.assertRaisesRegex(RuntimeError, "SUT identity changed"):
+            runner.verify_sut_unchanged(evidence)
+        self.assertEqual(json.loads((evidence / "sut-post-agent-check.json").read_text())["status"],
+                         "SUT_IDENTITY_DRIFT")
 
     def test_unsupported_terminal_state_blocks_entire_calibration_before_task_start(self):
         self.root.joinpath("benchmark-manifest.json").write_text(json.dumps({

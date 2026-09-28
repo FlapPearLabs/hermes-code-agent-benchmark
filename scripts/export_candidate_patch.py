@@ -9,6 +9,11 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+if __package__:
+    from scripts.candidate_artifact import artifact_type
+else:
+    from candidate_artifact import artifact_type
+
 REPO_DIR = Path(__file__).resolve().parent.parent
 WORKSPACES_ROOT = REPO_DIR / "agent-workspaces"
 RUNS_ROOT = REPO_DIR / "runs"
@@ -46,6 +51,10 @@ def export_patch(task_id, run_id):
     result_path = dest / "patch-export-result.json"
     patch_path = dest / "patch.diff"
     try:
+        try:
+            artifact_type(manifest["track"], "GIT_PATCH")
+        except (KeyError, ValueError) as exc:
+            raise PatchExportError("CANDIDATE_ARTIFACT_TYPE_MISMATCH", str(exc)) from exc
         expected = (WORKSPACES_ROOT / run_id / task_id / "repo").resolve(strict=True)
         repo = Path(manifest["repo_root"]).resolve(strict=True)
         if repo != expected or manifest["task_id"] != task_id or manifest["run_id"] != run_id:
@@ -93,6 +102,7 @@ def export_patch(task_id, run_id):
         patch_path.write_bytes(patch)
         result = {
             "status": "VALID", "task_id": task_id, "run_id": run_id,
+            "candidate_artifact_type": "GIT_PATCH",
             "base_sha": base, "base_tree": manifest["base_tree"],
             "head": head, "candidate_tree": tree, "repo_root": str(repo),
             "patch_path": str(patch_path), "patch_sha256": hashlib.sha256(patch).hexdigest(),

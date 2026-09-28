@@ -61,7 +61,9 @@ This repository uses strictly official, canonical upstream benchmark sources. No
 - **REFERENCE_SOLUTION_STORAGE**: `benchmark-control/private-oracle/terminal-bench/`
 - **AGENT_EXECUTION_COMPONENT_USED**: `NO`
 - **OFFICIAL_AGENT_RUNNER_USED**: `NO`
-- **GRADING_STATUS**: `UNSUPPORTED_STATE` until candidate state can be captured and replayed in the official environment. Calibration task `payments-pipeline-fix` declares both `/app/src/` and `kafka:/tmp/kafka-snapshot.tgz` as artifacts; a Git patch from the main image omits the Kafka sidecar state. `--agent nop` alone does not apply a host patch and cannot serve as evidence.
+- **CANDIDATE_ARTIFACT_TYPE**: `SANDBOX_STATE` (official Harbor source trial and collected artifact manifest), not a Git patch. `payments-pipeline-fix` declares `/app/src/` and `kafka:/tmp/kafka-snapshot.tgz`; its verifier reads both from collected artifacts. Missing or corrupt Kafka snapshot is infrastructure invalid, not a task `FAIL`.
+- **FRESH_REPLAY_SUPPORTED**: `YES`, conditional on an authentic complete source trial. Pinned Harbor provides `harbor trials regrade <source-trial-dir> -p <pinned-task-dir> -e docker --trial-name <new-name> -o <output-dir>` and rejects missing/failed artifact inputs. This is not evidence that a replay has occurred.
+- **GRADING_STATUS**: `BLOCKED_EXACT_SUT_TRIAL`. Current host Hermes Code profile has not been reproduced inside a Harbor trial with equivalent model/MCP routing and isolation. Harbor's built-in Hermes agent is not the frozen SUT. The calibration runner therefore starts no task. `--agent nop` and a host `/app` patch omit the Kafka sidecar state.
 
 ---
 
