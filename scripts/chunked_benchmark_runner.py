@@ -1,33 +1,58 @@
 #!/usr/bin/env python3
-"""
-chunked_benchmark_runner.py - Orchestrator for chunked benchmark execution.
-Runs tasks in isolated sessions with 40% context budget and Official Grader verification.
-Sends WeChat notification upon full completion.
-"""
+"""Calibration-only Hermes runner with raw trace capture and fail-closed steps."""
 
+import argparse
+import hashlib
 import os
-import sys
+import re
 import json
 import time
 import subprocess
+import sys
 from pathlib import Path
 
-REPO_DIR = Path("/Users/songshiyao/Desktop/Projects/hermes-code-agent-benchmark")
+if __package__:
+    from scripts.collect_telemetry import TaskTelemetryCollector
+    from scripts.verify_agent_sandbox import prove_sandbox
+else:
+    from collect_telemetry import TaskTelemetryCollector
+    from verify_agent_sandbox import prove_sandbox
+
+REPO_DIR = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = REPO_DIR / "benchmark-manifest.json"
 STATE_PATH = REPO_DIR / "runs" / "benchmark_run_state.json"
 SCRIPTS_DIR = REPO_DIR / "scripts"
-PYTHON_BIN = REPO_DIR / ".venv" / "bin" / "python"
+PYTHON_BIN = Path(sys.executable)
+
+
+def verify_sut_unchanged(task_dir):
+    protocol = json.loads((REPO_DIR / "PROTOCOL_V2.json").read_text())
+    observed = {}
+    for name, spec in protocol["external_sha256"].items():
+        actual = hashlib.sha256(Path(spec["path"]).read_bytes()).hexdigest()
+        observed[name] = {"expected": spec["sha256"], "actual": actual,
+                          "matched": actual == spec["sha256"]}
+    status = "PASS" if all(item["matched"] for item in observed.values()) else "SUT_CONFIG_DRIFT"
+    (task_dir / "sut-post-agent-check.json").write_text(json.dumps({
+        "status": status, "external_sha256": observed}, indent=2) + "\n")
+    if status != "PASS":
+        raise RuntimeError("SUT config changed during agent execution")
 
 def load_manifest():
     with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def load_state():
-    if STATE_PATH.exists():
-        with open(STATE_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
+def load_state(run_id):
+    path = STATE_PATH.parent / run_id / "runner-state.json"
+    if path.exists():
+        with path.open("r", encoding="utf-8") as f:
+            state = json.load(f)
+        if state.get("run_id") != run_id:
+            raise RuntimeError("Existing runner state belongs to another run ID")
+        return state
     return {
-        "status": "RUNNING",
+        "run_id": run_id,
+        "status": "CALIBRATION_RUNNING",
         "current_track": "calibration",
         "completed_tasks": {},
         "started_at": time.time(),
@@ -35,150 +60,148 @@ def load_state():
     }
 
 def save_state(state):
-    STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    path = STATE_PATH.parent / state["run_id"] / "runner-state.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
     state["updated_at"] = time.time()
-    with open(STATE_PATH, "w", encoding="utf-8") as f:
+    with path.open("w", encoding="utf-8") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
-HERMES_PYTHON = Path("/Users/songshiyao/.hermes/installs/6f381d8c7ae5bd7e/environments/c6bdf1a6971f4876ba6b6c8522463719/venv/bin/python")
-
-def notify_wechat(message: str):
-    try:
-        py_exec = str(HERMES_PYTHON) if HERMES_PYTHON.exists() else str(PYTHON_BIN)
-        cmd = [py_exec, str(SCRIPTS_DIR / "send_wechat_notice.py"), message]
-        subprocess.run(cmd, check=True)
-    except Exception as e:
-        print(f"WeChat notification failed: {e}", file=sys.stderr)
-
-def run_single_task(task_obj, track_name, run_id="run_001"):
+def run_single_task(task_obj, track_name, run_id):
+    if track_name != "calibration":
+        raise ValueError("Scored tasks are disabled for this runner")
     task_id = task_obj["task_id"]
-    print(f"\n=======================================================")
-    print(f"STARTING [{track_name}] TASK: {task_id}")
-    print(f"=======================================================")
-    
-    # 1. Prepare isolated workspace
+    if task_obj.get("track") == "terminal-bench":
+        raise RuntimeError("UNSUPPORTED_STATE: Terminal-Bench candidate replay is not proven")
+    task_dir = REPO_DIR / "runs" / run_id / "tasks" / task_id
+    workspace_dir = REPO_DIR / "agent-workspaces" / run_id / task_id
+    if task_dir.exists() or workspace_dir.exists():
+        raise RuntimeError(f"Task {task_id} already has run artifacts; use a fresh run ID")
+
+    task_started = time.monotonic()
     cmd_prep = [str(PYTHON_BIN), str(SCRIPTS_DIR / "prepare_agent_workspace.py"), "--task", task_id, "--run-id", run_id]
     subprocess.run(cmd_prep, check=True)
-
-    # 2. Record Task Start
-    cmd_start = [str(PYTHON_BIN), str(SCRIPTS_DIR / "collect_telemetry.py"), "--task", task_id, "--run-id", run_id, "--event", "TASK_START"]
-    subprocess.run(cmd_start, check=True)
-
-    # 3. Spawn Codebot for this specific task
-    # Codebot runs in an isolated workspace with instructions
-    workspace_dir = REPO_DIR / "agent-workspaces" / run_id / task_id
-    instructions_file = workspace_dir / "PROBLEM.md"
-    
-    prompt = f"Please solve the problem described in PROBLEM.md within this directory: {workspace_dir}. Inspect files, implement minimal correct fix, test if possible, and exit cleanly."
-    
-    # Run hermes agent in isolated mode with max-turns 60 (to respect the ~40% context budget)
-    # Using profile 'code'
+    collector = TaskTelemetryCollector(task_id, run_id)
+    collector.record_event("TASK_START", {"track": track_name})
+    sandbox_prefix = prove_sandbox(workspace_dir, task_dir, REPO_DIR)
+    prompt = f"Please solve the problem in {workspace_dir / 'PROBLEM.md'} within repository {workspace_dir / 'repo'}. Inspect files, implement the minimal correct fix, test if possible, and exit cleanly."
     agent_cmd = [
         "hermes", "-p", "code", "chat",
         "-q", prompt,
         "--yolo",
-        "--max-turns", "60"
+        "--max-turns", "60",
+        "--format", "stream-json",
     ]
-    print(f"Executing Codebot in workspace {workspace_dir}...")
     run_env = dict(os.environ)
     run_env["HERMES_YOLO_MODE"] = "1"
+    # A shell started inside an unrelated Kanban worker must not silently turn
+    # this benchmark task into that worker or inherit its Goal loop.
+    if any(key.startswith("HERMES_KANBAN_") for key in run_env):
+        raise RuntimeError("Inherited Kanban worker environment is not a benchmark run")
+
+    stdout_path = task_dir / "hermes-stream.jsonl"
+    stderr_path = task_dir / "hermes-stderr.log"
+    exit_code = None
+    timed_out = False
+    process_error = None
+    started = time.monotonic()
+    collector.record_event("AGENT_PROCESS_START", {"command": agent_cmd, "sandbox_proof": str(task_dir / "agent-sandbox-proof.json")})
     try:
-        subprocess.run(agent_cmd, cwd=str(workspace_dir), timeout=1800, env=run_env)
+        with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open("w", encoding="utf-8") as stderr:
+            process = subprocess.run(sandbox_prefix + agent_cmd, cwd=str(workspace_dir / "repo"), timeout=1800,
+                                     env=run_env, stdout=stdout, stderr=stderr)
+            exit_code = process.returncode
     except subprocess.TimeoutExpired:
-        print(f"Task {task_id} timed out after 30 minutes.")
+        timed_out = True
+        process_error = "Hermes exceeded the 1800-second task limit"
+    except OSError as exc:
+        process_error = f"Hermes process could not start: {exc}"
+    duration_ms = round((time.monotonic() - started) * 1000)
+    process_record = {"exit_code": exit_code, "duration_ms": duration_ms,
+                      "agent_start_monotonic": started, "agent_end_monotonic": time.monotonic(),
+                      "timed_out": timed_out, "error": process_error,
+                      "stdout": str(stdout_path), "stderr": str(stderr_path)}
+    (task_dir / "hermes-process.json").write_text(json.dumps(process_record, indent=2), encoding="utf-8")
+    trace = collector.ingest_stream(stdout_path, stderr_path, exit_code=exit_code,
+                                    duration_ms=duration_ms, timed_out=timed_out)
+    if exit_code != 0 or trace["trace_status"] != "COMPLETE":
+        raise RuntimeError(f"Hermes task {task_id} failed or its trace is incomplete; see {task_dir}")
+    verify_sut_unchanged(task_dir)
 
-    # 4. Export Candidate Patch
-    try:
-        cmd_export = [str(PYTHON_BIN), str(SCRIPTS_DIR / "export_candidate_patch.py"), "--task", task_id, "--run-id", run_id]
-        subprocess.run(cmd_export, check=True)
-    except Exception as e:
-        print(f"[WARN] Failed to export patch for {task_id}: {e}")
+    for script, start_event, end_event in (
+        ("export_candidate_patch.py", "GIT_DIFF_EXPORT_START", "GIT_DIFF_EXPORT_END"),
+        ("grade_with_official_verifier.py", "GRADER_START", "GRADER_END"),
+        ("fresh_sandbox_regrade.py", "FRESH_REGRADE_START", "FRESH_REGRADE_END"),
+    ):
+        collector.record_event(start_event)
+        step_start = time.monotonic()
+        subprocess.run([str(PYTHON_BIN), str(SCRIPTS_DIR / script), "--task", task_id,
+                        "--run-id", run_id], check=True)
+        collector.record_event(end_event, {"duration_ms": round((time.monotonic() - step_start) * 1000)})
 
-    # 5. Grade with Official Verifier
-    try:
-        cmd_grade = [str(PYTHON_BIN), str(SCRIPTS_DIR / "grade_with_official_verifier.py"), "--task", task_id, "--run-id", run_id]
-        subprocess.run(cmd_grade, check=True)
-    except Exception as e:
-        print(f"[WARN] Failed to run official verifier for {task_id}: {e}")
+    grade_path = task_dir / "grader-result.json"
+    regrade_path = task_dir / "fresh-regrade-result.json"
+    grade = json.loads(grade_path.read_text(encoding="utf-8"))
+    regrade = json.loads(regrade_path.read_text(encoding="utf-8"))
+    if grade.get("task_id") != task_id or regrade.get("task_id") != task_id:
+        raise RuntimeError(f"Grade artifacts do not match task {task_id}")
+    if (grade.get("status") not in ("PASS", "FAIL") or
+            regrade.get("status") != grade["status"] or
+            grade.get("official_grader_executed") is not True or
+            grade.get("patch_apply_status") != "APPLIED" or
+            regrade.get("patch_applied") is not True or
+            regrade.get("patch_apply_status") != "APPLIED" or
+            regrade.get("resolved") is not grade.get("resolved") or
+            regrade.get("candidate_patch_sha256") != grade.get("candidate_patch_sha256") or
+            not grade.get("sandbox_identity") or
+            not regrade.get("sandbox_identity") or
+            grade["sandbox_identity"] == regrade["sandbox_identity"]):
+        raise RuntimeError(f"Official grader or fresh sandbox evidence is invalid for {task_id}")
+    for result in (grade, regrade):
+        raw = result.get("raw_result_path")
+        if not raw or not Path(raw).is_file() or not Path(raw).resolve().is_relative_to(task_dir.resolve()):
+            raise RuntimeError(f"Raw official result missing for {task_id}")
+    result = {"status": "INFRA_VALID", "resolved": grade["resolved"],
+              "task_id": task_id, "run_id": run_id, "completed_at": time.time(),
+              "total_wall_duration_ms": round((time.monotonic() - task_started) * 1000),
+              "grader_report": str(grade_path), "fresh_regrade_report": str(regrade_path)}
+    collector.finalize_summary({**trace, **result})
+    return result
 
-    # 6. Fresh Sandbox Regrade
-    try:
-        cmd_regrade = [str(PYTHON_BIN), str(SCRIPTS_DIR / "fresh_sandbox_regrade.py"), "--task", task_id, "--run-id", run_id]
-        subprocess.run(cmd_regrade, check=True)
-    except Exception as e:
-        print(f"[WARN] Failed to run fresh sandbox regrade for {task_id}: {e}")
 
-    # Read result
-    summary_path = REPO_DIR / "runs" / run_id / task_id / "telemetry_summary.json"
-    resolved = False
-    if summary_path.exists():
-        with open(summary_path, "r", encoding="utf-8") as f:
-            summary_data = json.load(f)
-            resolved = summary_data.get("resolved", False)
-
-    print(f"COMPLETED TASK {task_id} - Resolved: {resolved}")
-    return {"resolved": resolved, "completed_at": time.time()}
-
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--stage", choices=["calibration"], required=True)
+    args = parser.parse_args(argv)
+    run_id = args.run_id
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", run_id):
+        parser.error("--run-id must contain only letters, digits, underscore, or hyphen")
+    subprocess.run([str(PYTHON_BIN), str(SCRIPTS_DIR / "verify_protocol_freeze.py"),
+                    "--run-id", run_id], check=True)
     manifest = load_manifest()
-    state = load_state()
-    run_id = "run_001"
-
-    # Calibration tasks
-    calib_tasks = manifest.get("calibration_tasks", [])
-    scored_tasks = manifest.get("scored_tasks", [])
-    
-    track_a_tasks = [t for t in scored_tasks if t.get("track") == "swe-bench-verified"]
-    track_b_tasks = [t for t in scored_tasks if t.get("track") == "swe-bench-pro-v2"]
-    track_c_tasks = [t for t in scored_tasks if t.get("track") == "terminal-bench"]
-
-    all_stages = [
-        ("calibration", calib_tasks),
-        ("track_a", track_a_tasks),
-        ("track_b", track_b_tasks),
-        ("track_c", track_c_tasks)
-    ]
-
-    total_tasks = sum(len(tasks) for _, tasks in all_stages)
-    print(f"Starting chunked benchmark runner. Total tasks across all stages: {total_tasks}")
-
-    for stage_name, tasks in all_stages:
-        state["current_track"] = stage_name
-        for task in tasks:
-            task_id = task["task_id"]
-            if task_id in state["completed_tasks"]:
-                print(f"Skipping already completed task: {task_id}")
-                continue
-
-            # Run task
-            res = run_single_task(task, stage_name, run_id=run_id)
-            state["completed_tasks"][task_id] = res
+    tasks = manifest.get("calibration_tasks", [])
+    if not tasks:
+        raise RuntimeError("Manifest has no calibration tasks")
+    if any(task.get("track") == "terminal-bench" for task in tasks):
+        raise RuntimeError("UNSUPPORTED_STATE: Terminal-Bench candidate includes non-Git sidecar state")
+    state = load_state(run_id)
+    for task in tasks:
+        task_id = task["task_id"]
+        if task_id in state["completed_tasks"]:
+            continue
+        try:
+            result = run_single_task(task, "calibration", run_id=run_id)
+            if result.get("status") != "INFRA_VALID":
+                raise RuntimeError(f"Calibration evidence is not valid for {task_id}")
+        except Exception:
+            state["status"] = "CALIBRATION_FAILED"
             save_state(state)
-
-    state["status"] = "FINISHED"
+            raise
+        state["completed_tasks"][task_id] = result
+        save_state(state)
+    state["status"] = "CALIBRATION_INFRA_VALID"
     save_state(state)
-
-    # Build final report
-    print("\nBuilding final benchmark report...")
-    cmd_report = [str(PYTHON_BIN), str(SCRIPTS_DIR / "build_report.py"), "--run-id", run_id]
-    subprocess.run(cmd_report, check=True)
-
-    # Send WeChat Notification
-    completed_count = len(state["completed_tasks"])
-    resolved_count = sum(1 for v in state["completed_tasks"].values() if v.get("resolved"))
-    
-    notice_text = (
-        f"🎯【Hermes Codebot Benchmark 全部评测完成】\n\n"
-        f"• 状态：全部评测阶段顺利结束\n"
-        f"• 总题目数：{completed_count} 题（含 Calibration 校准与全量 Scored 题集）\n"
-        f"• 官方 Grader 判定通过：{resolved_count} / {completed_count}\n"
-        f"• 上下文控制：单题独立会话隔离，严格压制在 40% 预算内\n"
-        f"• 报告已生成：hermes-code-agent-benchmark/reports/final-report.html\n\n"
-        f"请在电脑端查阅完整报告与 Diff 审计记录。"
-    )
-    print("Sending final completion notification via WeChat...")
-    notify_wechat(notice_text)
-    print("All tasks finished successfully.")
+    print(f"Calibration infrastructure valid for {run_id}. Scored tasks were not run.")
 
 if __name__ == "__main__":
     main()
