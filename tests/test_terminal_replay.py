@@ -711,6 +711,32 @@ def test_tree_sha256_is_stable_and_ignores_caches(tmp_path):
     assert tr.tree_sha256(tmp_path) != digest
 
 
+def test_candidate_state_sha256_refuses_a_vanished_artifact_tree(tmp_path):
+    """An absent artifact tree must not digest to the same value as a real empty one.
+
+    ``tree_sha256`` over zero files returns the SHA-256 of the empty string, so
+    deleting a trial's ``artifacts/`` directory used to make its recorded
+    identity recompute to that constant — an attacker holding only write access
+    to the run directory could delete the collected state, rewrite
+    ``candidate_state_sha256`` to that constant, and pass the digest check. The
+    identity of a candidate has to be a function of bytes that are present.
+    """
+    trial = tmp_path / "trial"
+    (trial / "artifacts" / "app").mkdir(parents=True)
+    (trial / "artifacts" / "app" / "worker.py").write_text("state\n")
+    real = tr.candidate_state_sha256(trial)
+
+    empty = tmp_path / "empty-trial"
+    (empty / "artifacts").mkdir(parents=True)
+    with pytest.raises(ValueError, match="CANDIDATE_STATE_ABSENT"):
+        tr.candidate_state_sha256(empty)
+
+    with pytest.raises(ValueError, match="CANDIDATE_STATE_ABSENT"):
+        tr.candidate_state_sha256(tmp_path / "no-such-trial")
+
+    assert tr.candidate_state_sha256(trial) == real
+
+
 # ---------------------------------------------------------------------------
 # candidate host bridge
 # ---------------------------------------------------------------------------

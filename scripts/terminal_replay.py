@@ -70,6 +70,9 @@ REGRADE_TRIAL_PREFIX = "grade"
 REPLAY_AGENT_STREAM = "hermes-stream.jsonl"
 REPLAY_PROCESS_RECORD = "hermes-process.json"
 _DIGEST_SKIP = ("__pycache__",)
+# What ``tree_sha256`` returns for a tree with no digestable file. Kept as a named
+# constant so "no state" is never confused with "this exact state".
+_EMPTY_TREE_SHA256 = hashlib.sha256().hexdigest()
 
 logger = logging.getLogger(__name__)
 
@@ -237,8 +240,25 @@ def _load_json(path) -> dict:
 
 
 def candidate_state_sha256(trial_dir) -> str:
-    """Content identity of the recorded candidate state (collected artifacts)."""
-    return tree_sha256(Path(trial_dir) / "artifacts")
+    """Content identity of the recorded candidate state (collected artifacts).
+
+    A candidate's identity has to be a function of bytes that are present, so a
+    trial whose ``artifacts/`` tree is missing or holds no digestable file is
+    rejected rather than hashed. ``tree_sha256`` over zero files returns the
+    SHA-256 of empty input, which is a value an attacker can simply write into
+    ``candidate_state_sha256``; refusing to produce it keeps "the recorded state
+    still exists and is unchanged" distinct from "there is no state".
+    """
+    artifacts = Path(trial_dir) / "artifacts"
+    if not artifacts.is_dir():
+        raise ValueError(f"CANDIDATE_STATE_ABSENT: {artifacts}")
+    try:
+        digest = tree_sha256(artifacts)
+    except OSError as error:
+        raise ValueError(f"CANDIDATE_STATE_UNREADABLE: {error}") from error
+    if digest == _EMPTY_TREE_SHA256:
+        raise ValueError(f"CANDIDATE_STATE_ABSENT: {artifacts}")
+    return digest
 
 
 def locate_trial(job_dir, task_id) -> Path:

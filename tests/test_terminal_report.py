@@ -11,6 +11,7 @@ the recorded trial, and a report that can actually count a passing terminal task
 
 import hashlib
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -217,18 +218,81 @@ def test_report_rejects_a_terminal_record_that_ran_an_agent_phase(tmp_path, monk
 
 
 def test_report_rejects_a_terminal_export_pointing_outside_the_run(tmp_path, monkeypatch):
-    """The report must not hash-read a directory an export merely names."""
+    """The report must not hash-read a directory an export merely names.
+
+    The impostor tree carries byte-identical artifacts, so its recomputed digest
+    equals the recorded identity and the digest gate cannot reject it: only the
+    containment requirement can. If that requirement were deleted this test
+    would report RESOLVED, so the test discriminates instead of passing by
+    accident.
+    """
     run = _fixture(tmp_path, monkeypatch)
-    task_dir, _, state_sha = _terminal_task(run / "tasks" / TASK_ID)
+    task_dir, trial, state_sha = _terminal_task(run / "tasks" / TASK_ID)
     _fresh_regrade(task_dir, {"task_id": TASK_ID, "track": "terminal-bench"}, state_sha)
     outside = tmp_path / "elsewhere"
-    (outside / "artifacts").mkdir(parents=True)
+    (outside / "artifacts" / "app" / "src").mkdir(parents=True)
+    (outside / "artifacts" / "app" / "src" / "worker.py").write_text("state\n")
+    (outside / "artifacts" / "manifest.json").write_text("[]\n")
+    # Positive control: the containment check is what rejects this, not a digest
+    # mismatch, so assert the impostor really is indistinguishable by content.
+    assert tr.candidate_state_sha256(outside) == state_sha
     export_path = task_dir / "trial-export-result.json"
     _write_json(export_path, json.loads(export_path.read_text()) | {
         "candidate_trial_dir": str(outside)})
     build_report.generate_report("run_test")
     report = (tmp_path / "reports" / "BENCHMARK_REPORT_run_test.md").read_text()
     assert f"CALIBRATION | terminal-bench | {TASK_ID} | INVALID" in report
+
+
+def test_report_rejects_a_terminal_export_escaping_through_a_symlink(tmp_path, monkeypatch):
+    """Containment is decided after resolution, so a symlink cannot smuggle a tree in."""
+    run = _fixture(tmp_path, monkeypatch)
+    task_dir, _, state_sha = _terminal_task(run / "tasks" / TASK_ID)
+    _fresh_regrade(task_dir, {"task_id": TASK_ID, "track": "terminal-bench"}, state_sha)
+    outside = tmp_path / "elsewhere"
+    (outside / "artifacts" / "app" / "src").mkdir(parents=True)
+    (outside / "artifacts" / "app" / "src" / "worker.py").write_text("state\n")
+    (outside / "artifacts" / "manifest.json").write_text("[]\n")
+    assert tr.candidate_state_sha256(outside) == state_sha
+    link = task_dir / "linked-trial"
+    link.symlink_to(outside, target_is_directory=True)
+    export_path = task_dir / "trial-export-result.json"
+    _write_json(export_path, json.loads(export_path.read_text()) | {
+        "candidate_trial_dir": str(link)})
+    build_report.generate_report("run_test")
+    report = (tmp_path / "reports" / "BENCHMARK_REPORT_run_test.md").read_text()
+    assert f"CALIBRATION | terminal-bench | {TASK_ID} | INVALID" in report
+
+
+def test_report_rejects_a_terminal_candidate_whose_artifacts_vanished(tmp_path, monkeypatch):
+    """Deleting the collected state must not leave a computable identity behind.
+
+    Without the presence check, an emptied ``artifacts/`` tree digests to the
+    SHA-256 of empty input; a record rewritten to that constant would satisfy
+    the digest gate and resurrect a solved task that no longer has any state.
+    """
+    run = _fixture(tmp_path, monkeypatch)
+    task_dir, trial, _ = _terminal_task(run / "tasks" / TASK_ID)
+    _fresh_regrade(task_dir, {"task_id": TASK_ID, "track": "terminal-bench"},
+                   tr.candidate_state_sha256(trial))
+    shutil.rmtree(trial / "artifacts")
+    (trial / "artifacts").mkdir()
+    empty_sha = hashlib.sha256().hexdigest()
+    export_path = task_dir / "trial-export-result.json"
+    _write_json(export_path, json.loads(export_path.read_text()) | {
+        "candidate_state_sha256": empty_sha})
+    for name in ("grader-result.json", "fresh-sandbox-result.json",
+                 "fresh-regrade-result.json"):
+        path = task_dir / name
+        data = json.loads(path.read_text())
+        data["candidate_patch_sha256"] = empty_sha
+        _write_json(path, data)
+    build_report.generate_report("run_test")
+    report = (tmp_path / "reports" / "BENCHMARK_REPORT_run_test.md").read_text()
+    assert f"CALIBRATION | terminal-bench | {TASK_ID} | INVALID" in report
+    assert "CALIBRATION_EXECUTED: 0/1" in report
+    assert "CALIBRATION_INVALID: 1" in report
+    assert "CALIBRATION_RESOLVED: 1/1" not in report
 
 
 def test_report_survives_a_malformed_terminal_export(tmp_path, monkeypatch):
