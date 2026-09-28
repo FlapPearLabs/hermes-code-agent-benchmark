@@ -22,6 +22,7 @@ PINNED_FILES = (
 HARNESS_FILES = (
     "scripts/candidate_artifact.py",
     "scripts/chunked_benchmark_runner.py",
+    "scripts/terminal_replay.py",
     "scripts/run_codebot_task.py",
     "scripts/collect_telemetry.py",
     "scripts/export_candidate_patch.py",

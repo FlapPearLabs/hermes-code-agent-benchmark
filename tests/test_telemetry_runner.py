@@ -163,18 +163,34 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(json.loads((evidence / "sut-post-agent-check.json").read_text())["status"],
                          "SUT_IDENTITY_DRIFT")
 
-    def test_unsupported_terminal_state_blocks_entire_calibration_before_task_start(self):
+    def test_terminal_calibration_routes_through_adapter_path(self):
+        """The manifest-level UNSUPPORTED_STATE blocker is replaced by the
+        state-replay adapter: terminal tasks are routed through the candidate
+        path and fail on evidence (missing pinned task), never on policy."""
         self.root.joinpath("benchmark-manifest.json").write_text(json.dumps({
             "calibration_tasks": [
                 {"task_id": "swe", "track": "swe-bench-verified"},
-                {"task_id": "terminal", "track": "terminal-bench"}],
+                {"task_id": "terminal", "track": "terminal-bench",
+                 "task_dir": "/nonexistent/pinned/task"}],
         }))
+
+        def fake_single(task_obj, track_name, run_id):
+            if task_obj["track"] == "terminal-bench":
+                raise RuntimeError("Pinned Terminal task is missing for terminal")
+            return {"status": "INFRA_VALID", "task_id": task_obj["task_id"],
+                    "run_id": run_id, "resolved": False}
+
         with patch.object(runner.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)), \
-             patch.object(runner, "run_single_task") as task:
-            with self.assertRaisesRegex(RuntimeError, "UNSUPPORTED_STATE"):
+             patch.object(runner, "run_single_task", side_effect=fake_single) as task:
+            with self.assertRaisesRegex(RuntimeError, "Pinned Terminal task is missing"):
                 runner.main(["--run-id", "new-run", "--stage", "calibration"])
-        task.assert_not_called()
-        self.assertFalse((self.root / "runs" / "new-run").exists())
+        self.assertEqual(
+            [call.args[0]["task_id"] for call in task.call_args_list],
+            ["swe", "terminal"])
+        state = json.loads(
+            (self.root / "runs" / "new-run" / "runner-state.json").read_text())
+        self.assertEqual(state["status"], "CALIBRATION_FAILED")
+        self.assertIn("swe", state["completed_tasks"])
 
     def test_nonzero_hermes_exit_persists_raw_trace_then_stops(self):
         calls = []

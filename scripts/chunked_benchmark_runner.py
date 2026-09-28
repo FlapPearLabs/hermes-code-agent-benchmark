@@ -7,18 +7,33 @@ import os
 import re
 import json
 import time
+import tomllib
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 
 if __package__:
     from scripts.collect_telemetry import TaskTelemetryCollector
     from scripts.verify_agent_sandbox import prove_sandbox
     from scripts.verify_protocol_freeze import FreezeError, verify_local_patch_set
+    from scripts.grade_with_official_verifier import HARBOR_BIN, HARBOR_ROOT, UPSTREAM
+    from scripts.terminal_replay import (REPLAY_AGENT_STREAM, REPLAY_PROCESS_RECORD,
+                                         build_terminal_prompt,
+                                         candidate_state_sha256,
+                                         candidate_trial_command, locate_trial,
+                                         read_candidate_evidence, verify_harbor_pin)
+    from scripts.candidate_artifact import check_terminal_artifact_preflight
 else:
     from collect_telemetry import TaskTelemetryCollector
     from verify_agent_sandbox import prove_sandbox
     from verify_protocol_freeze import FreezeError, verify_local_patch_set
+    from grade_with_official_verifier import HARBOR_BIN, HARBOR_ROOT, UPSTREAM
+    from terminal_replay import (REPLAY_AGENT_STREAM, REPLAY_PROCESS_RECORD,
+                                 build_terminal_prompt, candidate_state_sha256,
+                                 candidate_trial_command, locate_trial,
+                                 read_candidate_evidence, verify_harbor_pin)
+    from candidate_artifact import check_terminal_artifact_preflight
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = REPO_DIR / "benchmark-manifest.json"
@@ -86,12 +101,141 @@ def save_state(state):
     with path.open("w", encoding="utf-8") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
+def _run_terminal_task(task_obj, run_id):
+    """Terminal-Bench calibration candidate: a real pinned Harbor source trial
+    produced by the pinned host-side Hermes Code profile, followed by the same
+    official-grader + fresh-replay evidence chain as the git-patch tracks."""
+    task_id = task_obj["task_id"]
+    task_dir = REPO_DIR / "runs" / run_id / "tasks" / task_id
+    workspace_dir = REPO_DIR / "agent-workspaces" / run_id / task_id
+    if task_dir.exists() or workspace_dir.exists():
+        raise RuntimeError(f"Task {task_id} already has run artifacts; use a fresh run ID")
+    pinned_task_dir = Path(task_obj["task_dir"])
+    expected = UPSTREAM / "terminal-bench" / "tasks" / task_id
+    if pinned_task_dir.resolve() != expected.resolve() or not pinned_task_dir.is_dir():
+        raise RuntimeError(f"Pinned Terminal task is missing for {task_id}")
+    harbor_pin = verify_harbor_pin(HARBOR_ROOT, HARBOR_BIN)
+
+    task_dir.mkdir(parents=True, exist_ok=True)
+    workspace_dir.mkdir(parents=True, exist_ok=True)
+    (workspace_dir / "PROBLEM.md").write_text(
+        build_terminal_prompt(task_obj.get("instruction", "")), encoding="utf-8")
+    # The verified sandbox profile expects the workspace shape of a solved task.
+    # For Terminal-Bench the graded state lives in the container, so ``repo`` is
+    # the SUT's local scratch area rather than a git checkout.
+    (workspace_dir / "repo").mkdir(exist_ok=True)
+    collector = TaskTelemetryCollector(task_id, run_id)
+    task_started = time.monotonic()
+    collector.record_event("TASK_START", {"track": "terminal-bench"})
+
+    with (pinned_task_dir / "task.toml").open("rb") as handle:
+        task_config = tomllib.load(handle)
+    agent_timeout = int(task_config.get("agent", {}).get("timeout_sec", 28800))
+    job_name = f"candidate-{uuid.uuid4().hex[:8]}"
+    command = candidate_trial_command(
+        pinned_task_dir=pinned_task_dir, sut_workspace=workspace_dir,
+        sut_task_dir=task_dir, sut_timeout_sec=max(600, agent_timeout - 600),
+        job_name=job_name, jobs_dir=task_dir / "trials", harbor_bin=HARBOR_BIN)
+    env = dict(os.environ)
+    env["PYTHONPATH"] = os.pathsep.join((str(SCRIPTS_DIR), str(HARBOR_ROOT / "src")))
+    (task_dir / "harbor-candidate-command.json").write_text(
+        json.dumps({"argv": command, "cwd": str(REPO_DIR)}, indent=2) + "\n")
+    collector.record_event("CANDIDATE_TRIAL_START", {"job_name": job_name})
+    started = time.monotonic()
+    try:
+        process = subprocess.run(command, cwd=str(REPO_DIR), env=env,
+                                 capture_output=True, text=True, timeout=32400)
+    except subprocess.TimeoutExpired:
+        collector.record_event("CANDIDATE_TRIAL_END", {"timed_out": True})
+        raise RuntimeError(f"Candidate trial for {task_id} exceeded the hard wall limit")
+    (task_dir / "harbor-candidate.log").write_text(
+        (process.stdout or "") + "\n--- stderr ---\n" + (process.stderr or ""),
+        encoding="utf-8")
+    (task_dir / "harbor-candidate-exit-code.txt").write_text(f"{process.returncode}\n")
+    collector.record_event("CANDIDATE_TRIAL_END",
+                           {"exit_code": process.returncode,
+                            "duration_ms": round((time.monotonic() - started) * 1000)})
+    if process.returncode != 0:
+        raise RuntimeError(f"Candidate trial failed for {task_id}; see harbor-candidate.log")
+
+    candidate_trial = locate_trial(task_dir / "trials" / job_name, task_id)
+    verify_sut_unchanged(task_dir)
+    preflight = check_terminal_artifact_preflight(pinned_task_dir, candidate_trial, task_id)
+    sut = read_candidate_evidence(candidate_trial, task_id)
+    state_sha = candidate_state_sha256(candidate_trial)
+    stream_path = candidate_trial / "agent" / REPLAY_AGENT_STREAM
+    process_json = candidate_trial / "agent" / REPLAY_PROCESS_RECORD
+    sut_record = json.loads(process_json.read_text())
+    (task_dir / "trial-export-result.json").write_text(json.dumps({
+        "status": "VALID", "task_id": task_id, "run_id": run_id,
+        "candidate_artifact_type": "SANDBOX_STATE",
+        "candidate_trial_dir": str(candidate_trial),
+        "trial_id": preflight["trial_id"],
+        "candidate_state_sha256": state_sha,
+        "hermes_stream_path": str(stream_path),
+        "hermes_stream_sha256": sut["sut_stream_sha256"],
+        "declared_artifacts": preflight["declared_artifacts"],
+        "source_trial_authenticity": preflight["source_trial_authenticity"],
+        "sut": sut,
+        "harbor_pin": harbor_pin,
+        "preflight": dict(preflight),
+    }, indent=2, sort_keys=True) + "\n")
+
+    trace = collector.ingest_stream(
+        stream_path, candidate_trial / "agent" / "hermes-stderr.log",
+        exit_code=sut_record.get("exit_code"),
+        duration_ms=sut_record.get("duration_ms") or 0,
+        timed_out=bool(sut_record.get("timed_out")))
+    if trace["trace_status"] != "COMPLETE":
+        raise RuntimeError(
+            f"Hermes trace for terminal task {task_id} is incomplete; see {candidate_trial}")
+
+    for script, start_event, end_event in (
+        ("grade_with_official_verifier.py", "GRADER_START", "GRADER_END"),
+        ("fresh_sandbox_regrade.py", "FRESH_REGRADE_START", "FRESH_REGRADE_END"),
+    ):
+        collector.record_event(start_event)
+        step_start = time.monotonic()
+        subprocess.run([str(PYTHON_BIN), str(SCRIPTS_DIR / script), "--task", task_id,
+                        "--run-id", run_id], check=True)
+        collector.record_event(end_event, {"duration_ms": round((time.monotonic() - step_start) * 1000)})
+
+    grade_path = task_dir / "grader-result.json"
+    regrade_path = task_dir / "fresh-regrade-result.json"
+    grade = json.loads(grade_path.read_text(encoding="utf-8"))
+    regrade = json.loads(regrade_path.read_text(encoding="utf-8"))
+    if grade.get("task_id") != task_id or regrade.get("task_id") != task_id:
+        raise RuntimeError(f"Grade artifacts do not match task {task_id}")
+    if (grade.get("status") not in ("PASS", "FAIL") or
+            regrade.get("status") != grade["status"] or
+            grade.get("official_grader_executed") is not True or
+            grade.get("patch_apply_status") != "APPLIED" or
+            regrade.get("patch_applied") is not True or
+            regrade.get("patch_apply_status") != "APPLIED" or
+            regrade.get("resolved") is not grade.get("resolved") or
+            regrade.get("candidate_patch_sha256") != grade.get("candidate_patch_sha256") or
+            not grade.get("sandbox_identity") or
+            not regrade.get("sandbox_identity") or
+            grade["sandbox_identity"] == regrade["sandbox_identity"]):
+        raise RuntimeError(f"Official grader or fresh sandbox evidence is invalid for {task_id}")
+    for result in (grade, regrade):
+        raw = result.get("raw_result_path")
+        if not raw or not Path(raw).is_file() or not Path(raw).resolve().is_relative_to(task_dir.resolve()):
+            raise RuntimeError(f"Raw official result missing for {task_id}")
+    result = {"status": "INFRA_VALID", "resolved": grade["resolved"],
+              "task_id": task_id, "run_id": run_id, "completed_at": time.time(),
+              "total_wall_duration_ms": round((time.monotonic() - task_started) * 1000),
+              "grader_report": str(grade_path), "fresh_regrade_report": str(regrade_path)}
+    collector.finalize_summary({**trace, **result})
+    return result
+
+
 def run_single_task(task_obj, track_name, run_id):
     if track_name != "calibration":
         raise ValueError("Scored tasks are disabled for this runner")
     task_id = task_obj["task_id"]
     if task_obj.get("track") == "terminal-bench":
-        raise RuntimeError("UNSUPPORTED_STATE: Terminal-Bench candidate replay is not proven")
+        return _run_terminal_task(task_obj, run_id)
     task_dir = REPO_DIR / "runs" / run_id / "tasks" / task_id
     workspace_dir = REPO_DIR / "agent-workspaces" / run_id / task_id
     if task_dir.exists() or workspace_dir.exists():
@@ -202,8 +346,6 @@ def main(argv=None):
     tasks = manifest.get("calibration_tasks", [])
     if not tasks:
         raise RuntimeError("Manifest has no calibration tasks")
-    if any(task.get("track") == "terminal-bench" for task in tasks):
-        raise RuntimeError("UNSUPPORTED_STATE: Terminal-Bench candidate includes non-Git sidecar state")
     state = load_state(run_id)
     for task in tasks:
         task_id = task["task_id"]

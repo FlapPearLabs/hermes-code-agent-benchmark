@@ -16,9 +16,12 @@ from uuid import uuid4
 from datetime import datetime, timezone
 
 if __package__:
-    from scripts.candidate_artifact import artifact_type
+    from scripts.candidate_artifact import (
+        artifact_type, check_terminal_artifact_preflight)
+    from scripts import terminal_replay
 else:
-    from candidate_artifact import artifact_type
+    from candidate_artifact import artifact_type, check_terminal_artifact_preflight
+    import terminal_replay
 
 
 REPO_DIR = Path(__file__).resolve().parent.parent
@@ -201,11 +204,80 @@ def _invoke(command, cwd, env, evidence_dir, prefix):
     return code, started, duration_ms
 
 
+def _grade_terminal(task_id, run_id, phase, task):
+    """Terminal-Bench: replay the candidate's recorded sandbox state through the
+    official Harbor ``trials regrade`` path. That path seeds the recorded
+    artifact bytes into a fresh separate verifier environment, runs no agent
+    phase at all, and re-runs the task's official verifier — so the official
+    machinery restores and judges, and never becomes the SUT."""
+    task_dir = REPO_DIR / "runs" / run_id / "tasks" / task_id
+    outcome_path = task_dir / ("grader-result.json" if phase == "grader"
+                               else "fresh-sandbox-result.json")
+    if outcome_path.exists():
+        raise ValueError("existing official grader evidence is immutable")
+    task_dir.mkdir(parents=True, exist_ok=True)
+    outcome = {"task_id": task_id, "run_id": run_id, "status": "INVALID",
+               "resolved": None, "official_grader_process_started": False,
+               "official_grader_executed": False,
+               "patch_apply_status": "UNKNOWN", "grader_exit_code": None,
+               "sandbox_identity": None, "raw_result_path": None,
+               "timestamp": datetime.now(timezone.utc).isoformat()}
+    try:
+        official_task = UPSTREAM / "terminal-bench" / "tasks" / task_id
+        if official_task.resolve() != Path(task["task_dir"]).resolve() or not official_task.is_dir():
+            raise ValueError("Terminal task directory is not the pinned upstream task")
+        export = json.loads((task_dir / "trial-export-result.json").read_text())
+        candidate_trial = Path(export["candidate_trial_dir"])
+        if (not candidate_trial.is_dir()
+                or not candidate_trial.resolve().is_relative_to(task_dir.resolve())):
+            raise ValueError("Candidate source trial is missing or outside the run")
+        outcome["harbor_pin"] = terminal_replay.verify_harbor_pin(HARBOR_ROOT, HARBOR_BIN)
+        preflight = check_terminal_artifact_preflight(official_task, candidate_trial, task_id)
+        sut = terminal_replay.read_candidate_evidence(candidate_trial, task_id)
+        candidate_state_sha = terminal_replay.candidate_state_sha256(candidate_trial)
+        outcome.update(track=task["track"],
+                       candidate_patch_sha256=candidate_state_sha,
+                       candidate_trial_id=preflight["trial_id"],
+                       base_identity=task.get("upstream_sha"))
+        trials_dir = task_dir / "official-trials"
+        trial_name = (f"{terminal_replay.REGRADE_TRIAL_PREFIX}-{phase}-"
+                      f"{uuid4().hex[:8]}")
+        command = terminal_replay.regrade_command(
+            source_trial=candidate_trial, official_task=official_task,
+            trial_name=trial_name, trials_dir=trials_dir, harbor_bin=HARBOR_BIN)
+        env = dict(os.environ)
+        env["PYTHONPATH"] = os.pathsep.join((str(REPO_DIR / "scripts"),
+                                             str(HARBOR_ROOT / "src")))
+        code, started, duration_ms = _invoke(command, task_dir, env, task_dir, phase)
+        outcome["official_grader_process_started"] = started
+        outcome["grader_exit_code"] = code
+        outcome["grader_duration_ms"] = duration_ms
+        outcome["replay_trial_dir"] = str(trials_dir / trial_name)
+        outcome.update(terminal_replay.read_replay_evidence(
+            task_id=task_id, trial_dir=trials_dir / trial_name, exit_code=code,
+            source_trial_dir=candidate_trial, source_trial_id=preflight["trial_id"],
+            source_stream_sha256=sut["sut_stream_sha256"],
+            candidate_state_sha256_value=candidate_state_sha))
+    except (OSError, ValueError, KeyError, RuntimeError) as exc:
+        outcome["error"] = f"{type(exc).__name__}: {exc}"
+    outcome["official_grader_executed"] = outcome["status"] in ("PASS", "FAIL")
+    _json(outcome_path, outcome)
+    return outcome
+
+
 def grade_task(task_id, run_id, phase="grader"):
     if phase not in ("grader", "fresh-sandbox"):
         raise ValueError(f"unknown grading phase: {phase}")
     if run_id == "run_001" or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", run_id):
         raise ValueError("historical or unsafe run ID")
+    task = _task(task_id)
+    if artifact_type(task["track"]) == "SANDBOX_STATE":
+        return _grade_terminal(task_id, run_id, phase, task)
+    return _grade_patch(task_id, run_id, phase, task)
+
+
+def _grade_patch(task_id, run_id, phase, task):
+    """Official grader path for git-patch candidate tracks (unchanged)."""
     task_dir = REPO_DIR / "runs" / run_id / "tasks" / task_id
     outcome_path = task_dir / ("grader-result.json" if phase == "grader" else "fresh-sandbox-result.json")
     if outcome_path.exists():
